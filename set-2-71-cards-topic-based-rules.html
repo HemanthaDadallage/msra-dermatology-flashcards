@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flash Cards (Categorised)</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #160b2a;
+      --glass: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 22px;
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(1000px 700px at 85% 15%, rgba(6,182,212,.32), transparent 55%),
+        radial-gradient(900px 600px at 55% 90%, rgba(245,158,11,.25), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+    .blob { position: fixed; width: 420px; height: 420px; filter: blur(40px); opacity: .55; z-index: -1; border-radius: 999px; animation: float 9s ease-in-out infinite; pointer-events: none; }
+    .b1 { left: -120px; top: -140px; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.95), rgba(124,58,237,.05)); }
+    .b2 { right: -140px; top: 60px; background: radial-gradient(circle at 40% 40%, rgba(6,182,212,.95), rgba(6,182,212,.05)); animation-duration: 12s; }
+    .b3 { left: 35%; bottom: -180px; background: radial-gradient(circle at 35% 40%, rgba(245,158,11,.9), rgba(245,158,11,.05)); animation-duration: 14s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18px, -22px) scale(1.05); } }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 18px 38px; }
+    header { display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:44px; height:44px; border-radius:14px; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); box-shadow: 0 12px 30px rgba(0,0,0,.35); position:relative; overflow:hidden; }
+    .logo:after { content:""; position:absolute; inset:-40%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%); transform: rotate(18deg); opacity: .6; }
+    h1 { font-size:20px; margin:0; letter-spacing:.3px; }
+    .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; width:100%; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:9px 12px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.25); }
+    .pill input[type="search"] { width: 220px; max-width: 70vw; background:transparent; border:none; outline:none; color:var(--text); font-size:14px; }
+    .pill select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      appearance: none;
+      padding-right: 18px;
+      cursor: pointer;
+    }
+    .pill select option { color: #111; }
+    .pill .caret { opacity: .75; }
+
+    .btn { border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.10); color: var(--text); padding: 10px 12px; border-radius:14px; cursor:pointer; transition: transform .08s ease, background .2s ease, border-color .2s ease; user-select:none; box-shadow: 0 10px 26px rgba(0,0,0,.22); backdrop-filter: blur(10px); display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13px; }
+    .btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn.primary { border:none; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); }
+    .btn.good { border:none; background: linear-gradient(135deg, rgba(34,197,94,1), rgba(6,182,212,1)); }
+    .btn.bad { border:none; background: linear-gradient(135deg, rgba(239,68,68,1), rgba(245,158,11,1)); }
+
+    .grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; align-items:stretch; margin-top:14px; }
+    @media (max-width:900px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(12px); overflow:hidden; }
+    .panel-head { padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border-bottom: 1px solid rgba(255,255,255,.12); }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; color: var(--muted); font-size: 13px; }
+    .badge { padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.85); font-weight:700; letter-spacing:.2px; }
+
+    .progress { height: 10px; border-radius:999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.12); overflow:hidden; min-width:220px; }
+    .bar { height:100%; width:0%; background: linear-gradient(90deg, rgba(124,58,237,1), rgba(6,182,212,1), rgba(34,197,94,1)); border-radius:999px; transition: width .25s ease; }
+
+    .stage { padding: 18px; display:grid; place-items:center; }
+    .card { width: min(720px, 100%); height: 360px; perspective: 1400px; }
+    .inner { width:100%; height:100%; position:relative; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+    .card.flipped .inner { transform: rotateY(180deg); }
+    .face { position:absolute; inset:0; border-radius:26px; border: 1px solid rgba(255,255,255,.20); box-shadow: 0 22px 60px rgba(0,0,0,.45); overflow:hidden; backface-visibility:hidden; display:flex; flex-direction:column; }
+    .face::before { content:""; position:absolute; inset:0; background: radial-gradient(900px 500px at 10% 20%, rgba(255,255,255,.18), transparent 55%), radial-gradient(700px 500px at 90% 20%, rgba(255,255,255,.16), transparent 55%), radial-gradient(800px 650px at 50% 120%, rgba(0,0,0,.25), transparent 60%); pointer-events:none; }
+    .qface { background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(6,182,212,.70)); }
+    .aface { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(34,197,94,.82), rgba(245,158,11,.65)); }
+
+    .tagrow { display:flex; gap:10px; flex-wrap:wrap; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; margin:14px 14px 0; border-radius:999px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.22); width: fit-content; font-weight:800; letter-spacing:.2px; font-size:12px; }
+    .tag.topic { background: rgba(0,0,0,.22); }
+
+    .content { flex:1; padding: 18px 20px 16px; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; }
+    .text { font-size:22px; line-height:1.3; font-weight:800; text-shadow: 0 2px 14px rgba(0,0,0,.25); white-space: pre-wrap; }
+    .small { font-weight:700; font-size:14px; color: rgba(255,255,255,.85); text-shadow:none; }
+    .hint { padding: 10px 16px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.80); font-size:12px; }
+    kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,.20); border: 1px solid rgba(255,255,255,.18); }
+
+    .controls { padding: 16px; border-top: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .left, .right { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .stats { padding: 14px 16px 16px; }
+    .statgrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; box-shadow: 0 10px 24px rgba(0,0,0,.20); }
+    .stat b { font-size:18px; }
+    .stat span { color: var(--muted); font-weight:700; font-size:12px; }
+
+    .list { padding: 10px 16px 16px; }
+    .mini { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+    .mini h3 { margin:0 0 8px; font-size:14px; letter-spacing:.2px; }
+    .toggle { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .switch { display:inline-flex; align-items:center; gap:8px; padding: 8px 10px; border-radius:999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); cursor:pointer; user-select:none; font-size:12px; font-weight:800; color: rgba(255,255,255,.88); }
+    .switch input { accent-color:white; }
+
+    .footer { margin-top:14px; color: rgba(255,255,255,.55); font-size:12px; text-align:center; }
+
+    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.92); padding: 10px 12px; border-radius:999px; box-shadow: 0 18px 50px rgba(0,0,0,.35); backdrop-filter: blur(10px); opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; font-weight:700; font-size:13px; }
+    .toast.show { opacity:1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Colour Flash Cards</h1>
+          <div class="subtitle">Categorised by topic • <kbd>Space</kbd> flip, <kbd>←</kbd>/<kbd>→</kbd> navigate, <kbd>S</kbd> shuffle</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="pill" title="Topic filter">
+          🧩
+          <select id="topicSelect" aria-label="Topic">
+            <option value="__ALL__">All topics</option>
+            <option value="Other dermatology">Other dermatology (69)</option>
+<option value="Inflammatory conditions">Inflammatory conditions (1)</option>
+<option value="Skin cancer &amp; premalignant">Skin cancer &amp; premalignant (1)</option>
+          </select>
+          <span class="caret">▾</span>
+        </div>
+
+        <div class="pill" title="Search questions/answers">
+          🔎
+          <input id="search" type="search" placeholder="Search (e.g., melanoma, BCC, scabies…)" autocomplete="off" />
+        </div>
+
+        <button class="btn" id="shuffleBtn" title="Shuffle deck (S)">🔀 Shuffle</button>
+        <button class="btn" id="resetBtn" title="Reset progress">♻️ Reset</button>
+        <button class="btn primary" id="downloadBtn" title="Download your progress as JSON">⬇️ Export</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge" id="deckName">Deck</span>
+            <span>Card <b id="idx">1</b>/<b id="total">0</b></span>
+            <span class="badge" id="filterBadge">All</span>
+          </div>
+          <div class="progress" aria-label="Progress">
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="card" id="card" role="button" aria-label="Flashcard (click to flip)" tabindex="0">
+            <div class="inner">
+              <div class="face qface">
+                <div class="tagrow">
+                  <div class="tag">❓ Question</div>
+                  <div class="tag topic" id="topicTagQ">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="qText"></div>
+                </div>
+                <div class="hint">
+                  <span>Tip: press <kbd>Space</kbd> to flip</span>
+                  <span class="small" id="qLen"></span>
+                </div>
+              </div>
+
+              <div class="face aface">
+                <div class="tagrow">
+                  <div class="tag">✅ Answer</div>
+                  <div class="tag topic" id="topicTagA">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="aText"></div>
+                </div>
+                <div class="hint">
+                  <span>Mark it: <kbd>K</kbd> Known, <kbd>U</kbd> Unsure</span>
+                  <span class="small" id="aLen"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="left">
+            <button class="btn" id="prevBtn" title="Previous (←)">⬅️ Prev</button>
+            <button class="btn" id="flipBtn" title="Flip (Space)">🪄 Flip</button>
+            <button class="btn" id="nextBtn" title="Next (→)">Next ➡️</button>
+          </div>
+          <div class="right">
+            <button class="btn good" id="knownBtn" title="Mark known (K)">✅ Known</button>
+            <button class="btn bad" id="unsureBtn" title="Mark unsure (U)">🤔 Unsure</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge">Dashboard</span>
+            <span class="small">Progress is saved in your browser (localStorage).</span>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="statgrid">
+            <div class="stat"><span>✅ Known</span><b id="knownCount">0</b></div>
+            <div class="stat"><span>🤔 Unsure</span><b id="unsureCount">0</b></div>
+            <div class="stat"><span>🧠 Seen</span><b id="seenCount">0</b></div>
+            <div class="stat"><span>🎯 Completion</span><b id="pct">0%</b></div>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="mini">
+            <h3>Filters</h3>
+            <div class="toggle">
+              <label class="switch"><input type="radio" name="mode" value="all" checked> All</label>
+              <label class="switch"><input type="radio" name="mode" value="unknown"> Only unseen</label>
+              <label class="switch"><input type="radio" name="mode" value="known"> Known</label>
+              <label class="switch"><input type="radio" name="mode" value="unsure"> Unsure</label>
+            </div>
+            <div class="small" style="margin-top:10px; line-height:1.5;">
+              Topic filter (top bar) narrows the whole deck.
+            </div>
+          </div>
+
+          <div style="height: 12px"></div>
+
+          <div class="mini">
+            <h3>Study tips</h3>
+            <div class="small" style="line-height:1.6;">
+              • Choose a <b>Topic</b> to focus on one area.<br/>
+              • Use <b>Search</b> to jump to a matching card.<br/>
+              • Shuffle for spaced repetition vibes.<br/>
+              • Export if you want to save/share your progress file.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Built as a single offline HTML file ✨
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const RAW_DECK = [{"q": "What is the definition of vertigo?", "a": "Vertigo is a symptom describing the sensation of rotational movement in the absence of true physical movement.", "topic": "Other dermatology"}, {"q": "Name four common causes of peripheral vertigo.", "a": "Benign Paroxysmal Positional Vertigo (BPPV), Meniere's disease, vestibular neuronitis, and labyrinthitis.", "topic": "Other dermatology"}, {"q": "What is the key clinical feature that distinguishes BPPV from other causes of vertigo?", "a": "Brief, recurrent vertigo episodes (<1-2 mins) triggered by positional changes, such as rolling over in bed.", "topic": "Other dermatology"}, {"q": "What is the classic tetrad of symptoms for Meniere's disease?", "a": "Episodic vertigo, fluctuating sensorineural hearing loss, roaring tinnitus, and aural fullness.", "topic": "Other dermatology"}, {"q": "Persistent vertigo lasting longer than _____ is considered a red flag requiring urgent imaging.", "a": "24 hours", "topic": "Other dermatology"}, {"q": "What is the underlying pathophysiology of Benign Paroxysmal Positional Vertigo (BPPV)?", "a": "The movement of calcium carbonate crystals (otoconia) within the semicircular canals of the inner ear following head movement.", "topic": "Other dermatology"}, {"q": "What diagnostic test is used to confirm BPPV, and what is a positive result?", "a": "The Dix-Hallpike test, which is positive if it induces nystagmus and vertigo.", "topic": "Other dermatology"}, {"q": "What is the first-line management for BPPV?", "a": "The Epley manoeuvre.", "topic": "Other dermatology"}, {"q": "What is the pathophysiological association in Meniere's disease?", "a": "It is associated with endolymphatic hydrops, an imbalance in the production and reabsorption of endolymph in the inner ear.", "topic": "Other dermatology"}, {"q": "How long do vertigo episodes typically last in Meniere's disease?", "a": "From 20 minutes to less than 24 hours.", "topic": "Other dermatology"}, {"q": "What medication can be trialled for prophylaxis in Meniere's disease?", "a": "Betahistine.", "topic": "Other dermatology"}, {"q": "What is the pathophysiology of vestibular neuronitis?", "a": "Inflammation of the vestibular nerve, most commonly following a viral infection.", "topic": "Other dermatology"}, {"q": "How does vestibular neuronitis present clinically?", "a": "Sudden onset of severe, persistent vertigo, often following a recent viral illness, with no hearing loss or tinnitus.", "topic": "Other dermatology"}, {"q": "What clinical feature differentiates labyrinthitis from vestibular neuronitis?", "a": "Labyrinthitis presents with hearing loss and tinnitus, whereas vestibular neuronitis does not.", "topic": "Other dermatology"}, {"q": "What type of immune reaction is responsible for allergic rhinitis?", "a": "An IgE-mediated nasal inflammation in response to allergens.", "topic": "Other dermatology"}, {"q": "What is the first-line treatment for mild to moderate allergic rhinitis?", "a": "A PRN intranasal antihistamine (e.g., azelastine) or a PRN non-sedating oral antihistamine (e.g., cetirizine).", "topic": "Other dermatology"}, {"q": "What is the mainstay of treatment for moderate to severe or persistent allergic rhinitis?", "a": "A regular intranasal corticosteroid (e.g., mometasone furoate).", "topic": "Other dermatology"}, {"q": "What is the primary function of cerumen (earwax)?", "a": "It plays a protective role by helping to trap debris and protect the tympanic membrane.", "topic": "Other dermatology"}, {"q": "What is the recommended first-line management for impacted cerumen?", "a": "Soften the wax with ear drops, such as sodium bicarbonate 5% or olive oil, for 5 days.", "topic": "Other dermatology"}, {"q": "What is a cholesteatoma?", "a": "An abnormal, expanding, and destructive growth of keratinising squamous epithelium in the middle ear.", "topic": "Other dermatology"}, {"q": "A patient presents with chronic, foul-smelling purulent otorrhoea that has not resolved with antibiotics. What diagnosis should be suspected?", "a": "Cholesteatoma.", "topic": "Other dermatology"}, {"q": "What is a key otoscopic finding suggestive of a cholesteatoma?", "a": "A retraction pocket or perforation, particularly involving the upper part of the tympanic membrane (pars flaccida).", "topic": "Other dermatology"}, {"q": "What is the definitive management for a cholesteatoma?", "a": "Surgical excision, such as a mastoidectomy.", "topic": "Other dermatology"}, {"q": "What is Chondrodermatitis Nodularis Helicis (CNH)?", "a": "A painful inflammatory nodule on the helix or antihelix of the ear, often due to chronic pressure.", "topic": "Other dermatology"}, {"q": "What is the most important differential diagnosis to consider for Chondrodermatitis Nodularis Helicis (CNH)?", "a": "Squamous cell carcinoma (SCC).", "topic": "Skin cancer & premalignant"}, {"q": "What is the first-line conservative management for Chondrodermatitis Nodularis Helicis (CNH)?", "a": "Pressure relief, such as using protective padding or modifying sleep position, and topical potent corticosteroids.", "topic": "Other dermatology"}, {"q": "According to NICE 2WW referral criteria, a patient aged >45 years with persistent unexplained hoarseness should be referred for suspected _____ cancer.", "a": "Laryngeal", "topic": "Other dermatology"}, {"q": "Unexplained oral ulceration lasting more than _____ weeks is an indication for a 2WW referral for suspected oral cancer.", "a": "3", "topic": "Other dermatology"}, {"q": "What are three key risk factors for nasopharyngeal carcinoma?", "a": "Southeast Asian/Cantonese ancestry, a salty diet, and Epstein-Barr Virus (EBV).", "topic": "Other dermatology"}, {"q": "What is the classic triad of symptoms for an acoustic neuroma (vestibular schwannoma)?", "a": "Progressive unilateral hearing loss, unilateral tinnitus, and vertigo.", "topic": "Other dermatology"}, {"q": "The presence of bilateral acoustic neuromas is strongly associated with which genetic condition?", "a": "Neurofibromatosis type 2 (NF2).", "topic": "Other dermatology"}, {"q": "What is the gold standard investigation for a suspected acoustic neuroma?", "a": "MRI of the internal auditory meatus.", "topic": "Other dermatology"}, {"q": "What are the classic signs of epiglottitis in a child?", "a": "Stridor, drooling, high fever, and tripod positioning.", "topic": "Other dermatology"}, {"q": "Why should you not attempt to examine the throat of a patient with suspected epiglottitis in a non-controlled setting?", "a": "It can precipitate acute airway obstruction.", "topic": "Other dermatology"}, {"q": "What is the most common site of bleeding in anterior epistaxis?", "a": "Kiesselbach's plexus, also known as Little's area.", "topic": "Other dermatology"}, {"q": "What clinical features suggest a posterior epistaxis rather than an anterior one?", "a": "Profuse bleeding, bleeding from both nostrils, blood being swallowed, and inability to locate an anterior bleeding point.", "topic": "Other dermatology"}, {"q": "What is the recommended first aid for epistaxis?", "a": "Pinch the soft fleshy part of the nose and lean forward.", "topic": "Other dermatology"}, {"q": "A patient presents with pulsatile tinnitus and a red/blue mass is seen behind the tympanic membrane on otoscopy. What is the likely diagnosis?", "a": "A glomus jugulare tumour.", "topic": "Other dermatology"}, {"q": "What are the two most common bacterial pathogens causing acute otitis externa?", "a": "Pseudomonas aeruginosa and Staphylococcus aureus.", "topic": "Other dermatology"}, {"q": "Pain on palpation of the pinna or tragus (tragal tug) is a characteristic sign of which condition?", "a": "Acute otitis externa.", "topic": "Other dermatology"}, {"q": "What is the first-line management for acute otitis externa?", "a": "Topical antibiotics with or without a topical corticosteroid for 1-2 weeks.", "topic": "Other dermatology"}, {"q": "What is malignant otitis externa and in which patient population is it most common?", "a": "It is a severe infection spreading into the temporal bone (osteomyelitis), most commonly seen in immunocompromised patients, particularly those with poorly controlled diabetes.", "topic": "Other dermatology"}, {"q": "What otoscopic finding is highly suggestive of malignant otitis externa?", "a": "Granulation tissue within the external auditory meatus, potentially with exposed bone.", "topic": "Other dermatology"}, {"q": "A bulging, erythematous tympanic membrane is a classic sign of which condition?", "a": "Acute Otitis Media (AOM).", "topic": "Other dermatology"}, {"q": "Under NICE guidelines, when should immediate antibiotics be offered for Acute Otitis Media (AOM)?", "a": "If the patient is systemically unwell, or if they are under 2 years old with bilateral AOM or otorrhoea.", "topic": "Other dermatology"}, {"q": "What is the first-line antibiotic for Acute Otitis Media when indicated?", "a": "Amoxicillin for 5-7 days.", "topic": "Other dermatology"}, {"q": "Acute mastoiditis is a serious complication of which condition?", "a": "Acute Otitis Media (AOM).", "topic": "Other dermatology"}, {"q": "What are the classic clinical signs of acute mastoiditis?", "a": "Postauricular erythema, tenderness, boggy swelling, and displacement of the pinna forwards and downwards.", "topic": "Other dermatology"}, {"q": "What is Otitis Media with Effusion (OME)?", "a": "The accumulation of fluid in the middle ear without signs of acute infection.", "topic": "Other dermatology"}, {"q": "What is the most common presenting symptom of Otitis Media with Effusion (OME) in children?", "a": "Conductive hearing loss, which may manifest as speech delay or poor school performance.", "topic": "Other dermatology"}, {"q": "What are some typical otoscopic findings in Otitis Media with Effusion (OME)?", "a": "A discoloured (yellow) or retracted tympanic membrane, visible air-fluid level or bubbles, and a blunted light reflex.", "topic": "Other dermatology"}, {"q": "What is the initial management for most cases of Otitis Media with Effusion (OME)?", "a": "A period of watchful waiting for 3 months, with monitoring via audiometry tests.", "topic": "Other dermatology"}, {"q": "A young adult (30-40 years) presents with gradual, bilateral conductive hearing loss and a positive family history. What is the likely diagnosis?", "a": "Otosclerosis.", "topic": "Other dermatology"}, {"q": "What is presbycusis?", "a": "Age-related, progressive, irreversible, bilateral sensorineural hearing loss.", "topic": "Other dermatology"}, {"q": "A frontal headache or facial pain that worsens when leaning forward is a classic symptom of what condition?", "a": "Rhinosinusitis.", "topic": "Other dermatology"}, {"q": "When should a bacterial cause be suspected in a patient with rhinosinusitis?", "a": "If symptoms last more than 10 days, or if there is purulent discharge, high fever, or severe facial pain.", "topic": "Other dermatology"}, {"q": "What is the first-line antibiotic for suspected bacterial rhinosinusitis?", "a": "Phenoxymethylpenicillin.", "topic": "Other dermatology"}, {"q": "The _____ score is used to assess the need for antibiotics in acute sore throat.", "a": "FeverPAIN or Centor", "topic": "Other dermatology"}, {"q": "At what FeverPAIN or Centor score should antibiotics be offered for a sore throat?", "a": "A FeverPAIN score of 4 or more, or a Centor score of 3 or more.", "topic": "Other dermatology"}, {"q": "A patient with a severe sore throat presents with trismus, a muffled 'hot potato' voice, and deviation of the uvula. What is the suspected diagnosis?", "a": "Peritonsillar abscess (quinsy).", "topic": "Other dermatology"}, {"q": "What is the immediate management for a suspected peritonsillar abscess (quinsy)?", "a": "Emergency admission under ENT for IV antibiotics and needle aspiration or incision and drainage.", "topic": "Other dermatology"}, {"q": "A patient with a severe sore throat develops a widespread rash after being given amoxicillin. What underlying infection is likely?", "a": "Glandular fever (infectious mononucleosis), caused by the Epstein-Barr virus (EBV).", "topic": "Other dermatology"}, {"q": "Why should patients diagnosed with glandular fever avoid contact sports for 4 weeks?", "a": "Due to the risk of splenic rupture from splenomegaly.", "topic": "Inflammatory conditions"}, {"q": "How can you differentiate a lower motor neuron (LMN) facial palsy, like Bell's Palsy, from an upper motor neuron (UMN) palsy?", "a": "An LMN palsy affects both the upper and lower face (e.g., inability to wrinkle forehead), while a UMN palsy typically spares the forehead muscles.", "topic": "Other dermatology"}, {"q": "What is the first-line pharmacological treatment for Bell's Palsy?", "a": "Prednisolone (e.g., 50-60 mg OD for 10 days).", "topic": "Other dermatology"}, {"q": "What is the key clinical feature that differentiates Ramsay Hunt Syndrome from Bell's Palsy?", "a": "The presence of a vesicular rash in the external ear canal and/or oropharynx in Ramsay Hunt Syndrome.", "topic": "Other dermatology"}, {"q": "What is the required management for Ramsay Hunt Syndrome?", "a": "A combination of an antiviral (e.g., aciclovir) and a corticosteroid (e.g., prednisolone).", "topic": "Other dermatology"}, {"q": "What is the most common causative agent of croup?", "a": "Parainfluenza virus.", "topic": "Other dermatology"}, {"q": "What is the characteristic cough associated with croup?", "a": "A harsh, barking (seal-like) cough, which is often worse at night.", "topic": "Other dermatology"}, {"q": "What is the single medication that should be given to all children diagnosed with croup, regardless of severity?", "a": "A single dose of oral dexamethasone (0.15 mg/kg).", "topic": "Other dermatology"}, {"q": "In cases of moderate to severe croup, what additional treatment can be administered in hospital for acute symptom relief?", "a": "Nebulised adrenaline.", "topic": "Other dermatology"}];
+
+  const LS_KEY = "flashcards_progress_v2";
+  const LS_ORDER = "flashcards_order_v2";
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function nowISO() { return new Date().toISOString(); }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
+  }
+
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function saveProgress(p) { localStorage.setItem(LS_KEY, JSON.stringify(p)); }
+
+  function loadOrder() {
+    try {
+      const o = JSON.parse(localStorage.getItem(LS_ORDER) || "null");
+      if (Array.isArray(o) && o.length === RAW_DECK.length) return o;
+      return null;
+    } catch (e) { return null; }
+  }
+  function saveOrder(order) { localStorage.setItem(LS_ORDER, JSON.stringify(order)); }
+
+  const deck = RAW_DECK.map((c, i) => ({
+    id: i,
+    q: (c.q || "").trim(),
+    a: (c.a || "").trim(),
+    topic: (c.topic || "Other").trim(),
+    qLower: (c.q || "").toLowerCase(),
+    aLower: (c.a || "").toLowerCase(),
+    topicLower: (c.topic || "other").toLowerCase(),
+  }));
+
+  let progress = loadProgress();
+  let order = loadOrder() || deck.map(c => c.id);
+
+  let mode = "all";
+  let searchTerm = "";
+  let topicFilter = "__ALL__";
+  let view = [];
+  let pos = 0;
+
+  function statusOf(id) {
+    return (progress[id] && progress[id].status) || null;
+  }
+  function seenOf(id) {
+    return !!(progress[id] && progress[id].seen);
+  }
+
+  function recomputeView(keepCurrentId=true) {
+    const prevId = view[pos];
+    const term = (searchTerm || "").trim().toLowerCase();
+
+    view = order.filter(id => {
+      const c = deck[id];
+      const st = statusOf(id);
+      const seen = seenOf(id);
+
+      if (mode === "unknown" && (seen || st)) return false;
+      if (mode === "known" && st !== "known") return false;
+      if (mode === "unsure" && st !== "unsure") return false;
+
+      if (topicFilter !== "__ALL__" && c.topic !== topicFilter) return false;
+
+      if (term) {
+        return c.qLower.includes(term) || c.aLower.includes(term) || c.topicLower.includes(term);
+      }
+      return true;
+    });
+
+    document.getElementById("total").textContent = view.length;
+
+    const badge = document.getElementById("filterBadge");
+    let label = "All";
+    if (mode === "unknown") label = "Only unseen";
+    if (mode === "known") label = "Known";
+    if (mode === "unsure") label = "Unsure";
+    if (topicFilter !== "__ALL__") label = topicFilter + " • " + label;
+    if (term) label += " • Search";
+    badge.textContent = label;
+
+    if (view.length === 0) {
+      pos = 0;
+      renderEmpty();
+      updateStats();
+      return;
+    }
+
+    if (keepCurrentId && prevId != null) {
+      const newPos = view.indexOf(prevId);
+      pos = newPos >= 0 ? newPos : clamp(pos, 0, view.length - 1);
+    } else {
+      pos = clamp(pos, 0, view.length - 1);
+    }
+    renderCard();
+    updateStats();
+  }
+
+  function renderEmpty() {
+    document.getElementById("qText").textContent = "No cards match your filter/search 🤷‍♂️";
+    document.getElementById("aText").textContent = "Try clearing search or switching filters.";
+    document.getElementById("topicTagQ").textContent = "🧩 Topic";
+    document.getElementById("topicTagA").textContent = "🧩 Topic";
+    document.getElementById("idx").textContent = "0";
+    document.getElementById("bar").style.width = "0%";
+    document.getElementById("qLen").textContent = "";
+    document.getElementById("aLen").textContent = "";
+    document.getElementById("card").classList.remove("flipped");
+  }
+
+  function markSeen(id) {
+    progress[id] = progress[id] || {};
+    if (!progress[id].seen) {
+      progress[id].seen = true;
+      progress[id].updatedAt = nowISO();
+      saveProgress(progress);
+    }
+  }
+
+  function setStatus(id, s) {
+    progress[id] = progress[id] || {};
+    progress[id].status = s;
+    progress[id].seen = true;
+    progress[id].updatedAt = nowISO();
+    saveProgress(progress);
+  }
+
+  function renderCard() {
+    if (view.length === 0) return renderEmpty();
+    const id = view[pos];
+    const c = deck[id];
+
+    markSeen(id);
+
+    document.getElementById("qText").textContent = c.q || "(no question)";
+    document.getElementById("aText").textContent = c.a || "(no answer)";
+    document.getElementById("topicTagQ").textContent = "🧩 " + c.topic;
+    document.getElementById("topicTagA").textContent = "🧩 " + c.topic;
+
+    document.getElementById("idx").textContent = String(pos + 1);
+
+    const pct = ((pos + 1) / view.length) * 100;
+    document.getElementById("bar").style.width = pct.toFixed(1) + "%";
+
+    document.getElementById("qLen").textContent = c.q.length ? ("📝 " + c.q.length + " chars") : "";
+    document.getElementById("aLen").textContent = c.a.length ? ("📝 " + c.a.length + " chars") : "";
+
+    const st = statusOf(id);
+    if (st === "known") toast("✅ You previously marked this as Known");
+    if (st === "unsure") toast("🤔 You previously marked this as Unsure");
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const ids = deck.map(c => c.id);
+    let known = 0, unsure = 0, seen = 0;
+    for (const id of ids) {
+      const st = statusOf(id);
+      if (st === "known") known++;
+      if (st === "unsure") unsure++;
+      if (seenOf(id) || st) seen++;
+    }
+    document.getElementById("knownCount").textContent = known;
+    document.getElementById("unsureCount").textContent = unsure;
+    document.getElementById("seenCount").textContent = seen;
+    const completion = ids.length ? Math.round((known / ids.length) * 100) : 0;
+    document.getElementById("pct").textContent = completion + "%";
+  }
+
+  function flip() { document.getElementById("card").classList.toggle("flipped"); }
+  function next() {
+    if (view.length === 0) return;
+    pos = (pos + 1) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+  function prev() {
+    if (view.length === 0) return;
+    pos = (pos - 1 + view.length) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+
+  function shuffleOrder() {
+    const arr = order.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    order = arr;
+    saveOrder(order);
+    recomputeView(false);
+    toast("🔀 Shuffled!");
+  }
+
+  function resetAll() {
+    if (!confirm("Reset your progress (Known/Unsure/Seen) and shuffle order?")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_ORDER);
+    progress = loadProgress();
+    order = deck.map(c => c.id);
+    searchTerm = "";
+    topicFilter = "__ALL__";
+    document.getElementById("search").value = "";
+    document.getElementById("topicSelect").value = "__ALL__";
+    mode = "all";
+    document.querySelector('input[name="mode"][value="all"]').checked = true;
+    recomputeView(false);
+    toast("♻️ Reset done!");
+  }
+
+  function exportProgress() {
+    const payload = {
+      exportedAt: nowISO(),
+      deckSize: deck.length,
+      progress,
+      order
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flashcards_progress.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("⬇️ Exported progress");
+  }
+
+  document.getElementById("card").addEventListener("click", flip);
+  document.getElementById("flipBtn").addEventListener("click", flip);
+  document.getElementById("nextBtn").addEventListener("click", next);
+  document.getElementById("prevBtn").addEventListener("click", prev);
+  document.getElementById("shuffleBtn").addEventListener("click", shuffleOrder);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("downloadBtn").addEventListener("click", exportProgress);
+
+  document.getElementById("knownBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "known");
+    toast("✅ Marked Known");
+    next();
+  });
+
+  document.getElementById("unsureBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "unsure");
+    toast("🤔 Marked Unsure");
+    next();
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    searchTerm = e.target.value || "";
+    recomputeView(true);
+  });
+
+  document.getElementById("topicSelect").addEventListener("change", (e) => {
+    topicFilter = e.target.value;
+    recomputeView(false);
+  });
+
+  for (const r of document.querySelectorAll('input[name="mode"]')) {
+    r.addEventListener("change", (e) => {
+      mode = e.target.value;
+      recomputeView(true);
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+    const typing = tag === "input" || tag === "textarea" || tag === "select";
+    if (typing) return;
+
+    if (e.key === " " ) { e.preventDefault(); flip(); }
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === "ArrowLeft") prev();
+    else if (e.key.toLowerCase() === "s") shuffleOrder();
+    else if (e.key.toLowerCase() === "k") {
+      if (view.length) { setStatus(view[pos], "known"); toast("✅ Known"); next(); }
+    }
+    else if (e.key.toLowerCase() === "u") {
+      if (view.length) { setStatus(view[pos], "unsure"); toast("🤔 Unsure"); next(); }
+    }
+  });
+
+  document.getElementById("deckName").textContent = "Deck • " + deck.length + " cards";
+  recomputeView(false);
+</script>
+</body>
+</html>

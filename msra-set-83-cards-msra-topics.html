@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flash Cards (Categorised)</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #160b2a;
+      --glass: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 22px;
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(1000px 700px at 85% 15%, rgba(6,182,212,.32), transparent 55%),
+        radial-gradient(900px 600px at 55% 90%, rgba(245,158,11,.25), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+    .blob { position: fixed; width: 420px; height: 420px; filter: blur(40px); opacity: .55; z-index: -1; border-radius: 999px; animation: float 9s ease-in-out infinite; pointer-events: none; }
+    .b1 { left: -120px; top: -140px; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.95), rgba(124,58,237,.05)); }
+    .b2 { right: -140px; top: 60px; background: radial-gradient(circle at 40% 40%, rgba(6,182,212,.95), rgba(6,182,212,.05)); animation-duration: 12s; }
+    .b3 { left: 35%; bottom: -180px; background: radial-gradient(circle at 35% 40%, rgba(245,158,11,.9), rgba(245,158,11,.05)); animation-duration: 14s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18px, -22px) scale(1.05); } }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 18px 38px; }
+    header { display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:44px; height:44px; border-radius:14px; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); box-shadow: 0 12px 30px rgba(0,0,0,.35); position:relative; overflow:hidden; }
+    .logo:after { content:""; position:absolute; inset:-40%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%); transform: rotate(18deg); opacity: .6; }
+    h1 { font-size:20px; margin:0; letter-spacing:.3px; }
+    .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; width:100%; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:9px 12px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.25); }
+    .pill input[type="search"] { width: 220px; max-width: 70vw; background:transparent; border:none; outline:none; color:var(--text); font-size:14px; }
+    .pill select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      appearance: none;
+      padding-right: 18px;
+      cursor: pointer;
+    }
+    .pill select option { color: #111; }
+    .pill .caret { opacity: .75; }
+
+    .btn { border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.10); color: var(--text); padding: 10px 12px; border-radius:14px; cursor:pointer; transition: transform .08s ease, background .2s ease, border-color .2s ease; user-select:none; box-shadow: 0 10px 26px rgba(0,0,0,.22); backdrop-filter: blur(10px); display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13px; }
+    .btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn.primary { border:none; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); }
+    .btn.good { border:none; background: linear-gradient(135deg, rgba(34,197,94,1), rgba(6,182,212,1)); }
+    .btn.bad { border:none; background: linear-gradient(135deg, rgba(239,68,68,1), rgba(245,158,11,1)); }
+
+    .grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; align-items:stretch; margin-top:14px; }
+    @media (max-width:900px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(12px); overflow:hidden; }
+    .panel-head { padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border-bottom: 1px solid rgba(255,255,255,.12); }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; color: var(--muted); font-size: 13px; }
+    .badge { padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.85); font-weight:700; letter-spacing:.2px; }
+
+    .progress { height: 10px; border-radius:999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.12); overflow:hidden; min-width:220px; }
+    .bar { height:100%; width:0%; background: linear-gradient(90deg, rgba(124,58,237,1), rgba(6,182,212,1), rgba(34,197,94,1)); border-radius:999px; transition: width .25s ease; }
+
+    .stage { padding: 18px; display:grid; place-items:center; }
+    .card { width: min(720px, 100%); height: 360px; perspective: 1400px; }
+    .inner { width:100%; height:100%; position:relative; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+    .card.flipped .inner { transform: rotateY(180deg); }
+    .face { position:absolute; inset:0; border-radius:26px; border: 1px solid rgba(255,255,255,.20); box-shadow: 0 22px 60px rgba(0,0,0,.45); overflow:hidden; backface-visibility:hidden; display:flex; flex-direction:column; }
+    .face::before { content:""; position:absolute; inset:0; background: radial-gradient(900px 500px at 10% 20%, rgba(255,255,255,.18), transparent 55%), radial-gradient(700px 500px at 90% 20%, rgba(255,255,255,.16), transparent 55%), radial-gradient(800px 650px at 50% 120%, rgba(0,0,0,.25), transparent 60%); pointer-events:none; }
+    .qface { background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(6,182,212,.70)); }
+    .aface { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(34,197,94,.82), rgba(245,158,11,.65)); }
+
+    .tagrow { display:flex; gap:10px; flex-wrap:wrap; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; margin:14px 14px 0; border-radius:999px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.22); width: fit-content; font-weight:800; letter-spacing:.2px; font-size:12px; }
+    .tag.topic { background: rgba(0,0,0,.22); }
+
+    .content { flex:1; padding: 18px 20px 16px; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; }
+    .text { font-size:22px; line-height:1.3; font-weight:800; text-shadow: 0 2px 14px rgba(0,0,0,.25); white-space: pre-wrap; }
+    .small { font-weight:700; font-size:14px; color: rgba(255,255,255,.85); text-shadow:none; }
+    .hint { padding: 10px 16px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.80); font-size:12px; }
+    kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,.20); border: 1px solid rgba(255,255,255,.18); }
+
+    .controls { padding: 16px; border-top: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .left, .right { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .stats { padding: 14px 16px 16px; }
+    .statgrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; box-shadow: 0 10px 24px rgba(0,0,0,.20); }
+    .stat b { font-size:18px; }
+    .stat span { color: var(--muted); font-weight:700; font-size:12px; }
+
+    .list { padding: 10px 16px 16px; }
+    .mini { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+    .mini h3 { margin:0 0 8px; font-size:14px; letter-spacing:.2px; }
+    .toggle { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .switch { display:inline-flex; align-items:center; gap:8px; padding: 8px 10px; border-radius:999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); cursor:pointer; user-select:none; font-size:12px; font-weight:800; color: rgba(255,255,255,.88); }
+    .switch input { accent-color:white; }
+
+    .footer { margin-top:14px; color: rgba(255,255,255,.55); font-size:12px; text-align:center; }
+
+    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.92); padding: 10px 12px; border-radius:999px; box-shadow: 0 18px 50px rgba(0,0,0,.35); backdrop-filter: blur(10px); opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; font-weight:700; font-size:13px; }
+    .toast.show { opacity:1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>MSRA Flash Cards</h1>
+          <div class="subtitle">Categorised by topic • <kbd>Space</kbd> flip, <kbd>←</kbd>/<kbd>→</kbd> navigate, <kbd>S</kbd> shuffle</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="pill" title="Topic filter">
+          🧩
+          <select id="topicSelect" aria-label="Topic">
+            <option value="__ALL__">All topics</option>
+            <option value="General dermatology (MSRA)">General dermatology (MSRA) (66)</option>
+<option value="Dermatology emergencies 🚑">Dermatology emergencies 🚑 (10)</option>
+<option value="Infections &amp; infestations">Infections &amp; infestations (5)</option>
+<option value="Dermatology drugs &amp; treatments">Dermatology drugs &amp; treatments (1)</option>
+<option value="Leg ulcers &amp; vascular skin disease">Leg ulcers &amp; vascular skin disease (1)</option>
+          </select>
+          <span class="caret">▾</span>
+        </div>
+
+        <div class="pill" title="Search questions/answers">
+          🔎
+          <input id="search" type="search" placeholder="Search (e.g., melanoma, BCC, scabies…)" autocomplete="off" />
+        </div>
+
+        <button class="btn" id="shuffleBtn" title="Shuffle deck (S)">🔀 Shuffle</button>
+        <button class="btn" id="resetBtn" title="Reset progress">♻️ Reset</button>
+        <button class="btn primary" id="downloadBtn" title="Download your progress as JSON">⬇️ Export</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge" id="deckName">Deck</span>
+            <span>Card <b id="idx">1</b>/<b id="total">0</b></span>
+            <span class="badge" id="filterBadge">All</span>
+          </div>
+          <div class="progress" aria-label="Progress">
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="card" id="card" role="button" aria-label="Flashcard (click to flip)" tabindex="0">
+            <div class="inner">
+              <div class="face qface">
+                <div class="tagrow">
+                  <div class="tag">❓ Question</div>
+                  <div class="tag topic" id="topicTagQ">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="qText"></div>
+                </div>
+                <div class="hint">
+                  <span>Tip: press <kbd>Space</kbd> to flip</span>
+                  <span class="small" id="qLen"></span>
+                </div>
+              </div>
+
+              <div class="face aface">
+                <div class="tagrow">
+                  <div class="tag">✅ Answer</div>
+                  <div class="tag topic" id="topicTagA">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="aText"></div>
+                </div>
+                <div class="hint">
+                  <span>Mark it: <kbd>K</kbd> Known, <kbd>U</kbd> Unsure</span>
+                  <span class="small" id="aLen"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="left">
+            <button class="btn" id="prevBtn" title="Previous (←)">⬅️ Prev</button>
+            <button class="btn" id="flipBtn" title="Flip (Space)">🪄 Flip</button>
+            <button class="btn" id="nextBtn" title="Next (→)">Next ➡️</button>
+          </div>
+          <div class="right">
+            <button class="btn good" id="knownBtn" title="Mark known (K)">✅ Known</button>
+            <button class="btn bad" id="unsureBtn" title="Mark unsure (U)">🤔 Unsure</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge">Dashboard</span>
+            <span class="small">Progress is saved in your browser (localStorage).</span>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="statgrid">
+            <div class="stat"><span>✅ Known</span><b id="knownCount">0</b></div>
+            <div class="stat"><span>🤔 Unsure</span><b id="unsureCount">0</b></div>
+            <div class="stat"><span>🧠 Seen</span><b id="seenCount">0</b></div>
+            <div class="stat"><span>🎯 Completion</span><b id="pct">0%</b></div>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="mini">
+            <h3>Filters</h3>
+            <div class="toggle">
+              <label class="switch"><input type="radio" name="mode" value="all" checked> All</label>
+              <label class="switch"><input type="radio" name="mode" value="unknown"> Only unseen</label>
+              <label class="switch"><input type="radio" name="mode" value="known"> Known</label>
+              <label class="switch"><input type="radio" name="mode" value="unsure"> Unsure</label>
+            </div>
+            <div class="small" style="margin-top:10px; line-height:1.5;">
+              Topic filter (top bar) narrows the whole deck.
+            </div>
+          </div>
+
+          <div style="height: 12px"></div>
+
+          <div class="mini">
+            <h3>Study tips</h3>
+            <div class="small" style="line-height:1.6;">
+              • Choose a <b>Topic</b> to focus on one area.<br/>
+              • Use <b>Search</b> to jump to a matching card.<br/>
+              • Shuffle for spaced repetition vibes.<br/>
+              • Export if you want to save/share your progress file.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Built as a single offline MSRA HTML file ✨
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const RAW_DECK = [{"q": "What are the five key features to assess in a patient presenting with a red eye?", "a": "Pain, photophobia, visual acuity, pupil response, and discharge.", "topic": "General dermatology (MSRA)"}, {"q": "Name four red flags in a patient with a red eye that warrant urgent ophthalmology review.", "a": "Reduced visual acuity, irregular pupil, ciliary flush, and severe pain.", "topic": "General dermatology (MSRA)"}, {"q": "Anterior uveitis is defined as inflammation of which two structures of the eye?", "a": "The iris and the ciliary body.", "topic": "General dermatology (MSRA)"}, {"q": "What are the classic clinical features of anterior uveitis?", "a": "Unilateral painful red eye, photophobia, blurred vision, tearing, and a small, irregular pupil.", "topic": "General dermatology (MSRA)"}, {"q": "A layer of white blood cells in the anterior chamber of the eye, seen in conditions like anterior uveitis and endophthalmitis, is known as a _____.", "a": "hypopyon", "topic": "General dermatology (MSRA)"}, {"q": "What is the initial management for a patient diagnosed with anterior uveitis?", "a": "Same-day ophthalmology referral for treatment with corticosteroids and cycloplegics.", "topic": "General dermatology (MSRA)"}, {"q": "What clinical feature differentiates the pain of scleritis from that of episcleritis?", "a": "In scleritis, the severe pain is characteristically worse on eye movement.", "topic": "General dermatology (MSRA)"}, {"q": "A patient presents with a painless, segmental red eye with normal vision and pupil response. What is the most likely diagnosis?", "a": "Episcleritis.", "topic": "General dermatology (MSRA)"}, {"q": "Endophthalmitis is a purulent intraocular inflammation that most commonly occurs after what procedure?", "a": "Cataract surgery.", "topic": "General dermatology (MSRA)"}, {"q": "What are the typical clinical features of endophthalmitis?", "a": "A red eye with pain, visual loss, a hypopyon, and a hazy cornea, typically presenting 3–7 days post-surgery.", "topic": "General dermatology (MSRA)"}, {"q": "What is the pathophysiology of a subconjunctival haemorrhage?", "a": "Rupture of a subconjunctival blood vessel.", "topic": "General dermatology (MSRA)"}, {"q": "What is the hallmark clinical finding of viral keratitis on fluorescein staining?", "a": "Dendritic ulcers.", "topic": "Leg ulcers & vascular skin disease"}, {"q": "What is the first-line management for bacterial keratitis?", "a": "Topical antibiotics.", "topic": "Dermatology drugs & treatments"}, {"q": "A clinical presentation of a painful red eye, photophobia, and a small, irregular pupil is a classic triad for what condition?", "a": "Anterior uveitis.", "topic": "General dermatology (MSRA)"}, {"q": "A red eye combined with visual loss, headache, and a fixed mid-dilated pupil strongly suggests what diagnosis?", "a": "Acute angle closure glaucoma.", "topic": "General dermatology (MSRA)"}, {"q": "In a CN III palsy, why does a dilated pupil suggest a compressive ('surgical') cause like an aneurysm?", "a": "The parasympathetic fibres controlling pupil constriction are located on the periphery of the nerve and are affected early by compression.", "topic": "General dermatology (MSRA)"}, {"q": "A CN III palsy that does not affect the pupil (pupil sparing) suggests a medical cause such as _____.", "a": "microvascular pathology caused by diabetes or hypertension", "topic": "Dermatology emergencies 🚑"}, {"q": "What is the classic triad of signs in Horner's syndrome?", "a": "Ptosis (mild), miosis (constricted pupil), and anhidrosis (decreased sweating).", "topic": "General dermatology (MSRA)"}, {"q": "A Pancoast tumour at the lung apex is a classic preganglionic cause of what neuro-ophthalmological syndrome?", "a": "Horner's syndrome.", "topic": "General dermatology (MSRA)"}, {"q": "What is the pathophysiology of internuclear ophthalmoplegia (INO)?", "a": "A lesion in the medial longitudinal fasciculus (MLF), which links CN VI and CN III.", "topic": "General dermatology (MSRA)"}, {"q": "In a young patient, bilateral internuclear ophthalmoplegia is highly suggestive of what underlying condition?", "a": "Multiple sclerosis (MS).", "topic": "General dermatology (MSRA)"}, {"q": "What are the characteristic eye movement findings in a patient with internuclear ophthalmoplegia (INO)?", "a": "Impaired adduction of the affected eye with nystagmus of the contralateral abducting eye.", "topic": "General dermatology (MSRA)"}, {"q": "An Argyll-Robertson pupil is characterized by which specific response pattern to light and accommodation?", "a": "The pupil reacts to accommodation but does not react to light (light-near dissociation).", "topic": "General dermatology (MSRA)"}, {"q": "Argyll-Robertson pupils are classically associated with what specific infection?", "a": "Neurosyphilis.", "topic": "General dermatology (MSRA)"}, {"q": "What syndrome is characterized by a sluggishly reactive pupil in a young woman, often associated with absent deep tendon reflexes?", "a": "Holmes-Adie pupil (or Holmes-Adie syndrome).", "topic": "Dermatology emergencies 🚑"}, {"q": "What is the earliest symptom to typically present in retinitis pigmentosa?", "a": "Night blindness (nyctalopia).", "topic": "General dermatology (MSRA)"}, {"q": "What is the classic fundoscopic triad seen in retinitis pigmentosa?", "a": "Bone-spicule pigmentation in the peripheral retina, retinal vessel attenuation, and optic disc pallor.", "topic": "Dermatology emergencies 🚑"}, {"q": "In retinitis pigmentosa, which photoreceptor cells are affected first, leading to early symptoms?", "a": "Rod cells.", "topic": "General dermatology (MSRA)"}, {"q": "The progressive loss of peripheral vision in retinitis pigmentosa is often described as '_____ vision.'", "a": "tunnel", "topic": "Dermatology emergencies 🚑"}, {"q": "What is the primary pathophysiology of dry (non-exudative) age-related macular degeneration (AMD)?", "a": "The accumulation of drusen under the retinal pigment epithelium (RPE) and subsequent geographic atrophy.", "topic": "General dermatology (MSRA)"}, {"q": "Wet (exudative) AMD is characterized by _____, which leads to rapid vision loss from leaking fluid or blood.", "a": "choroidal neovascularisation", "topic": "General dermatology (MSRA)"}, {"q": "What is the first-line investigation for diagnosing and monitoring age-related macular degeneration (AMD)?", "a": "Optical coherence tomography (OCT).", "topic": "General dermatology (MSRA)"}, {"q": "What is the primary treatment for wet (exudative) AMD?", "a": "Intravitreal anti-VEGF injections.", "topic": "General dermatology (MSRA)"}, {"q": "What lifestyle modification is crucial in managing dry AMD?", "a": "Smoking cessation.", "topic": "General dermatology (MSRA)"}, {"q": "Which component of AREDS supplements should be avoided in smokers due to an increased risk of lung cancer?", "a": "Beta-carotene.", "topic": "Dermatology emergencies 🚑"}, {"q": "A patient reporting distorted vision, where straight lines appear wavy, is describing _____, a key symptom of AMD.", "a": "metamorphopsia", "topic": "General dermatology (MSRA)"}, {"q": "Posterior blepharitis is primarily a dysfunction of which glands in the eyelid?", "a": "Meibomian glands.", "topic": "General dermatology (MSRA)"}, {"q": "What is the first-line management for both anterior and posterior blepharitis?", "a": "Self-care, including warm compresses and eyelid cleaning.", "topic": "General dermatology (MSRA)"}, {"q": "In posterior blepharitis (MGD) associated with rosacea, what class of oral antibiotics is often prescribed?", "a": "Oral tetracyclines (e.g., doxycycline).", "topic": "Dermatology emergencies 🚑"}, {"q": "A patient with blepharitis complains of crusting and sticking of the eyelids, which is typically worst at what time of day?", "a": "In the morning.", "topic": "General dermatology (MSRA)"}, {"q": "What is the pathophysiology of cataracts?", "a": "Protein aggregation within the crystalline lens, causing it to lose transparency.", "topic": "General dermatology (MSRA)"}, {"q": "A white or grey pupil reflex, known as _____, is a key examination finding in advanced cataracts.", "a": "leukocoria", "topic": "General dermatology (MSRA)"}, {"q": "What type of cataract is specifically associated with long-term corticosteroid use?", "a": "Posterior subcapsular cataract.", "topic": "General dermatology (MSRA)"}, {"q": "What is the definitive treatment for cataracts?", "a": "Phacoemulsification surgery with intraocular lens implantation.", "topic": "General dermatology (MSRA)"}, {"q": "What is the most common post-operative complication of cataract surgery, presenting with glare and cloudy vision?", "a": "Posterior capsule opacification.", "topic": "General dermatology (MSRA)"}, {"q": "What is the key difference between a chalazion and a hordeolum (stye) in terms of pathophysiology?", "a": "A chalazion is a sterile granulomatous inflammation, whereas a hordeolum is an acute bacterial infection.", "topic": "General dermatology (MSRA)"}, {"q": "A patient presents with a painless, firm, non-tender nodule on the upper eyelid that has developed over several weeks. What is the diagnosis?", "a": "Chalazion.", "topic": "Dermatology emergencies 🚑"}, {"q": "What is the initial management for a chalazion?", "a": "Warm compresses and gentle lid massage for 10–15 minutes, 3–4 times daily.", "topic": "General dermatology (MSRA)"}, {"q": "What is the most characteristic symptom of allergic conjunctivitis that helps differentiate it from infective causes?", "a": "Itch.", "topic": "General dermatology (MSRA)"}, {"q": "What type of discharge is typically associated with bacterial conjunctivitis?", "a": "Purulent discharge.", "topic": "General dermatology (MSRA)"}, {"q": "Viral conjunctivitis is most commonly caused by _____ and may follow a recent upper respiratory tract infection.", "a": "adenovirus", "topic": "General dermatology (MSRA)"}, {"q": "What is the first-line treatment for bacterial conjunctivitis if it is severe or persistent?", "a": "Topical chloramphenicol or fusidic acid.", "topic": "Dermatology emergencies 🚑"}, {"q": "For ocular symptoms of allergic conjunctivitis, which is more effective: topical antihistamines or oral antihistamines?", "a": "Topical agents (e.g., azelastine, sodium cromoglicate).", "topic": "General dermatology (MSRA)"}, {"q": "What is the classic fundoscopic appearance of a central retinal vein occlusion (CRVO)?", "a": "Widespread retinal haemorrhages, described as a 'blood and thunder' appearance.", "topic": "General dermatology (MSRA)"}, {"q": "What is the classic fundoscopic appearance of a central retinal artery occlusion (CRAO)?", "a": "A pale retina with a cherry red spot at the macula.", "topic": "General dermatology (MSRA)"}, {"q": "In an older patient presenting with signs of a central retinal artery occlusion (CRAO), what systemic condition must be urgently excluded?", "a": "Giant cell arteritis (GCA).", "topic": "General dermatology (MSRA)"}, {"q": "What is the most common cause of blindness in adults aged 30–65 in developed countries?", "a": "Diabetic retinopathy.", "topic": "General dermatology (MSRA)"}, {"q": "The presence of _____ is the defining feature that transitions non-proliferative diabetic retinopathy to proliferative diabetic retinopathy (PDR).", "a": "neovascularisation (new vessel growth)", "topic": "General dermatology (MSRA)"}, {"q": "What are the fundoscopic findings in moderate non-proliferative diabetic retinopathy (NPDR)?", "a": "Microaneurysms, blot haemorrhages, hard exudates, cotton wool spots, and venous looping.", "topic": "General dermatology (MSRA)"}, {"q": "What is the major risk associated with the new vessels in proliferative diabetic retinopathy?", "a": "They can bleed, causing a vitreous haemorrhage and sudden vision loss.", "topic": "General dermatology (MSRA)"}, {"q": "What fundoscopic sign in hypertensive retinopathy involves the indentation of retinal veins by stiffened retinal arteries at their crossing points?", "a": "Arteriovenous (AV) nipping.", "topic": "Dermatology emergencies 🚑"}, {"q": "Primary open angle glaucoma (POAG) is typically asymptomatic until late in the disease, when patients notice loss of _____ vision.", "a": "peripheral", "topic": "General dermatology (MSRA)"}, {"q": "What is the first-line treatment for primary open angle glaucoma (POAG)?", "a": "360° Selective Laser Trabeculoplasty (SLT).", "topic": "General dermatology (MSRA)"}, {"q": "If laser therapy is refused or ineffective for POAG, what is the first-line medical treatment?", "a": "Prostaglandin analogue drops (e.g., latanoprost).", "topic": "General dermatology (MSRA)"}, {"q": "What is a characteristic side effect of prostaglandin analogue eye drops like latanoprost?", "a": "Eyelash growth and brown pigmentation of the iris.", "topic": "General dermatology (MSRA)"}, {"q": "What are the classic symptoms of acute angle closure glaucoma (AACG)?", "a": "Sudden, severely painful red eye, headache, nausea, vomiting, and seeing visual halos around lights.", "topic": "General dermatology (MSRA)"}, {"q": "What are the key examination findings in acute angle closure glaucoma?", "a": "A hard eye on palpation, a fixed, mid-dilated oval pupil, a hazy cornea, and conjunctival injection.", "topic": "General dermatology (MSRA)"}, {"q": "What is the definitive treatment for acute angle closure glaucoma to prevent recurrence?", "a": "Laser peripheral iridotomy.", "topic": "General dermatology (MSRA)"}, {"q": "What is the mechanism of action of pilocarpine in the acute management of AACG?", "a": "It constricts the pupil (miosis), which helps to open the drainage angle.", "topic": "General dermatology (MSRA)"}, {"q": "A(n) _____ hordeolum is an infection of a meibomian gland, while a(n) _____ hordeolum is an infection of an eyelash follicle.", "a": "internal; external", "topic": "General dermatology (MSRA)"}, {"q": "What is the most common causative organism for a hordeolum (stye)?", "a": "Staphylococcus aureus.", "topic": "General dermatology (MSRA)"}, {"q": "What investigation is used to reveal the characteristic dendritic ulcers of ocular herpes simplex?", "a": "Fluorescein staining.", "topic": "Infections & infestations"}, {"q": "What is the management plan for a patient with suspected HSV keratitis?", "a": "Urgent same-day ophthalmology assessment for specialist treatment with antivirals.", "topic": "General dermatology (MSRA)"}, {"q": "What is the key clinical feature that distinguishes orbital cellulitis from pre-septal cellulitis?", "a": "Pain on eye movement (also ophthalmoplegia, proptosis, and reduced visual acuity).", "topic": "Infections & infestations"}, {"q": "Orbital cellulitis is a serious infection located posterior to the orbital _____, usually spreading from adjacent sinusitis.", "a": "septum", "topic": "Infections & infestations"}, {"q": "What is the investigation of choice to confirm orbital cellulitis and rule out an abscess?", "a": "CT scan of the orbit with contrast.", "topic": "Infections & infestations"}, {"q": "How is orbital cellulitis managed?", "a": "Hospital admission for urgent ophthalmology review and intravenous (IV) antibiotics.", "topic": "Infections & infestations"}, {"q": "What are the classic symptoms of a retinal tear or detachment?", "a": "Painless photopsia (flashes), floaters, and a 'curtain' or shadow over the vision.", "topic": "General dermatology (MSRA)"}, {"q": "What is the most common type of retinal detachment, caused by a retinal tear or hole?", "a": "Rhegmatogenous retinal detachment.", "topic": "General dermatology (MSRA)"}, {"q": "Tractional retinal detachment is most commonly seen as a complication of what underlying disease?", "a": "Proliferative diabetic retinopathy.", "topic": "General dermatology (MSRA)"}, {"q": "A patient reporting a sudden onset of flashing lights and floaters should be evaluated for a posterior vitreous detachment and what potential, more serious, sequela?", "a": "A rhegmatogenous retinal detachment.", "topic": "Dermatology emergencies 🚑"}, {"q": "The fundoscopic finding of optic disc cupping, with a cup-to-disc ratio > 0.7, is characteristic of what condition?", "a": "Glaucoma (specifically POAG).", "topic": "General dermatology (MSRA)"}, {"q": "What term describes the abnormal appearance of retinal vessels as they sharply dip over the edge of a cupped optic disc in glaucoma?", "a": "Vessel bayonetting.", "topic": "General dermatology (MSRA)"}];
+
+  const LS_KEY = "flashcards_progress_v2";
+  const LS_ORDER = "flashcards_order_v2";
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function nowISO() { return new Date().toISOString(); }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
+  }
+
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function saveProgress(p) { localStorage.setItem(LS_KEY, JSON.stringify(p)); }
+
+  function loadOrder() {
+    try {
+      const o = JSON.parse(localStorage.getItem(LS_ORDER) || "null");
+      if (Array.isArray(o) && o.length === RAW_DECK.length) return o;
+      return null;
+    } catch (e) { return null; }
+  }
+  function saveOrder(order) { localStorage.setItem(LS_ORDER, JSON.stringify(order)); }
+
+  const deck = RAW_DECK.map((c, i) => ({
+    id: i,
+    q: (c.q || "").trim(),
+    a: (c.a || "").trim(),
+    topic: (c.topic || "Other").trim(),
+    qLower: (c.q || "").toLowerCase(),
+    aLower: (c.a || "").toLowerCase(),
+    topicLower: (c.topic || "other").toLowerCase(),
+  }));
+
+  let progress = loadProgress();
+  let order = loadOrder() || deck.map(c => c.id);
+
+  let mode = "all";
+  let searchTerm = "";
+  let topicFilter = "__ALL__";
+  let view = [];
+  let pos = 0;
+
+  function statusOf(id) {
+    return (progress[id] && progress[id].status) || null;
+  }
+  function seenOf(id) {
+    return !!(progress[id] && progress[id].seen);
+  }
+
+  function recomputeView(keepCurrentId=true) {
+    const prevId = view[pos];
+    const term = (searchTerm || "").trim().toLowerCase();
+
+    view = order.filter(id => {
+      const c = deck[id];
+      const st = statusOf(id);
+      const seen = seenOf(id);
+
+      if (mode === "unknown" && (seen || st)) return false;
+      if (mode === "known" && st !== "known") return false;
+      if (mode === "unsure" && st !== "unsure") return false;
+
+      if (topicFilter !== "__ALL__" && c.topic !== topicFilter) return false;
+
+      if (term) {
+        return c.qLower.includes(term) || c.aLower.includes(term) || c.topicLower.includes(term);
+      }
+      return true;
+    });
+
+    document.getElementById("total").textContent = view.length;
+
+    const badge = document.getElementById("filterBadge");
+    let label = "All";
+    if (mode === "unknown") label = "Only unseen";
+    if (mode === "known") label = "Known";
+    if (mode === "unsure") label = "Unsure";
+    if (topicFilter !== "__ALL__") label = topicFilter + " • " + label;
+    if (term) label += " • Search";
+    badge.textContent = label;
+
+    if (view.length === 0) {
+      pos = 0;
+      renderEmpty();
+      updateStats();
+      return;
+    }
+
+    if (keepCurrentId && prevId != null) {
+      const newPos = view.indexOf(prevId);
+      pos = newPos >= 0 ? newPos : clamp(pos, 0, view.length - 1);
+    } else {
+      pos = clamp(pos, 0, view.length - 1);
+    }
+    renderCard();
+    updateStats();
+  }
+
+  function renderEmpty() {
+    document.getElementById("qText").textContent = "No cards match your filter/search 🤷‍♂️";
+    document.getElementById("aText").textContent = "Try clearing search or switching filters.";
+    document.getElementById("topicTagQ").textContent = "🧩 Topic";
+    document.getElementById("topicTagA").textContent = "🧩 Topic";
+    document.getElementById("idx").textContent = "0";
+    document.getElementById("bar").style.width = "0%";
+    document.getElementById("qLen").textContent = "";
+    document.getElementById("aLen").textContent = "";
+    document.getElementById("card").classList.remove("flipped");
+  }
+
+  function markSeen(id) {
+    progress[id] = progress[id] || {};
+    if (!progress[id].seen) {
+      progress[id].seen = true;
+      progress[id].updatedAt = nowISO();
+      saveProgress(progress);
+    }
+  }
+
+  function setStatus(id, s) {
+    progress[id] = progress[id] || {};
+    progress[id].status = s;
+    progress[id].seen = true;
+    progress[id].updatedAt = nowISO();
+    saveProgress(progress);
+  }
+
+  function renderCard() {
+    if (view.length === 0) return renderEmpty();
+    const id = view[pos];
+    const c = deck[id];
+
+    markSeen(id);
+
+    document.getElementById("qText").textContent = c.q || "(no question)";
+    document.getElementById("aText").textContent = c.a || "(no answer)";
+    document.getElementById("topicTagQ").textContent = "🧩 " + c.topic;
+    document.getElementById("topicTagA").textContent = "🧩 " + c.topic;
+
+    document.getElementById("idx").textContent = String(pos + 1);
+
+    const pct = ((pos + 1) / view.length) * 100;
+    document.getElementById("bar").style.width = pct.toFixed(1) + "%";
+
+    document.getElementById("qLen").textContent = c.q.length ? ("📝 " + c.q.length + " chars") : "";
+    document.getElementById("aLen").textContent = c.a.length ? ("📝 " + c.a.length + " chars") : "";
+
+    const st = statusOf(id);
+    if (st === "known") toast("✅ You previously marked this as Known");
+    if (st === "unsure") toast("🤔 You previously marked this as Unsure");
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const ids = deck.map(c => c.id);
+    let known = 0, unsure = 0, seen = 0;
+    for (const id of ids) {
+      const st = statusOf(id);
+      if (st === "known") known++;
+      if (st === "unsure") unsure++;
+      if (seenOf(id) || st) seen++;
+    }
+    document.getElementById("knownCount").textContent = known;
+    document.getElementById("unsureCount").textContent = unsure;
+    document.getElementById("seenCount").textContent = seen;
+    const completion = ids.length ? Math.round((known / ids.length) * 100) : 0;
+    document.getElementById("pct").textContent = completion + "%";
+  }
+
+  function flip() { document.getElementById("card").classList.toggle("flipped"); }
+  function next() {
+    if (view.length === 0) return;
+    pos = (pos + 1) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+  function prev() {
+    if (view.length === 0) return;
+    pos = (pos - 1 + view.length) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+
+  function shuffleOrder() {
+    const arr = order.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    order = arr;
+    saveOrder(order);
+    recomputeView(false);
+    toast("🔀 Shuffled!");
+  }
+
+  function resetAll() {
+    if (!confirm("Reset your progress (Known/Unsure/Seen) and shuffle order?")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_ORDER);
+    progress = loadProgress();
+    order = deck.map(c => c.id);
+    searchTerm = "";
+    topicFilter = "__ALL__";
+    document.getElementById("search").value = "";
+    document.getElementById("topicSelect").value = "__ALL__";
+    mode = "all";
+    document.querySelector('input[name="mode"][value="all"]').checked = true;
+    recomputeView(false);
+    toast("♻️ Reset done!");
+  }
+
+  function exportProgress() {
+    const payload = {
+      exportedAt: nowISO(),
+      deckSize: deck.length,
+      progress,
+      order
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flashcards_progress.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("⬇️ Exported progress");
+  }
+
+  document.getElementById("card").addEventListener("click", flip);
+  document.getElementById("flipBtn").addEventListener("click", flip);
+  document.getElementById("nextBtn").addEventListener("click", next);
+  document.getElementById("prevBtn").addEventListener("click", prev);
+  document.getElementById("shuffleBtn").addEventListener("click", shuffleOrder);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("downloadBtn").addEventListener("click", exportProgress);
+
+  document.getElementById("knownBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "known");
+    toast("✅ Marked Known");
+    next();
+  });
+
+  document.getElementById("unsureBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "unsure");
+    toast("🤔 Marked Unsure");
+    next();
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    searchTerm = e.target.value || "";
+    recomputeView(true);
+  });
+
+  document.getElementById("topicSelect").addEventListener("change", (e) => {
+    topicFilter = e.target.value;
+    recomputeView(false);
+  });
+
+  for (const r of document.querySelectorAll('input[name="mode"]')) {
+    r.addEventListener("change", (e) => {
+      mode = e.target.value;
+      recomputeView(true);
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+    const typing = tag === "input" || tag === "textarea" || tag === "select";
+    if (typing) return;
+
+    if (e.key === " " ) { e.preventDefault(); flip(); }
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === "ArrowLeft") prev();
+    else if (e.key.toLowerCase() === "s") shuffleOrder();
+    else if (e.key.toLowerCase() === "k") {
+      if (view.length) { setStatus(view[pos], "known"); toast("✅ Known"); next(); }
+    }
+    else if (e.key.toLowerCase() === "u") {
+      if (view.length) { setStatus(view[pos], "unsure"); toast("🤔 Unsure"); next(); }
+    }
+  });
+
+  document.getElementById("deckName").textContent = "Deck • " + deck.length + " cards";
+  recomputeView(false);
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "decks": [
+    {
+      "id": "dermatology-original-topic-based",
+      "title": "Dermatology (Original – topic based)",
+      "file": "dermatology-original-topic-based.html",
+      "cards": 127
+    },
+    {
+      "id": "msra-set-83-cards-msra-topics",
+      "title": "MSRA Set (83 cards – MSRA topics)",
+      "file": "msra-set-83-cards-msra-topics.html",
+      "cards": 83
+    },
+    {
+      "id": "set-2-71-cards-general",
+      "title": "Set 2 (71 cards – General)",
+      "file": "set-2-71-cards-general.html",
+      "cards": 71
+    },
+    {
+      "id": "set-2-71-cards-topic-based-rules",
+      "title": "Set 2 (71 cards – topic-based rules)",
+      "file": "set-2-71-cards-topic-based-rules.html",
+      "cards": 71
+    }
+  ]
+}
