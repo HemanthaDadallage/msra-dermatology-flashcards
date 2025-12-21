@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flash Cards (Categorised)</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #160b2a;
+      --glass: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 22px;
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(1000px 700px at 85% 15%, rgba(6,182,212,.32), transparent 55%),
+        radial-gradient(900px 600px at 55% 90%, rgba(245,158,11,.25), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+    .blob { position: fixed; width: 420px; height: 420px; filter: blur(40px); opacity: .55; z-index: -1; border-radius: 999px; animation: float 9s ease-in-out infinite; pointer-events: none; }
+    .b1 { left: -120px; top: -140px; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.95), rgba(124,58,237,.05)); }
+    .b2 { right: -140px; top: 60px; background: radial-gradient(circle at 40% 40%, rgba(6,182,212,.95), rgba(6,182,212,.05)); animation-duration: 12s; }
+    .b3 { left: 35%; bottom: -180px; background: radial-gradient(circle at 35% 40%, rgba(245,158,11,.9), rgba(245,158,11,.05)); animation-duration: 14s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18px, -22px) scale(1.05); } }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 18px 38px; }
+    header { display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:44px; height:44px; border-radius:14px; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); box-shadow: 0 12px 30px rgba(0,0,0,.35); position:relative; overflow:hidden; }
+    .logo:after { content:""; position:absolute; inset:-40%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%); transform: rotate(18deg); opacity: .6; }
+    h1 { font-size:20px; margin:0; letter-spacing:.3px; }
+    .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; width:100%; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:9px 12px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.25); }
+    .pill input[type="search"] { width: 220px; max-width: 70vw; background:transparent; border:none; outline:none; color:var(--text); font-size:14px; }
+    .pill select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      appearance: none;
+      padding-right: 18px;
+      cursor: pointer;
+    }
+    .pill select option { color: #111; }
+    .pill .caret { opacity: .75; }
+
+    .btn { border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.10); color: var(--text); padding: 10px 12px; border-radius:14px; cursor:pointer; transition: transform .08s ease, background .2s ease, border-color .2s ease; user-select:none; box-shadow: 0 10px 26px rgba(0,0,0,.22); backdrop-filter: blur(10px); display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13px; }
+    .btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn.primary { border:none; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); }
+    .btn.good { border:none; background: linear-gradient(135deg, rgba(34,197,94,1), rgba(6,182,212,1)); }
+    .btn.bad { border:none; background: linear-gradient(135deg, rgba(239,68,68,1), rgba(245,158,11,1)); }
+
+    .grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; align-items:stretch; margin-top:14px; }
+    @media (max-width:900px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(12px); overflow:hidden; }
+    .panel-head { padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border-bottom: 1px solid rgba(255,255,255,.12); }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; color: var(--muted); font-size: 13px; }
+    .badge { padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.85); font-weight:700; letter-spacing:.2px; }
+
+    .progress { height: 10px; border-radius:999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.12); overflow:hidden; min-width:220px; }
+    .bar { height:100%; width:0%; background: linear-gradient(90deg, rgba(124,58,237,1), rgba(6,182,212,1), rgba(34,197,94,1)); border-radius:999px; transition: width .25s ease; }
+
+    .stage { padding: 18px; display:grid; place-items:center; }
+    .card { width: min(720px, 100%); height: 360px; perspective: 1400px; }
+    .inner { width:100%; height:100%; position:relative; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+    .card.flipped .inner { transform: rotateY(180deg); }
+    .face { position:absolute; inset:0; border-radius:26px; border: 1px solid rgba(255,255,255,.20); box-shadow: 0 22px 60px rgba(0,0,0,.45); overflow:hidden; backface-visibility:hidden; display:flex; flex-direction:column; }
+    .face::before { content:""; position:absolute; inset:0; background: radial-gradient(900px 500px at 10% 20%, rgba(255,255,255,.18), transparent 55%), radial-gradient(700px 500px at 90% 20%, rgba(255,255,255,.16), transparent 55%), radial-gradient(800px 650px at 50% 120%, rgba(0,0,0,.25), transparent 60%); pointer-events:none; }
+    .qface { background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(6,182,212,.70)); }
+    .aface { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(34,197,94,.82), rgba(245,158,11,.65)); }
+
+    .tagrow { display:flex; gap:10px; flex-wrap:wrap; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; margin:14px 14px 0; border-radius:999px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.22); width: fit-content; font-weight:800; letter-spacing:.2px; font-size:12px; }
+    .tag.topic { background: rgba(0,0,0,.22); }
+
+    .content { flex:1; padding: 18px 20px 16px; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; }
+    .text { font-size:22px; line-height:1.3; font-weight:800; text-shadow: 0 2px 14px rgba(0,0,0,.25); white-space: pre-wrap; }
+    .small { font-weight:700; font-size:14px; color: rgba(255,255,255,.85); text-shadow:none; }
+    .hint { padding: 10px 16px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.80); font-size:12px; }
+    kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,.20); border: 1px solid rgba(255,255,255,.18); }
+
+    .controls { padding: 16px; border-top: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .left, .right { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .stats { padding: 14px 16px 16px; }
+    .statgrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; box-shadow: 0 10px 24px rgba(0,0,0,.20); }
+    .stat b { font-size:18px; }
+    .stat span { color: var(--muted); font-weight:700; font-size:12px; }
+
+    .list { padding: 10px 16px 16px; }
+    .mini { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+    .mini h3 { margin:0 0 8px; font-size:14px; letter-spacing:.2px; }
+    .toggle { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .switch { display:inline-flex; align-items:center; gap:8px; padding: 8px 10px; border-radius:999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); cursor:pointer; user-select:none; font-size:12px; font-weight:800; color: rgba(255,255,255,.88); }
+    .switch input { accent-color:white; }
+
+    .footer { margin-top:14px; color: rgba(255,255,255,.55); font-size:12px; text-align:center; }
+
+    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.92); padding: 10px 12px; border-radius:999px; box-shadow: 0 18px 50px rgba(0,0,0,.35); backdrop-filter: blur(10px); opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; font-weight:700; font-size:13px; }
+    .toast.show { opacity:1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Colour Flash Cards</h1>
+          <div class="subtitle">Categorised by topic • <kbd>Space</kbd> flip, <kbd>←</kbd>/<kbd>→</kbd> navigate, <kbd>S</kbd> shuffle</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="pill" title="Topic filter">
+          🧩
+          <select id="topicSelect" aria-label="Topic">
+            <option value="__ALL__">All topics</option>
+            <option value="Autoimmune &amp; blistering">Autoimmune &amp; blistering (4)</option>
+<option value="Benign lesions &amp; tumours">Benign lesions &amp; tumours (4)</option>
+<option value="Drug reactions">Drug reactions (4)</option>
+<option value="Emergencies">Emergencies (5)</option>
+<option value="Hair &amp; nails">Hair &amp; nails (5)</option>
+<option value="Infections &amp; infestations">Infections &amp; infestations (17)</option>
+<option value="Inflammatory conditions">Inflammatory conditions (26)</option>
+<option value="Other dermatology">Other dermatology (33)</option>
+<option value="Pigment disorders">Pigment disorders (4)</option>
+<option value="Skin cancer &amp; premalignant">Skin cancer &amp; premalignant (20)</option>
+<option value="Vascular &amp; ulcers">Vascular &amp; ulcers (5)</option>
+          </select>
+          <span class="caret">▾</span>
+        </div>
+
+        <div class="pill" title="Search questions/answers">
+          🔎
+          <input id="search" type="search" placeholder="Search (e.g., melanoma, BCC, scabies…)" autocomplete="off" />
+        </div>
+
+        <button class="btn" id="shuffleBtn" title="Shuffle deck (S)">🔀 Shuffle</button>
+        <button class="btn" id="resetBtn" title="Reset progress">♻️ Reset</button>
+        <button class="btn primary" id="downloadBtn" title="Download your progress as JSON">⬇️ Export</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge" id="deckName">Deck</span>
+            <span>Card <b id="idx">1</b>/<b id="total">0</b></span>
+            <span class="badge" id="filterBadge">All</span>
+          </div>
+          <div class="progress" aria-label="Progress">
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="card" id="card" role="button" aria-label="Flashcard (click to flip)" tabindex="0">
+            <div class="inner">
+              <div class="face qface">
+                <div class="tagrow">
+                  <div class="tag">❓ Question</div>
+                  <div class="tag topic" id="topicTagQ">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="qText"></div>
+                </div>
+                <div class="hint">
+                  <span>Tip: press <kbd>Space</kbd> to flip</span>
+                  <span class="small" id="qLen"></span>
+                </div>
+              </div>
+
+              <div class="face aface">
+                <div class="tagrow">
+                  <div class="tag">✅ Answer</div>
+                  <div class="tag topic" id="topicTagA">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="aText"></div>
+                </div>
+                <div class="hint">
+                  <span>Mark it: <kbd>K</kbd> Known, <kbd>U</kbd> Unsure</span>
+                  <span class="small" id="aLen"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="left">
+            <button class="btn" id="prevBtn" title="Previous (←)">⬅️ Prev</button>
+            <button class="btn" id="flipBtn" title="Flip (Space)">🪄 Flip</button>
+            <button class="btn" id="nextBtn" title="Next (→)">Next ➡️</button>
+          </div>
+          <div class="right">
+            <button class="btn good" id="knownBtn" title="Mark known (K)">✅ Known</button>
+            <button class="btn bad" id="unsureBtn" title="Mark unsure (U)">🤔 Unsure</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge">Dashboard</span>
+            <span class="small">Progress is saved in your browser (localStorage).</span>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="statgrid">
+            <div class="stat"><span>✅ Known</span><b id="knownCount">0</b></div>
+            <div class="stat"><span>🤔 Unsure</span><b id="unsureCount">0</b></div>
+            <div class="stat"><span>🧠 Seen</span><b id="seenCount">0</b></div>
+            <div class="stat"><span>🎯 Completion</span><b id="pct">0%</b></div>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="mini">
+            <h3>Filters</h3>
+            <div class="toggle">
+              <label class="switch"><input type="radio" name="mode" value="all" checked> All</label>
+              <label class="switch"><input type="radio" name="mode" value="unknown"> Only unseen</label>
+              <label class="switch"><input type="radio" name="mode" value="known"> Known</label>
+              <label class="switch"><input type="radio" name="mode" value="unsure"> Unsure</label>
+            </div>
+            <div class="small" style="margin-top:10px; line-height:1.5;">
+              Topic filter (top bar) narrows the whole deck.
+            </div>
+          </div>
+
+          <div style="height: 12px"></div>
+
+          <div class="mini">
+            <h3>Study tips</h3>
+            <div class="small" style="line-height:1.6;">
+              • Choose a <b>Topic</b> to focus on one area.<br/>
+              • Use <b>Search</b> to jump to a matching card.<br/>
+              • Shuffle for spaced repetition vibes.<br/>
+              • Export if you want to save/share your progress file.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Built as a single offline HTML file ✨
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const RAW_DECK = [{"q": "What is the most common type of skin cancer?", "a": "Basal Cell Carcinoma (BCC).", "topic": "Skin cancer & premalignant"}, {"q": "What are the classic clinical features of Basal Cell Carcinoma (BCC)?", "a": "A pearly, pink or flesh-coloured papule with telangiectasia and rolled edges, which may have central ulceration.", "topic": "Skin cancer & premalignant"}, {"q": "Which skin cancer is described as a locally invasive keratinocyte cancer with crusty, ulcerated lesions on sun-exposed skin?", "a": "Squamous Cell Carcinoma (SCC).", "topic": "Skin cancer & premalignant"}, {"q": "The ABCDE rule and the 7-point checklist are used for the early identification of which skin cancer?", "a": "Malignant Melanoma.", "topic": "Skin cancer & premalignant"}, {"q": "A rare genetic condition predisposing to early and multiple skin malignancies due to an inability to repair UV-induced DNA damage is known as _____.", "a": "Xeroderma Pigmentosum.", "topic": "Skin cancer & premalignant"}, {"q": "What is the most common subtype of Basal Cell Carcinoma?", "a": "Nodular subtype.", "topic": "Skin cancer & premalignant"}, {"q": "What is the approximate metastatic risk for Squamous Cell Carcinoma (SCC)?", "a": "Approximately 5%.", "topic": "Skin cancer & premalignant"}, {"q": "What are three major risk factors for Squamous Cell Carcinoma (SCC)?", "a": "Sun exposure, immunosuppression (e.g., HIV, transplant), and smoking.", "topic": "Skin cancer & premalignant"}, {"q": "Malignant melanoma is a malignancy of which type of skin cell?", "a": "Melanocytes.", "topic": "Skin cancer & premalignant"}, {"q": "What is the most common subtype of malignant melanoma, accounting for 60% of cases?", "a": "Superficial Spreading Melanoma.", "topic": "Skin cancer & premalignant"}, {"q": "A dome-shaped, fast-growing, pigmented or non-pigmented nodule that may ulcerate or bleed describes which subtype of melanoma?", "a": "Nodular Melanoma.", "topic": "Skin cancer & premalignant"}, {"q": "Which subtype of melanoma commonly affects the soles, palms, and nail beds and is more common in individuals with darker skin tones?", "a": "Acral Lentiginous Melanoma.", "topic": "Skin cancer & premalignant"}, {"q": "In the NICE 7-point checklist for melanoma, what are the three major criteria, each worth 2 points?", "a": "Change in size, irregular shape, and irregular colour.", "topic": "Skin cancer & premalignant"}, {"q": "According to the NICE 7-point checklist, what score warrants an urgent referral for a suspicious lesion?", "a": "A score of 3 or more points, or the presence of any single major criterion.", "topic": "Skin cancer & premalignant"}, {"q": "Xeroderma Pigmentosum is an autosomal recessive disorder of DNA repair and is noted to be 6 times more prevalent in which population?", "a": "Japanese people.", "topic": "Skin cancer & premalignant"}, {"q": "SJS and TEN are differentiated by the extent of body surface area (BSA) involvement. What is the BSA percentage for SJS?", "a": "Less than 10% BSA involvement.", "topic": "Emergencies"}, {"q": "What percentage of body surface area involvement defines Toxic Epidermal Necrolysis (TEN)?", "a": "Greater than 30% BSA involvement.", "topic": "Emergencies"}, {"q": "Name three classes of drugs commonly implicated in causing Stevens-Johnson Syndrome (SJS) and Toxic Epidermal Necrolysis (TEN).", "a": "Sulfonamides (e.g., co-trimoxazole), anticonvulsants (e.g., carbamazepine), and allopurinol.", "topic": "Emergencies"}, {"q": "A positive _____ sign, where gentle rubbing of the skin causes blistering and desquamation, is a clinical feature of SJS/TEN.", "a": "Nikolsky's sign.", "topic": "Emergencies"}, {"q": "What is the triad of clinical features characteristic of Drug Reaction with Eosinophilia and Systemic Symptoms (DRESS) syndrome?", "a": "A widespread rash, high fever, and eosinophilia with systemic organ involvement (e.g., hepatitis).", "topic": "Drug reactions"}, {"q": "Erythroderma is defined as widespread redness and scaling affecting at least what percentage of the body surface area?", "a": "At least 90% of the BSA.", "topic": "Inflammatory conditions"}, {"q": "What is the causative agent of eczema herpeticum?", "a": "Herpes Simplex Virus (HSV-1 or HSV-2).", "topic": "Infections & infestations"}, {"q": "The presence of painful, monomorphic 'punched-out' erosions and vesicles on a background of eczema is highly suggestive of what condition?", "a": "Eczema herpeticum.", "topic": "Inflammatory conditions"}, {"q": "What is the first-line treatment for eczema herpeticum?", "a": "Urgent admission for IV aciclovir.", "topic": "Inflammatory conditions"}, {"q": "Staphylococcal Scalded Skin Syndrome (SSSS) is caused by exfoliative toxins from which bacterium?", "a": "Staphylococcus aureus.", "topic": "Infections & infestations"}, {"q": "A key feature that helps distinguish Staphylococcal Scalded Skin Syndrome (SSSS) from SJS/TEN is the absence of ____ involvement.", "a": "mucosal", "topic": "Emergencies"}, {"q": "What is the first-line antibiotic for Staphylococcal Scalded Skin Syndrome (SSSS)?", "a": "IV flucloxacillin (or vancomycin if MRSA is suspected).", "topic": "Infections & infestations"}, {"q": "A rapidly growing epithelial tumour with a central keratin plug, often described as having a 'volcano-like' appearance, is known as a _____.", "a": "Keratoacanthoma.", "topic": "Skin cancer & premalignant"}, {"q": "Actinic keratosis is a premalignant lesion that can progress to which type of skin cancer?", "a": "Squamous Cell Carcinoma (SCC).", "topic": "Skin cancer & premalignant"}, {"q": "What is the term for squamous cell carcinoma in situ, characterized by full-thickness epidermal dysplasia without dermal invasion?", "a": "Bowen's disease.", "topic": "Skin cancer & premalignant"}, {"q": "Bowen's disease is often mistaken for psoriasis or eczema. A key clue is its failure to respond to which type of medication?", "a": "Topical steroids.", "topic": "Skin cancer & premalignant"}, {"q": "What is the first-line treatment for widespread or superficial actinic keratoses?", "a": "Topical therapy, such as 5-fluorouracil (Efudix) or imiquimod.", "topic": "Skin cancer & premalignant"}, {"q": "Lichen sclerosus is a chronic autoimmune condition that most commonly affects which areas of the body?", "a": "The genital and perianal areas.", "topic": "Inflammatory conditions"}, {"q": "What is the first-line treatment for lichen sclerosus?", "a": "Very potent topical corticosteroids (e.g., clobetasol propionate 0.05%).", "topic": "Inflammatory conditions"}, {"q": "If lichen sclerosus does not respond to potent topical steroids, what is the next step in management?", "a": "A biopsy should be performed to exclude vulval carcinoma.", "topic": "Inflammatory conditions"}, {"q": "Vitiligo is a chronic autoimmune condition characterized by the destruction of which cells?", "a": "Melanocytes.", "topic": "Pigment disorders"}, {"q": "Vitiligo has a strong association with other autoimmune conditions, especially which type of disorder?", "a": "Autoimmune thyroid disease.", "topic": "Pigment disorders"}, {"q": "What is the first-line treatment for new presentations of localized vitiligo affecting less than 10% of BSA and not on the face?", "a": "A 1-2 month course of a topical potent corticosteroid.", "topic": "Pigment disorders"}, {"q": "According to NICE guidelines, what is the first-line treatment for moderate-to-severe acne?", "a": "A combination of topical therapy (e.g., adapalene + benzoyl peroxide) and an oral tetracycline (e.g., lymecycline/doxycycline).", "topic": "Inflammatory conditions"}, {"q": "Which oral antibiotic is recommended for acne in pregnant patients, as tetracyclines are contraindicated?", "a": "Erythromycin.", "topic": "Inflammatory conditions"}, {"q": "What is the primary mechanism of action of oral isotretinoin?", "a": "It reduces sebaceous gland activity and sebum production.", "topic": "Other dermatology"}, {"q": "Due to its severe teratogenicity, what is required for females of reproductive age being treated with isotretinoin?", "a": "Strict contraception is required.", "topic": "Other dermatology"}, {"q": "Arterial ulcers are most commonly a complication of what underlying condition?", "a": "Peripheral arterial disease (PAD).", "topic": "Other dermatology"}, {"q": "What are the classic locations for arterial ulcers?", "a": "Pressure points such as the tips of toes, heels, and metatarsal heads.", "topic": "Other dermatology"}, {"q": "An Ankle-Brachial Pressure Index (ABPI) of less than what value suggests severe PAD-related ulceration?", "a": "An ABPI < 0.5.", "topic": "Vascular & ulcers"}, {"q": "In contrast to arterial ulcers, where are venous ulcers typically located?", "a": "On the lower legs, near the medial malleolus (the gaiter area).", "topic": "Other dermatology"}, {"q": "What is the gold standard for management of venous ulcers, provided arterial insufficiency has been excluded?", "a": "Compression bandaging.", "topic": "Other dermatology"}, {"q": "Urticaria presents as itchy, red, raised wheals with a pale centre. How long do individual lesions typically last?", "a": "Lesions are transient and often last less than 24 hours.", "topic": "Inflammatory conditions"}, {"q": "Angio-oedema can be histaminergic or bradykinin-mediated. Which type does NOT respond to antihistamines or steroids?", "a": "Bradykinin-mediated angio-oedema (e.g., caused by ACE inhibitors or hereditary angio-oedema).", "topic": "Other dermatology"}, {"q": "A recurrent, solitary, dusky-red patch that appears in the same location upon re-exposure to a drug is called a _____.", "a": "Fixed drug eruption.", "topic": "Drug reactions"}, {"q": "Acanthosis nigricans, characterized by velvety hyperpigmented plaques in skin folds, is often associated with what metabolic condition?", "a": "Insulin resistance (e.g., Type 2 Diabetes Mellitus, PCOS).", "topic": "Other dermatology"}, {"q": "Rapid-onset, widespread acanthosis nigricans in an adult can be a paraneoplastic sign, especially of which type of cancer?", "a": "Gastric adenocarcinoma.", "topic": "Other dermatology"}, {"q": "What is the name for benign, warty lesions common in older adults that have a characteristic 'stuck-on' appearance?", "a": "Seborrhoeic keratoses.", "topic": "Other dermatology"}, {"q": "A firm, solitary nodule that dimples when pinched, known as the 'button-hole sign', is characteristic of a _____.", "a": "Dermatofibroma.", "topic": "Benign lesions & tumours"}, {"q": "What is the first-line management for all severities of atopic dermatitis (eczema)?", "a": "Liberal application of emollients.", "topic": "Inflammatory conditions"}, {"q": "Pompholyx (dyshidrotic eczema) is characterized by pruritic vesicles on which parts of the body?", "a": "The palms, fingers, and soles of the feet.", "topic": "Inflammatory conditions"}, {"q": "Seborrhoeic dermatitis is associated with the overgrowth of which skin fungus?", "a": "Malassezia furfur.", "topic": "Inflammatory conditions"}, {"q": "What is the first-line treatment for seborrhoeic dermatitis of the scalp?", "a": "Ketoconazole 2% shampoo.", "topic": "Inflammatory conditions"}, {"q": "Allergic contact dermatitis is what type of hypersensitivity reaction?", "a": "A T-cell mediated Type IV hypersensitivity reaction.", "topic": "Inflammatory conditions"}, {"q": "Dermatitis herpetiformis is an intensely itchy, vesicular rash on extensor surfaces strongly associated with what gastrointestinal condition?", "a": "Coeliac disease.", "topic": "Inflammatory conditions"}, {"q": "What is the pathognomonic finding on a skin biopsy with direct immunofluorescence for dermatitis herpetiformis?", "a": "Granular IgA deposition in the dermal papillae.", "topic": "Inflammatory conditions"}, {"q": "What is the cornerstone of long-term management for dermatitis herpetiformis?", "a": "A strict gluten-free diet.", "topic": "Inflammatory conditions"}, {"q": "Erythema multiforme is a hypersensitivity reaction characterized by what classic skin lesion?", "a": "Target lesions (a central dark area surrounded by a paler halo and an erythematous ring).", "topic": "Other dermatology"}, {"q": "What is the most common trigger for erythema multiforme?", "a": "Herpes Simplex Virus (HSV) infection.", "topic": "Infections & infestations"}, {"q": "The presence of mucosal involvement in erythema multiforme upgrades the diagnosis to _____.", "a": "Erythema multiforme major.", "topic": "Other dermatology"}, {"q": "Folliculitis is a superficial infection of hair follicles, typically caused by which bacterium?", "a": "Staphylococcus aureus.", "topic": "Infections & infestations"}, {"q": "Tinea corporis, also known as ringworm, presents with annular erythematous lesions with a scaly edge and _____.", "a": "a clear centre.", "topic": "Infections & infestations"}, {"q": "What is a kerion, and what does its presence in tinea capitis warrant?", "a": "A kerion is a boggy, pus-filled lesion on the scalp, and it warrants an urgent dermatology referral.", "topic": "Infections & infestations"}, {"q": "What is the first-line treatment for tinea capitis (scalp infection)?", "a": "An oral antifungal agent (e.g., griseofulvin or terbinafine).", "topic": "Infections & infestations"}, {"q": "The superficial skin infection erythrasma glows what color under a Wood's lamp?", "a": "Coral-red.", "topic": "Other dermatology"}, {"q": "A patient presents after a holiday with multiple, scaly, hypopigmented patches on their trunk. What is the likely diagnosis?", "a": "Pityriasis versicolor.", "topic": "Infections & infestations"}, {"q": "Pityriasis versicolor is caused by an overgrowth of which fungus?", "a": "Malassezia.", "topic": "Infections & infestations"}, {"q": "Hereditary Haemorrhagic Telangiectasia (HHT) is diagnosed using the Curaçao Criteria. How many criteria must be met for a definite diagnosis?", "a": "Three out of four criteria.", "topic": "Other dermatology"}, {"q": "What are the four Curaçao Criteria for diagnosing Hereditary Haemorrhagic Telangiectasia (HHT)?", "a": "1. Recurrent epistaxis, 2. Telangiectasia (skin/mucosa), 3. Visceral involvement (AVMs), 4. Family history of HHT.", "topic": "Other dermatology"}, {"q": "Lichen planus is characterized by the '4 Ps'. What are they?", "a": "Pruritic, Polygonal, Purple, Papules.", "topic": "Other dermatology"}, {"q": "What are the fine, white, lacy lines seen on the surface of lichen planus lesions or on the buccal mucosa called?", "a": "Wickham's striae.", "topic": "Other dermatology"}, {"q": "What is the first-line treatment for skin lesions of lichen planus?", "a": "Topical potent corticosteroids (e.g., betamethasone).", "topic": "Other dermatology"}, {"q": "Melasma, also known as chloasma, is an acquired hyperpigmentation disorder strongly associated with what two factors?", "a": "Hormonal changes (e.g., pregnancy, COCP) and sun exposure.", "topic": "Pigment disorders"}, {"q": "Tiny, 1-2mm white or yellow keratin-filled cysts commonly seen on the face of newborns are known as ____.", "a": "Milia.", "topic": "Benign lesions & tumours"}, {"q": "What is the management for milia in a newborn?", "a": "Reassurance, as they are benign and resolve spontaneously within a few weeks.", "topic": "Benign lesions & tumours"}, {"q": "Acute paronychia is a bacterial infection of the nail fold most commonly caused by which organism?", "a": "Staphylococcus aureus.", "topic": "Infections & infestations"}, {"q": "Onychomycosis is a fungal nail infection most commonly caused by which dermatophyte?", "a": "Trichophyton rubrum.", "topic": "Hair & nails"}, {"q": "What is the first-line oral treatment for onychomycosis caused by a dermatophyte?", "a": "Oral terbinafine.", "topic": "Hair & nails"}, {"q": "A key feature of irritant nappy rash is that it characteristically _____ the skin folds.", "a": "spares", "topic": "Other dermatology"}, {"q": "If a nappy rash presents with bright red patches and satellite lesions, especially involving the skin folds, what secondary infection should be suspected?", "a": "Candida albicans.", "topic": "Infections & infestations"}, {"q": "Pellagra, a deficiency of vitamin B3 (niacin), presents with the classic '3 Ds'. What are they?", "a": "Dermatitis, Diarrhoea, and Dementia.", "topic": "Inflammatory conditions"}, {"q": "The photosensitive dermatitis around the neck seen in pellagra is known as ____.", "a": "Casal's collar (or Casal's necklace).", "topic": "Inflammatory conditions"}, {"q": "Bullous pemphigoid is characterized by autoantibodies against hemidesmosomal proteins, leading to what type of blistering?", "a": "Subepidermal blistering, resulting in large, tense bullae.", "topic": "Autoimmune & blistering"}, {"q": "Pemphigus vulgaris is characterized by autoantibodies against desmoglein 3, causing what type of blistering?", "a": "Intraepidermal blistering, resulting in flaccid blisters that rupture easily.", "topic": "Autoimmune & blistering"}, {"q": "Which blistering autoimmune disease typically affects older adults (60-80), presents with tense bullae, and spares the mucosa?", "a": "Bullous pemphigoid.", "topic": "Autoimmune & blistering"}, {"q": "Which blistering autoimmune disease typically affects younger adults (40-60) and often begins with painful oral erosions before skin lesions appear?", "a": "Pemphigus vulgaris.", "topic": "Autoimmune & blistering"}, {"q": "Pityriasis rosea often begins with a single, larger lesion known as a _____, followed by a widespread eruption.", "a": "herald patch", "topic": "Drug reactions"}, {"q": "The rash in pityriasis rosea often forms a characteristic pattern on the trunk known as a _____ distribution.", "a": "Christmas tree", "topic": "Other dermatology"}, {"q": "Porphyria cutanea tarda is caused by reduced activity of which enzyme?", "a": "Uroporphyrinogen decarboxylase (UROD).", "topic": "Other dermatology"}, {"q": "Porphyria cutanea tarda presents with fragile, photosensitive skin with blisters and erosions, typically on which body parts?", "a": "Sun-exposed areas, especially the dorsum of the hands.", "topic": "Other dermatology"}, {"q": "Pressure sores are graded from 0 to 4. What grade describes full-thickness skin loss down to the subcutaneous fat?", "a": "Grade 3.", "topic": "Other dermatology"}, {"q": "What is the first-line pharmacological treatment for primary focal hyperhidrosis?", "a": "Aluminium chloride hexahydrate 20% topical solution.", "topic": "Other dermatology"}, {"q": "Chronic plaque psoriasis typically affects which surfaces of the body?", "a": "Extensor surfaces, such as the elbows and knees.", "topic": "Inflammatory conditions"}, {"q": "What are two common nail changes associated with psoriasis?", "a": "Pitting and onycholysis (separation of the nail from the nail bed).", "topic": "Inflammatory conditions"}, {"q": "According to NICE guidelines for chronic plaque psoriasis, Step 1 management involves a potent topical steroid and what other class of topical agent?", "a": "A vitamin D analogue (e.g., calcipotriol).", "topic": "Inflammatory conditions"}, {"q": "A sudden eruption of red, teardrop-shaped lesions, often following a streptococcal infection, is characteristic of which type of psoriasis?", "a": "Guttate psoriasis.", "topic": "Inflammatory conditions"}, {"q": "A benign, rapidly growing vascular lesion that bleeds easily and is often surrounded by a white collarette is a _____.", "a": "Pyogenic granuloma.", "topic": "Benign lesions & tumours"}, {"q": "A chronic inflammatory condition of the central face with erythema, papules, pustules, and flushing (but no comedones) is known as _____.", "a": "Rosacea.", "topic": "Inflammatory conditions"}, {"q": "What is the first-line treatment for the papules and pustules of mild-to-moderate rosacea?", "a": "Topical ivermectin (or topical metronidazole).", "topic": "Inflammatory conditions"}, {"q": "A rosacea-like eruption of papules and pustules around the mouth that spares the vermillion border is called _____.", "a": "Perioral dermatitis.", "topic": "Inflammatory conditions"}, {"q": "Painful, erythematous nodules on the shins, often associated with infections (TB, strep) or inflammatory conditions (IBD, sarcoidosis), are characteristic of _____.", "a": "Erythema nodosum.", "topic": "Vascular & ulcers"}, {"q": "A rapidly progressing, deep necrotic ulcer with a violaceous, undermined border, often on the shins, is characteristic of _____.", "a": "Pyoderma gangrenosum.", "topic": "Vascular & ulcers"}, {"q": "Pyoderma gangrenosum is strongly associated with which two categories of systemic disease?", "a": "Autoimmune diseases (especially IBD and rheumatoid arthritis) and haematological malignancies.", "topic": "Vascular & ulcers"}, {"q": "Shiny, yellow-red plaques with telangiectasia on the shins of a patient with diabetes are suggestive of _____.", "a": "Necrobiosis lipoidica diabeticorum (NLD).", "topic": "Other dermatology"}, {"q": "Symmetrical swelling and shiny, thickened skin on the shins in a patient with Graves' disease is known as _____.", "a": "Pretibial myxoedema.", "topic": "Other dermatology"}, {"q": "The rash of chickenpox evolves through stages. What is the sequence?", "a": "Itchy macules → papules → vesicles → crusting.", "topic": "Other dermatology"}, {"q": "What are Koplik spots, and with which viral exanthem are they associated?", "a": "They are small white spots ('grain of salt' appearance) on the buccal mucosa, associated with measles.", "topic": "Other dermatology"}, {"q": "Erythema infectiosum, or 'slapped cheek' syndrome, is caused by which virus?", "a": "Parvovirus B19.", "topic": "Other dermatology"}, {"q": "A pregnant woman exposed to parvovirus B19 is at risk of what fetal complications?", "a": "Fetal anaemia and hydrops fetalis.", "topic": "Other dermatology"}, {"q": "What are the classic features of scarlet fever?", "a": "Sore throat, strawberry tongue, a sandpaper-like rash, and circumoral pallor.", "topic": "Other dermatology"}, {"q": "What is the first-line treatment for scarlet fever?", "a": "A 10-day course of phenoxymethylpenicillin (Penicillin V).", "topic": "Drug reactions"}, {"q": "The bacterial skin infection impetigo is characterized by what distinctive crusts?", "a": "Golden, honey-coloured crusts ('cornflake lesions').", "topic": "Infections & infestations"}, {"q": "What is the first-line treatment for localized, non-bullous impetigo?", "a": "Topical hydrogen peroxide.", "topic": "Infections & infestations"}, {"q": "Dome-shaped, pearly papules with central umbilication are characteristic of what viral skin infection?", "a": "Molluscum contagiosum.", "topic": "Infections & infestations"}, {"q": "What is the classic presentation of scabies?", "a": "Intense nocturnal itch and erythematous papules or burrows, especially in the interdigital spaces.", "topic": "Infections & infestations"}, {"q": "What is the first-line treatment for scabies?", "a": "Permethrin 5% cream, applied twice one week apart, treating all close contacts simultaneously.", "topic": "Infections & infestations"}, {"q": "Toxic shock syndrome is a systemic inflammatory response triggered by toxins from which two bacteria?", "a": "Staphylococcus aureus or Streptococcus pyogenes.", "topic": "Other dermatology"}, {"q": "What is the term for hardened, thickened skin on the lower legs with a red-brown discolouration, often in an 'inverted champagne bottle' shape, seen in chronic venous insufficiency?", "a": "Lipodermatosclerosis.", "topic": "Other dermatology"}, {"q": "What investigation must be performed before initiating compression bandaging for venous insufficiency?", "a": "An Ankle-Brachial Pressure Index (ABPI) to rule out significant peripheral arterial disease.", "topic": "Vascular & ulcers"}, {"q": "Alopecia areata is an autoimmune condition characterized by sudden, patchy hair loss and the presence of short, broken hairs that are narrow at the base, known as _____ hairs.", "a": "exclamation mark", "topic": "Hair & nails"}, {"q": "Hirsutism is androgen-dependent hair growth in women. What is the most common underlying cause?", "a": "Polycystic Ovarian Syndrome (PCOS).", "topic": "Hair & nails"}, {"q": "What is the first-line pharmacological treatment for facial hirsutism?", "a": "Topical eflornithine.", "topic": "Hair & nails"}];
+
+  const LS_KEY = "flashcards_progress_v2";
+  const LS_ORDER = "flashcards_order_v2";
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function nowISO() { return new Date().toISOString(); }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
+  }
+
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function saveProgress(p) { localStorage.setItem(LS_KEY, JSON.stringify(p)); }
+
+  function loadOrder() {
+    try {
+      const o = JSON.parse(localStorage.getItem(LS_ORDER) || "null");
+      if (Array.isArray(o) && o.length === RAW_DECK.length) return o;
+      return null;
+    } catch (e) { return null; }
+  }
+  function saveOrder(order) { localStorage.setItem(LS_ORDER, JSON.stringify(order)); }
+
+  const deck = RAW_DECK.map((c, i) => ({
+    id: i,
+    q: (c.q || "").trim(),
+    a: (c.a || "").trim(),
+    topic: (c.topic || "Other").trim(),
+    qLower: (c.q || "").toLowerCase(),
+    aLower: (c.a || "").toLowerCase(),
+    topicLower: (c.topic || "other").toLowerCase(),
+  }));
+
+  let progress = loadProgress();
+  let order = loadOrder() || deck.map(c => c.id);
+
+  let mode = "all";
+  let searchTerm = "";
+  let topicFilter = "__ALL__";
+  let view = [];
+  let pos = 0;
+
+  function statusOf(id) {
+    return (progress[id] && progress[id].status) || null;
+  }
+  function seenOf(id) {
+    return !!(progress[id] && progress[id].seen);
+  }
+
+  function recomputeView(keepCurrentId=true) {
+    const prevId = view[pos];
+    const term = (searchTerm || "").trim().toLowerCase();
+
+    view = order.filter(id => {
+      const c = deck[id];
+      const st = statusOf(id);
+      const seen = seenOf(id);
+
+      if (mode === "unknown" && (seen || st)) return false;
+      if (mode === "known" && st !== "known") return false;
+      if (mode === "unsure" && st !== "unsure") return false;
+
+      if (topicFilter !== "__ALL__" && c.topic !== topicFilter) return false;
+
+      if (term) {
+        return c.qLower.includes(term) || c.aLower.includes(term) || c.topicLower.includes(term);
+      }
+      return true;
+    });
+
+    document.getElementById("total").textContent = view.length;
+
+    const badge = document.getElementById("filterBadge");
+    let label = "All";
+    if (mode === "unknown") label = "Only unseen";
+    if (mode === "known") label = "Known";
+    if (mode === "unsure") label = "Unsure";
+    if (topicFilter !== "__ALL__") label = topicFilter + " • " + label;
+    if (term) label += " • Search";
+    badge.textContent = label;
+
+    if (view.length === 0) {
+      pos = 0;
+      renderEmpty();
+      updateStats();
+      return;
+    }
+
+    if (keepCurrentId && prevId != null) {
+      const newPos = view.indexOf(prevId);
+      pos = newPos >= 0 ? newPos : clamp(pos, 0, view.length - 1);
+    } else {
+      pos = clamp(pos, 0, view.length - 1);
+    }
+    renderCard();
+    updateStats();
+  }
+
+  function renderEmpty() {
+    document.getElementById("qText").textContent = "No cards match your filter/search 🤷‍♂️";
+    document.getElementById("aText").textContent = "Try clearing search or switching filters.";
+    document.getElementById("topicTagQ").textContent = "🧩 Topic";
+    document.getElementById("topicTagA").textContent = "🧩 Topic";
+    document.getElementById("idx").textContent = "0";
+    document.getElementById("bar").style.width = "0%";
+    document.getElementById("qLen").textContent = "";
+    document.getElementById("aLen").textContent = "";
+    document.getElementById("card").classList.remove("flipped");
+  }
+
+  function markSeen(id) {
+    progress[id] = progress[id] || {};
+    if (!progress[id].seen) {
+      progress[id].seen = true;
+      progress[id].updatedAt = nowISO();
+      saveProgress(progress);
+    }
+  }
+
+  function setStatus(id, s) {
+    progress[id] = progress[id] || {};
+    progress[id].status = s;
+    progress[id].seen = true;
+    progress[id].updatedAt = nowISO();
+    saveProgress(progress);
+  }
+
+  function renderCard() {
+    if (view.length === 0) return renderEmpty();
+    const id = view[pos];
+    const c = deck[id];
+
+    markSeen(id);
+
+    document.getElementById("qText").textContent = c.q || "(no question)";
+    document.getElementById("aText").textContent = c.a || "(no answer)";
+    document.getElementById("topicTagQ").textContent = "🧩 " + c.topic;
+    document.getElementById("topicTagA").textContent = "🧩 " + c.topic;
+
+    document.getElementById("idx").textContent = String(pos + 1);
+
+    const pct = ((pos + 1) / view.length) * 100;
+    document.getElementById("bar").style.width = pct.toFixed(1) + "%";
+
+    document.getElementById("qLen").textContent = c.q.length ? ("📝 " + c.q.length + " chars") : "";
+    document.getElementById("aLen").textContent = c.a.length ? ("📝 " + c.a.length + " chars") : "";
+
+    const st = statusOf(id);
+    if (st === "known") toast("✅ You previously marked this as Known");
+    if (st === "unsure") toast("🤔 You previously marked this as Unsure");
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const ids = deck.map(c => c.id);
+    let known = 0, unsure = 0, seen = 0;
+    for (const id of ids) {
+      const st = statusOf(id);
+      if (st === "known") known++;
+      if (st === "unsure") unsure++;
+      if (seenOf(id) || st) seen++;
+    }
+    document.getElementById("knownCount").textContent = known;
+    document.getElementById("unsureCount").textContent = unsure;
+    document.getElementById("seenCount").textContent = seen;
+    const completion = ids.length ? Math.round((known / ids.length) * 100) : 0;
+    document.getElementById("pct").textContent = completion + "%";
+  }
+
+  function flip() { document.getElementById("card").classList.toggle("flipped"); }
+  function next() {
+    if (view.length === 0) return;
+    pos = (pos + 1) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+  function prev() {
+    if (view.length === 0) return;
+    pos = (pos - 1 + view.length) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+
+  function shuffleOrder() {
+    const arr = order.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    order = arr;
+    saveOrder(order);
+    recomputeView(false);
+    toast("🔀 Shuffled!");
+  }
+
+  function resetAll() {
+    if (!confirm("Reset your progress (Known/Unsure/Seen) and shuffle order?")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_ORDER);
+    progress = loadProgress();
+    order = deck.map(c => c.id);
+    searchTerm = "";
+    topicFilter = "__ALL__";
+    document.getElementById("search").value = "";
+    document.getElementById("topicSelect").value = "__ALL__";
+    mode = "all";
+    document.querySelector('input[name="mode"][value="all"]').checked = true;
+    recomputeView(false);
+    toast("♻️ Reset done!");
+  }
+
+  function exportProgress() {
+    const payload = {
+      exportedAt: nowISO(),
+      deckSize: deck.length,
+      progress,
+      order
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flashcards_progress.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("⬇️ Exported progress");
+  }
+
+  document.getElementById("card").addEventListener("click", flip);
+  document.getElementById("flipBtn").addEventListener("click", flip);
+  document.getElementById("nextBtn").addEventListener("click", next);
+  document.getElementById("prevBtn").addEventListener("click", prev);
+  document.getElementById("shuffleBtn").addEventListener("click", shuffleOrder);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("downloadBtn").addEventListener("click", exportProgress);
+
+  document.getElementById("knownBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "known");
+    toast("✅ Marked Known");
+    next();
+  });
+
+  document.getElementById("unsureBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "unsure");
+    toast("🤔 Marked Unsure");
+    next();
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    searchTerm = e.target.value || "";
+    recomputeView(true);
+  });
+
+  document.getElementById("topicSelect").addEventListener("change", (e) => {
+    topicFilter = e.target.value;
+    recomputeView(false);
+  });
+
+  for (const r of document.querySelectorAll('input[name="mode"]')) {
+    r.addEventListener("change", (e) => {
+      mode = e.target.value;
+      recomputeView(true);
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+    const typing = tag === "input" || tag === "textarea" || tag === "select";
+    if (typing) return;
+
+    if (e.key === " " ) { e.preventDefault(); flip(); }
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === "ArrowLeft") prev();
+    else if (e.key.toLowerCase() === "s") shuffleOrder();
+    else if (e.key.toLowerCase() === "k") {
+      if (view.length) { setStatus(view[pos], "known"); toast("✅ Known"); next(); }
+    }
+    else if (e.key.toLowerCase() === "u") {
+      if (view.length) { setStatus(view[pos], "unsure"); toast("🤔 Unsure"); next(); }
+    }
+  });
+
+  document.getElementById("deckName").textContent = "Deck • " + deck.length + " cards";
+  recomputeView(false);
+</script>
+</body>
+</html>
