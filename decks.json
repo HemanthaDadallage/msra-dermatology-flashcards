@@ -41,6 +41,12 @@
   "title": "Infectious Disease",
   "file": "msra-csv6-topic-based.html",
   "cards": 97
+},
+    {
+  "id": "msra-csv7-topic-based",
+  "title": "Haematology",
+  "file": "msra-csv7-topic-based.html",
+  "cards": 116
 }
   ]
 }
