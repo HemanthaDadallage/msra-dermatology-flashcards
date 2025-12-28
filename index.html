@@ -94,7 +94,7 @@ let decksData = [];
 
 async function loadDecks(){
   try{
-    const res = await fetch('./decks.json');
+    const res = await fetch('./decks.json?v=' + Date.now());
     const json = await res.json();
     decksData = json.decks || [];
     const sel = document.getElementById('deckSelect');
