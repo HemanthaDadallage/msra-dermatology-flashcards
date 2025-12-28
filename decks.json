@@ -35,6 +35,12 @@
   "title": "Gastronentrology",
   "file": "msra-csv5-topic-based.html",
   "cards": 145
+},
+    {
+  "id": "msra-csv6-topic-based",
+  "title": "Infectious Disease",
+  "file": "msra-csv6-topic-based.html",
+  "cards": /* number of rows in CSV 6 */
 }
   ]
 }
