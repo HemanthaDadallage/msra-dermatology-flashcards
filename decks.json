@@ -28,7 +28,7 @@
   "id": "msra-new-deck",
   "title": "MSRA – New Flashcards (from CSV 4)",
   "file": "msra-new-deck.html",
-  "cards":  /* put the number of rows in your CSV */
+  "cards": 139
 }
   ]
 }
