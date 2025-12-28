@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MSRA Flash Cards — CSV 7</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #160b2a;
+      --glass: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 22px;
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(1000px 700px at 85% 15%, rgba(6,182,212,.32), transparent 55%),
+        radial-gradient(900px 600px at 55% 90%, rgba(245,158,11,.25), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+    .blob { position: fixed; width: 420px; height: 420px; filter: blur(40px); opacity: .55; z-index: -1; border-radius: 999px; animation: float 9s ease-in-out infinite; pointer-events: none; }
+    .b1 { left: -120px; top: -140px; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.95), rgba(124,58,237,.05)); }
+    .b2 { right: -140px; top: 60px; background: radial-gradient(circle at 40% 40%, rgba(6,182,212,.95), rgba(6,182,212,.05)); animation-duration: 12s; }
+    .b3 { left: 35%; bottom: -180px; background: radial-gradient(circle at 35% 40%, rgba(245,158,11,.9), rgba(245,158,11,.05)); animation-duration: 14s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18px, -22px) scale(1.05); } }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 18px 38px; }
+    header { display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:44px; height:44px; border-radius:14px; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); box-shadow: 0 12px 30px rgba(0,0,0,.35); position:relative; overflow:hidden; }
+    .logo:after { content:""; position:absolute; inset:-40%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%); transform: rotate(18deg); opacity: .6; }
+    h1 { font-size:20px; margin:0; letter-spacing:.3px; }
+    .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; width:100%; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:9px 12px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.25); }
+    .pill input[type="search"] { width: 220px; max-width: 70vw; background:transparent; border:none; outline:none; color:var(--text); font-size:14px; }
+    .pill select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      appearance: none;
+      padding-right: 18px;
+      cursor: pointer;
+    }
+    .pill select option { color: #111; }
+    .pill .caret { opacity: .75; }
+
+    .btn { border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.10); color: var(--text); padding: 10px 12px; border-radius:14px; cursor:pointer; transition: transform .08s ease, background .2s ease, border-color .2s ease; user-select:none; box-shadow: 0 10px 26px rgba(0,0,0,.22); backdrop-filter: blur(10px); display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13px; }
+    .btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn.primary { border:none; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); }
+    .btn.good { border:none; background: linear-gradient(135deg, rgba(34,197,94,1), rgba(6,182,212,1)); }
+    .btn.bad { border:none; background: linear-gradient(135deg, rgba(239,68,68,1), rgba(245,158,11,1)); }
+
+    .grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; align-items:stretch; margin-top:14px; }
+    @media (max-width:900px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(12px); overflow:hidden; }
+    .panel-head { padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border-bottom: 1px solid rgba(255,255,255,.12); }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; color: var(--muted); font-size: 13px; }
+    .badge { padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.85); font-weight:700; letter-spacing:.2px; }
+
+    .progress { height: 10px; border-radius:999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.12); overflow:hidden; min-width:220px; }
+    .bar { height:100%; width:0%; background: linear-gradient(90deg, rgba(124,58,237,1), rgba(6,182,212,1), rgba(34,197,94,1)); border-radius:999px; transition: width .25s ease; }
+
+    .stage { padding: 18px; display:grid; place-items:center; }
+    .card { width: min(720px, 100%); height: 360px; perspective: 1400px; }
+    .inner { width:100%; height:100%; position:relative; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+    .card.flipped .inner { transform: rotateY(180deg); }
+    .face { position:absolute; inset:0; border-radius:26px; border: 1px solid rgba(255,255,255,.20); box-shadow: 0 22px 60px rgba(0,0,0,.45); overflow:hidden; backface-visibility:hidden; display:flex; flex-direction:column; }
+    .face::before { content:""; position:absolute; inset:0; background: radial-gradient(900px 500px at 10% 20%, rgba(255,255,255,.18), transparent 55%), radial-gradient(700px 500px at 90% 20%, rgba(255,255,255,.16), transparent 55%), radial-gradient(800px 650px at 50% 120%, rgba(0,0,0,.25), transparent 60%); pointer-events:none; }
+    .qface { background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(6,182,212,.70)); }
+    .aface { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(34,197,94,.82), rgba(245,158,11,.65)); }
+
+    .tagrow { display:flex; gap:10px; flex-wrap:wrap; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; margin:14px 14px 0; border-radius:999px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.22); width: fit-content; font-weight:800; letter-spacing:.2px; font-size:12px; }
+    .tag.topic { background: rgba(0,0,0,.22); }
+
+    .content { flex:1; padding: 18px 20px 16px; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; }
+    .text { font-size:22px; line-height:1.3; font-weight:800; text-shadow: 0 2px 14px rgba(0,0,0,.25); white-space: pre-wrap; }
+    .small { font-weight:700; font-size:14px; color: rgba(255,255,255,.85); text-shadow:none; }
+    .hint { padding: 10px 16px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.80); font-size:12px; }
+    kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,.20); border: 1px solid rgba(255,255,255,.18); }
+
+    .controls { padding: 16px; border-top: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .left, .right { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .stats { padding: 14px 16px 16px; }
+    .statgrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; box-shadow: 0 10px 24px rgba(0,0,0,.20); }
+    .stat b { font-size:18px; }
+    .stat span { color: var(--muted); font-weight:700; font-size:12px; }
+
+    .list { padding: 10px 16px 16px; }
+    .mini { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+    .mini h3 { margin:0 0 8px; font-size:14px; letter-spacing:.2px; }
+    .toggle { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .switch { display:inline-flex; align-items:center; gap:8px; padding: 8px 10px; border-radius:999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); cursor:pointer; user-select:none; font-size:12px; font-weight:800; color: rgba(255,255,255,.88); }
+    .switch input { accent-color:white; }
+
+    .footer { margin-top:14px; color: rgba(255,255,255,.55); font-size:12px; text-align:center; }
+
+    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.92); padding: 10px 12px; border-radius:999px; box-shadow: 0 18px 50px rgba(0,0,0,.35); backdrop-filter: blur(10px); opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; font-weight:700; font-size:13px; }
+    .toast.show { opacity:1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>MSRA Flash Cards — CSV 7</h1>
+          <div class="subtitle">Categorised by topic • <kbd>Space</kbd> flip, <kbd>←</kbd>/<kbd>→</kbd> navigate, <kbd>S</kbd> shuffle</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="pill" title="Topic filter">
+          🧩
+          <select id="topicSelect" aria-label="Topic">
+            <option value="__ALL__">All topics</option>
+            <option value="Autoimmune &amp; blistering">Autoimmune &amp; blistering (4)</option>
+<option value="Benign lesions &amp; tumours">Benign lesions &amp; tumours (4)</option>
+<option value="Drug reactions">Drug reactions (4)</option>
+<option value="Emergencies">Emergencies (5)</option>
+<option value="Hair &amp; nails">Hair &amp; nails (5)</option>
+<option value="Infections &amp; infestations">Infections &amp; infestations (17)</option>
+<option value="Inflammatory conditions">Inflammatory conditions (26)</option>
+<option value="Other dermatology">Other dermatology (33)</option>
+<option value="Pigment disorders">Pigment disorders (4)</option>
+<option value="Skin cancer &amp; premalignant">Skin cancer &amp; premalignant (20)</option>
+<option value="Vascular &amp; ulcers">Vascular &amp; ulcers (5)</option>
+          </select>
+          <span class="caret">▾</span>
+        </div>
+
+        <div class="pill" title="Search questions/answers">
+          🔎
+          <input id="search" type="search" placeholder="Search (e.g., melanoma, BCC, scabies…)" autocomplete="off" />
+        </div>
+
+        <button class="btn" id="shuffleBtn" title="Shuffle deck (S)">🔀 Shuffle</button>
+        <button class="btn" id="resetBtn" title="Reset progress">♻️ Reset</button>
+        <button class="btn primary" id="downloadBtn" title="Download your progress as JSON">⬇️ Export</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge" id="deckName">Deck</span>
+            <span>Card <b id="idx">1</b>/<b id="total">0</b></span>
+            <span class="badge" id="filterBadge">All</span>
+          </div>
+          <div class="progress" aria-label="Progress">
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="card" id="card" role="button" aria-label="Flashcard (click to flip)" tabindex="0">
+            <div class="inner">
+              <div class="face qface">
+                <div class="tagrow">
+                  <div class="tag">❓ Question</div>
+                  <div class="tag topic" id="topicTagQ">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="qText"></div>
+                </div>
+                <div class="hint">
+                  <span>Tip: press <kbd>Space</kbd> to flip</span>
+                  <span class="small" id="qLen"></span>
+                </div>
+              </div>
+
+              <div class="face aface">
+                <div class="tagrow">
+                  <div class="tag">✅ Answer</div>
+                  <div class="tag topic" id="topicTagA">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="aText"></div>
+                </div>
+                <div class="hint">
+                  <span>Mark it: <kbd>K</kbd> Known, <kbd>U</kbd> Unsure</span>
+                  <span class="small" id="aLen"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="left">
+            <button class="btn" id="prevBtn" title="Previous (←)">⬅️ Prev</button>
+            <button class="btn" id="flipBtn" title="Flip (Space)">🪄 Flip</button>
+            <button class="btn" id="nextBtn" title="Next (→)">Next ➡️</button>
+          </div>
+          <div class="right">
+            <button class="btn good" id="knownBtn" title="Mark known (K)">✅ Known</button>
+            <button class="btn bad" id="unsureBtn" title="Mark unsure (U)">🤔 Unsure</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge">Dashboard</span>
+            <span class="small">Progress is saved in your browser (localStorage).</span>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="statgrid">
+            <div class="stat"><span>✅ Known</span><b id="knownCount">0</b></div>
+            <div class="stat"><span>🤔 Unsure</span><b id="unsureCount">0</b></div>
+            <div class="stat"><span>🧠 Seen</span><b id="seenCount">0</b></div>
+            <div class="stat"><span>🎯 Completion</span><b id="pct">0%</b></div>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="mini">
+            <h3>Filters</h3>
+            <div class="toggle">
+              <label class="switch"><input type="radio" name="mode" value="all" checked> All</label>
+              <label class="switch"><input type="radio" name="mode" value="unknown"> Only unseen</label>
+              <label class="switch"><input type="radio" name="mode" value="known"> Known</label>
+              <label class="switch"><input type="radio" name="mode" value="unsure"> Unsure</label>
+            </div>
+            <div class="small" style="margin-top:10px; line-height:1.5;">
+              Topic filter (top bar) narrows the whole deck.
+            </div>
+          </div>
+
+          <div style="height: 12px"></div>
+
+          <div class="mini">
+            <h3>Study tips</h3>
+            <div class="small" style="line-height:1.6;">
+              • Choose a <b>Topic</b> to focus on one area.<br/>
+              • Use <b>Search</b> to jump to a matching card.<br/>
+              • Shuffle for spaced repetition vibes.<br/>
+              • Export if you want to save/share your progress file.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Built as a single offline HTML file ✨
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const RAW_DECK = [{"q": "What is the first-line and life-saving treatment for anaphylaxis that should never be delayed?", "a": "Intramuscular (IM) adrenaline.", "topic": "MSRA (CSV 7)"}, {"q": "Anaphylaxis is a rapid-onset systemic hypersensitivity reaction most often mediated by which immunoglobulin?", "a": "IgE.", "topic": "MSRA (CSV 7)"}, {"q": "What are the three key pathophysiological effects of mediator release in anaphylaxis?", "a": "Widespread vasodilation (hypotension), increased vascular permeability (oedema), and smooth muscle contraction (bronchospasm).", "topic": "MSRA (CSV 7)"}, {"q": "In the management of anaphylaxis, how often should IM adrenaline be repeated if there is no response?", "a": "After 5 minutes.", "topic": "MSRA (CSV 7)"}, {"q": "What is the recommended dose of IM adrenaline (1:1000) for an adult with anaphylaxis?", "a": "500 micrograms (0.5 mL).", "topic": "MSRA (CSV 7)"}, {"q": "What is the recommended dose of IM adrenaline (1:1000) for a child aged 6-12 years with anaphylaxis?", "a": "300 micrograms (0.3 mL).", "topic": "MSRA (CSV 7)"}, {"q": "What is the recommended dose of IM adrenaline (1:1000) for a child under 6 years with anaphylaxis?", "a": "150 micrograms (0.15 mL).", "topic": "MSRA (CSV 7)"}, {"q": "Which investigation can be performed 1-2 hours after the onset of anaphylaxis to confirm mast cell activation?", "a": "Serum tryptase.", "topic": "MSRA (CSV 7)"}, {"q": "Patients should be monitored for at least 6-12 hours after anaphylaxis due to the risk of what type of reaction?", "a": "Biphasic reactions.", "topic": "MSRA (CSV 7)"}, {"q": "What is the classic clinical sign of systemic mastocytosis, where rubbing the skin causes an urticarial wheal?", "a": "Darier’s sign.", "topic": "MSRA (CSV 7)"}, {"q": "What is the first-line investigation for suspected systemic mastocytosis, which is typically elevated (>20 ng/mL)?", "a": "Serum tryptase.", "topic": "MSRA (CSV 7)"}, {"q": "What is the first-line treatment for managing flushing and urticaria in systemic mastocytosis?", "a": "Oral H1 antihistamines (e.g., cetirizine).", "topic": "MSRA (CSV 7)"}, {"q": "What is the diagnostic finding for amyloidosis on a tissue biopsy stained with Congo red and viewed under polarised light?", "a": "Apple-green birefringence.", "topic": "MSRA (CSV 7)"}, {"q": "AL (Primary) Amyloidosis is caused by misfolded _____ and is associated with plasma cell dyscrasias.", "a": "immunoglobulin light chains.", "topic": "MSRA (CSV 7)"}, {"q": "AA (Secondary) Amyloidosis is caused by misfolded serum amyloid A (SAA) protein and is associated with _____.", "a": "chronic inflammation or infection.", "topic": "MSRA (CSV 7)"}, {"q": "What are the characteristic ECG and echocardiogram findings in cardiac AL amyloidosis?", "a": "Low voltage QRS complexes on ECG and thickened walls with 'sparkling' myocardium on echo.", "topic": "MSRA (CSV 7)"}, {"q": "What is the most common renal complication seen in both AL and AA amyloidosis?", "a": "Nephrotic syndrome.", "topic": "MSRA (CSV 7)"}, {"q": "Deficiency of B12 and folate leads to what type of anaemia, characterized by an MCV > 100?", "a": "Megaloblastic anaemia.", "topic": "MSRA (CSV 7)"}, {"q": "Why must Vitamin B12 be replaced before folate in a patient with combined deficiency?", "a": "To avoid precipitating subacute combined degeneration of the cord (SADC).", "topic": "MSRA (CSV 7)"}, {"q": "Vitamin B12 requires _____ from gastric parietal cells for its absorption in the distal ileum.", "a": "intrinsic factor (IF).", "topic": "MSRA (CSV 7)"}, {"q": "What is pernicious anaemia?", "a": "An autoimmune cause of B12 deficiency due to antibodies against gastric parietal cells or intrinsic factor.", "topic": "MSRA (CSV 7)"}, {"q": "What is the characteristic finding on a blood film for a patient with megaloblastic anaemia?", "a": "Hypersegmented neutrophils.", "topic": "MSRA (CSV 7)"}, {"q": "What is the maintenance treatment for non-diet-related B12 deficiency without neurological involvement?", "a": "IM hydroxocobalamin 1 mg every 2–3 months.", "topic": "MSRA (CSV 7)"}, {"q": "Anaemia with an MCV < 80 fL is classified as what type?", "a": "Microcytic.", "topic": "MSRA (CSV 7)"}, {"q": "What is the underlying pathophysiology of sideroblastic anaemia?", "a": "Defective heme synthesis in red blood cells, leading to iron deposition in mitochondria.", "topic": "MSRA (CSV 7)"}, {"q": "What are the characteristic findings on a bone marrow biopsy in aplastic anaemia?", "a": "Hypocellular marrow (<30% cellularity) replaced by fat.", "topic": "MSRA (CSV 7)"}, {"q": "What is the triad of findings on a full blood count in aplastic anaemia?", "a": "Pancytopenia (anaemia, thrombocytopenia, and leukopenia).", "topic": "MSRA (CSV 7)"}, {"q": "Haemophilia A is an X-linked recessive disorder caused by a deficiency in which coagulation factor?", "a": "Factor VIII.", "topic": "MSRA (CSV 7)"}, {"q": "Haemophilia B (Christmas Disease) is an X-linked recessive disorder caused by a deficiency in which coagulation factor?", "a": "Factor IX.", "topic": "MSRA (CSV 7)"}, {"q": "In haemophilia A and B, which coagulation pathway test is prolonged, while the PT/INR remains normal?", "a": "APTT (Activated Partial Thromboplastin Time).", "topic": "MSRA (CSV 7)"}, {"q": "What is the most common inherited bleeding disorder, caused by a deficiency or dysfunction of a factor that mediates platelet adhesion?", "a": "Von Willebrand's Disease (VWD).", "topic": "MSRA (CSV 7)"}, {"q": "What are the typical clinical features of Von Willebrand's Disease, reflecting a platelet-type bleeding pattern?", "a": "Epistaxis, menorrhagia, gingival bleeding, and petechiae.", "topic": "MSRA (CSV 7)"}, {"q": "In Disseminated Intravascular Coagulation (DIC), what happens to clotting times (APTT, PT/INR), platelet count, and fibrinogen levels?", "a": "All clotting times are prolonged, while platelet count and fibrinogen are low (due to consumption).", "topic": "MSRA (CSV 7)"}, {"q": "What are schistocytes, which may be seen on a blood film in DIC?", "a": "Fragmented red blood cells.", "topic": "MSRA (CSV 7)"}, {"q": "Which chemotherapy agent is most commonly associated with cardiotoxicity, including acute myopericarditis and long-term cardiomyopathy?", "a": "Doxorubicin (an anthracycline).", "topic": "MSRA (CSV 7)"}, {"q": "Which chemotherapy agent is known to cause pulmonary fibrosis, often presenting with a dry cough and exertional dyspnoea?", "a": "Bleomycin.", "topic": "MSRA (CSV 7)"}, {"q": "Which two chemotherapy agents are commonly associated with peripheral neuropathy?", "a": "Vincristine and Cisplatin.", "topic": "MSRA (CSV 7)"}, {"q": "Cyclophosphamide can cause haemorrhagic cystitis due to its toxic metabolite, acrolein. What drug is co-prescribed to prevent this?", "a": "Mesna.", "topic": "MSRA (CSV 7)"}, {"q": "Which chemotherapy agent is known for causing nephrotoxicity, ototoxicity, and electrolyte disturbances like hypomagnesaemia?", "a": "Cisplatin.", "topic": "MSRA (CSV 7)"}, {"q": "According to NICE guidelines, what is the next step in management if a patient has a DVT Wells score of $\\ge2$ (DVT likely)?", "a": "Offer a proximal leg vein ultrasound scan to be performed within 4 hours.", "topic": "MSRA (CSV 7)"}, {"q": "If an ultrasound scan is not available within 4 hours for a patient with a likely DVT, what two actions should be taken?", "a": "Check a D-dimer and start interim therapeutic anticoagulation.", "topic": "MSRA (CSV 7)"}, {"q": "What is the first-line treatment for most patients with a DVT?", "a": "A direct oral anticoagulant (DOAC) such as apixaban or rivaroxaban.", "topic": "MSRA (CSV 7)"}, {"q": "What is the anticoagulant of choice for treating a DVT in pregnancy?", "a": "Low-molecular-weight heparin (LMWH).", "topic": "MSRA (CSV 7)"}, {"q": "What is the preferred anticoagulant for treating a DVT in a patient with end-stage renal failure (ESRF)?", "a": "Warfarin.", "topic": "MSRA (CSV 7)"}, {"q": "Sickle cell disease results from a point mutation in the $\\beta$-globin gene, where _____ is replaced by valine.", "a": "glutamate.", "topic": "MSRA (CSV 7)"}, {"q": "What is the gold standard diagnostic investigation for sickle cell disease?", "a": "Haemoglobin electrophoresis.", "topic": "MSRA (CSV 7)"}, {"q": "What is the most common cause of death in patients with sickle cell disease?", "a": "Acute chest syndrome.", "topic": "MSRA (CSV 7)"}, {"q": "An aplastic crisis in sickle cell disease, characterized by a sudden drop in haemoglobin and low reticulocyte count, is often triggered by which virus?", "a": "Parvovirus B19.", "topic": "MSRA (CSV 7)"}, {"q": "Why is lifelong prophylactic penicillin recommended for patients with sickle cell disease?", "a": "Due to functional hyposplenism, which increases the risk of infection from encapsulated organisms.", "topic": "MSRA (CSV 7)"}, {"q": "What is the pathophysiology of thalassaemias?", "a": "Defective synthesis of alpha or beta globin chains, leading to imbalanced haemoglobin production.", "topic": "MSRA (CSV 7)"}, {"q": "Deletion of all four alpha-globin genes results in _____ which is usually fatal in utero.", "a": "Hydrops fetalis (Hb Barts).", "topic": "MSRA (CSV 7)"}, {"q": "A patient with beta-thalassaemia major who requires regular blood transfusions is at risk of what major complication?", "a": "Iron overload.", "topic": "MSRA (CSV 7)"}, {"q": "What is the name for the facial deformity seen in beta-thalassaemia major due to bone marrow expansion?", "a": "Skull bossing.", "topic": "MSRA (CSV 7)"}, {"q": "What is the purpose of the Direct Coombs Test (DCT) in investigating haemolytic anaemia?", "a": "It detects antibodies or complement attached to the surface of red blood cells, indicating an autoimmune process.", "topic": "MSRA (CSV 7)"}, {"q": "Which type of autoimmune haemolytic anaemia (AIHA) is mediated by IgG antibodies, occurs at body temperature, and is associated with SLE and certain drugs?", "a": "Warm AIHA.", "topic": "MSRA (CSV 7)"}, {"q": "Which type of autoimmune haemolytic anaemia (AIHA) is mediated by IgM antibodies, occurs at colder temperatures, and is associated with infections like EBV and Mycoplasma?", "a": "Cold AIHA.", "topic": "MSRA (CSV 7)"}, {"q": "G6PD deficiency is an X-linked recessive disorder that makes red blood cells susceptible to what type of damage?", "a": "Oxidative damage.", "topic": "MSRA (CSV 7)"}, {"q": "What are the characteristic findings on a blood film from a patient with G6PD deficiency during a haemolytic crisis?", "a": "Heinz bodies and bite cells.", "topic": "MSRA (CSV 7)"}, {"q": "Hereditary spherocytosis is an autosomal dominant disorder caused by a defect in the RBC _____, leading to extravascular haemolysis in the spleen.", "a": "cytoskeleton.", "topic": "MSRA (CSV 7)"}, {"q": "Paroxysmal nocturnal haemoglobinuria (PNH) is an acquired disorder where RBCs lack which protective proteins, leading to complement-mediated lysis?", "a": "CD55 and CD59.", "topic": "MSRA (CSV 7)"}, {"q": "Besides haemolytic anaemia, what is a major life-threatening complication of Paroxysmal Nocturnal Haemoglobinuria (PNH)?", "a": "Thrombosis (e.g., DVT, Budd-Chiari syndrome).", "topic": "MSRA (CSV 7)"}, {"q": "What is the gold standard investigation for diagnosing Paroxysmal Nocturnal Haemoglobinuria (PNH)?", "a": "Flow cytometry for CD55 and CD59 on red blood cells.", "topic": "MSRA (CSV 7)"}, {"q": "Hereditary haemochromatosis is an autosomal recessive disorder caused by mutations in which gene on chromosome 6?", "a": "HFE gene.", "topic": "MSRA (CSV 7)"}, {"q": "What is the first-line screening investigation for hereditary haemochromatosis?", "a": "Transferrin saturation.", "topic": "MSRA (CSV 7)"}, {"q": "What is the mainstay of treatment for hereditary haemochromatosis?", "a": "Venesection (phlebotomy).", "topic": "MSRA (CSV 7)"}, {"q": "What is the most common inherited thrombophilia?", "a": "Factor V Leiden.", "topic": "MSRA (CSV 7)"}, {"q": "What is the underlying mechanism of Factor V Leiden?", "a": "It causes resistance to activated protein C (APC), preventing the breakdown of Factor Va.", "topic": "MSRA (CSV 7)"}, {"q": "Protein C and its cofactor Protein S inactivate which two clotting factors?", "a": "Factor Va and Factor VIIIa.", "topic": "MSRA (CSV 7)"}, {"q": "According to NICE, a serum ferritin level of <30 µg/L confirms what diagnosis?", "a": "Iron deficiency anaemia.", "topic": "MSRA (CSV 7)"}, {"q": "For how long should oral iron be continued after haemoglobin normalises in iron deficiency anaemia?", "a": "For 3 months, to replenish iron stores.", "topic": "MSRA (CSV 7)"}, {"q": "According to NICE, all patients with confirmed iron deficiency anaemia should be screened for coeliac disease using which test?", "a": "Anti-tissue transglutaminase (anti-TTG) antibodies.", "topic": "MSRA (CSV 7)"}, {"q": "What is the pathognomonic finding on a blood film for Acute Myeloid Leukaemia (AML)?", "a": "Auer rods.", "topic": "MSRA (CSV 7)"}, {"q": "Acute Promyelocytic Leukaemia (APML) is a subtype of AML associated with which chromosomal translocation?", "a": "t(15;17).", "topic": "MSRA (CSV 7)"}, {"q": "What is a key clinical feature and complication of Acute Promyelocytic Leukaemia (APML)?", "a": "Disseminated Intravascular Coagulation (DIC).", "topic": "MSRA (CSV 7)"}, {"q": "What is the targeted therapy for Acute Promyelocytic Leukaemia (APML)?", "a": "All-trans retinoic acid (ATRA).", "topic": "MSRA (CSV 7)"}, {"q": "Chronic Myeloid Leukaemia (CML) is characterized by which specific genetic abnormality?", "a": "The Philadelphia chromosome, t(9;22), which forms the BCR-ABL fusion gene.", "topic": "MSRA (CSV 7)"}, {"q": "What is the first-line treatment for Chronic Myeloid Leukaemia (CML)?", "a": "Imatinib (a tyrosine kinase inhibitor).", "topic": "MSRA (CSV 7)"}, {"q": "What is the most common leukaemia in adults, often found incidentally on a full blood count showing marked lymphocytosis?", "a": "Chronic Lymphocytic Leukaemia (CLL).", "topic": "MSRA (CSV 7)"}, {"q": "What is the characteristic finding on a blood film for Chronic Lymphocytic Leukaemia (CLL)?", "a": "Smudge cells (or smear cells).", "topic": "MSRA (CSV 7)"}, {"q": "What is the most common leukaemia of childhood, typically presenting between ages 2-5?", "a": "Acute Lymphoblastic Leukaemia (ALL).", "topic": "MSRA (CSV 7)"}, {"q": "What is the hallmark histological finding in Hodgkin's lymphoma?", "a": "Reed-Sternberg cells.", "topic": "MSRA (CSV 7)"}, {"q": "Hodgkin's lymphoma typically has what kind of age distribution?", "a": "A bimodal age distribution, with peaks in the 30s and 70s.", "topic": "MSRA (CSV 7)"}, {"q": "What are the three 'B symptoms' associated with lymphoma?", "a": "Fever >38.3°C, drenching night sweats, and weight loss >10% in 6 months.", "topic": "MSRA (CSV 7)"}, {"q": "Endemic (African) Burkitt's lymphoma is strongly associated with which virus and typically presents with a mass in what location?", "a": "Epstein-Barr virus (EBV) and a maxillary or mandibular mass.", "topic": "MSRA (CSV 7)"}, {"q": "What is tumour lysis syndrome?", "a": "A life-threatening metabolic emergency caused by the rapid breakdown of tumour cells, releasing their intracellular contents.", "topic": "MSRA (CSV 7)"}, {"q": "What are the key electrolyte abnormalities seen in tumour lysis syndrome?", "a": "Hyperkalaemia, hyperphosphataemia, hypocalcaemia, and high uric acid.", "topic": "MSRA (CSV 7)"}, {"q": "What drug can be given as prophylaxis to prevent tumour lysis syndrome by breaking down uric acid?", "a": "Rasburicase.", "topic": "MSRA (CSV 7)"}, {"q": "What is the classic finding on a blood film for myelofibrosis?", "a": "Tear drop cells (dacrocytes).", "topic": "MSRA (CSV 7)"}, {"q": "Myelofibrosis is characterized by bone marrow fibrosis, which leads to haematopoiesis in other organs, a process known as _____.", "a": "extramedullary haematopoiesis.", "topic": "MSRA (CSV 7)"}, {"q": "A massive _____ is a key clinical finding in myelofibrosis.", "a": "splenomegaly.", "topic": "MSRA (CSV 7)"}, {"q": "What is the first-line treatment for symptomatic myelofibrosis, which inhibits the JAK2 pathway?", "a": "Ruxolitinib.", "topic": "MSRA (CSV 7)"}, {"q": "Myelodysplastic syndrome (MDS) is a malignancy characterized by ineffective haematopoiesis and carries a significant risk of progression to which other condition?", "a": "Acute Myeloid Leukaemia (AML).", "topic": "MSRA (CSV 7)"}, {"q": "What does the 'CRAB' mnemonic for the clinical features of myeloma stand for?", "a": "Calcium (hypercalcaemia), Renal failure, Anaemia, Bone lesions.", "topic": "MSRA (CSV 7)"}, {"q": "What are the key initial investigations for suspected myeloma, according to NICE guidelines?", "a": "Serum protein electrophoresis and serum free light-chain assay.", "topic": "MSRA (CSV 7)"}, {"q": "What is Monoclonal Gammopathy of Undetermined Significance (MGUS)?", "a": "An asymptomatic, premalignant condition with a monoclonal paraprotein, carrying a 1% per year risk of progression to myeloma.", "topic": "MSRA (CSV 7)"}, {"q": "Waldenström's macroglobulinaemia is a lymphoplasmacytic lymphoma that produces a monoclonal _____ paraprotein, leading to hyperviscosity.", "a": "IgM.", "topic": "MSRA (CSV 7)"}, {"q": "What is the first-line treatment for a patient with symptomatic hyperviscosity in Waldenström's macroglobulinaemia?", "a": "Plasmapheresis.", "topic": "MSRA (CSV 7)"}, {"q": "Polycythaemia Rubra Vera (PRV) is a myeloproliferative disorder associated with a mutation in which gene?", "a": "JAK2.", "topic": "MSRA (CSV 7)"}, {"q": "How does the erythropoietin (EPO) level help distinguish between primary polycythaemia (PRV) and secondary polycythaemia?", "a": "EPO is low in PRV and high in secondary polycythaemia.", "topic": "MSRA (CSV 7)"}, {"q": "What is the characteristic symptom of pruritus after a warm shower or bath associated with?", "a": "Polycythaemia Rubra Vera (PRV).", "topic": "MSRA (CSV 7)"}, {"q": "What is the first-line management for Polycythaemia Rubra Vera to control haematocrit levels?", "a": "Venesection (to maintain haematocrit <0.45).", "topic": "MSRA (CSV 7)"}, {"q": "Idiopathic Thrombocytopenic Purpura (ITP) is caused by IgG autoantibodies targeting which receptors on platelets?", "a": "GP2b/3a receptors.", "topic": "MSRA (CSV 7)"}, {"q": "What is the first-line treatment for symptomatic Idiopathic Thrombocytopenic Purpura (ITP)?", "a": "Oral prednisolone (corticosteroids).", "topic": "MSRA (CSV 7)"}, {"q": "Thrombotic Thrombocytopenic Purpura (TTP) is caused by a deficiency in which enzyme?", "a": "ADAMTS13.", "topic": "MSRA (CSV 7)"}, {"q": "What are the five components of the classic pentad of features in Thrombotic Thrombocytopenic Purpura (TTP)?", "a": "Thrombocytopenia, microangiopathic haemolytic anaemia, fever, fluctuating neurological signs, and acute kidney injury.", "topic": "MSRA (CSV 7)"}, {"q": "What is the urgent, first-line treatment for Thrombotic Thrombocytopenic Purpura (TTP)?", "a": "Plasma exchange.", "topic": "MSRA (CSV 7)"}, {"q": "Heparin-Induced Thrombocytopenia (HIT) is caused by IgG antibodies forming against which complex on the platelet surface?", "a": "The heparin-platelet factor 4 (PF4) complex.", "topic": "MSRA (CSV 7)"}, {"q": "What is the immediate management for a patient diagnosed with Heparin-Induced Thrombocytopenia (HIT)?", "a": "Stop all heparin products immediately and start an alternative anticoagulant like fondaparinux or argatroban.", "topic": "MSRA (CSV 7)"}, {"q": "Essential Thrombocythaemia (ET) is a myeloproliferative disorder characterized by the overproduction of platelets. Around 50% of cases have a mutation in which gene?", "a": "JAK2.", "topic": "MSRA (CSV 7)"}, {"q": "In a high-risk patient with Essential Thrombocythaemia (age >60 or history of thrombosis), what is the first-line cytoreductive therapy?", "a": "Hydroxycarbamide.", "topic": "MSRA (CSV 7)"}, {"q": "A patient develops urticaria and pruritus during a blood transfusion but is otherwise haemodynamically stable. What is the likely diagnosis and initial management?", "a": "Minor allergic reaction; give antihistamines (e.g., chlorphenamine) and cautiously continue the transfusion.", "topic": "MSRA (CSV 7)"}, {"q": "Anaphylaxis during a blood transfusion is a severe IgE-mediated reaction, particularly common in patients with a deficiency of which immunoglobulin?", "a": "IgA.", "topic": "MSRA (CSV 7)"}, {"q": "An Acute Haemolytic Transfusion Reaction (AHTR) is most often caused by what type of mismatch?", "a": "ABO mismatch.", "topic": "MSRA (CSV 7)"}, {"q": "What is the key clinical feature that helps differentiate Transfusion Associated Circulatory Overload (TACO) from Transfusion Related Acute Lung Injury (TRALI)?", "a": "Hypertension is common in TACO, whereas hypotension is characteristic of TRALI.", "topic": "MSRA (CSV 7)"}, {"q": "What is the pathophysiology of Transfusion Related Acute Lung Injury (TRALI)?", "a": "Donor anti-leukocyte antibodies react with recipient WBCs, causing inflammatory lung injury and non-cardiogenic pulmonary oedema.", "topic": "MSRA (CSV 7)"}, {"q": "A patient develops jaundice and a falling haemoglobin level 5-7 days after a blood transfusion. What is the likely diagnosis?", "a": "Delayed Haemolytic Transfusion Reaction.", "topic": "MSRA (CSV 7)"}];
+
+  const LS_KEY = "flashcards_progress_v2";
+  const LS_ORDER = "flashcards_order_v2";
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function nowISO() { return new Date().toISOString(); }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
+  }
+
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function saveProgress(p) { localStorage.setItem(LS_KEY, JSON.stringify(p)); }
+
+  function loadOrder() {
+    try {
+      const o = JSON.parse(localStorage.getItem(LS_ORDER) || "null");
+      if (Array.isArray(o) && o.length === RAW_DECK.length) return o;
+      return null;
+    } catch (e) { return null; }
+  }
+  function saveOrder(order) { localStorage.setItem(LS_ORDER, JSON.stringify(order)); }
+
+  const deck = RAW_DECK.map((c, i) => ({
+    id: i,
+    q: (c.q || "").trim(),
+    a: (c.a || "").trim(),
+    topic: (c.topic || "Other").trim(),
+    qLower: (c.q || "").toLowerCase(),
+    aLower: (c.a || "").toLowerCase(),
+    topicLower: (c.topic || "other").toLowerCase(),
+  }));
+
+  let progress = loadProgress();
+  let order = loadOrder() || deck.map(c => c.id);
+
+  let mode = "all";
+  let searchTerm = "";
+  let topicFilter = "__ALL__";
+  let view = [];
+  let pos = 0;
+
+  function statusOf(id) {
+    return (progress[id] && progress[id].status) || null;
+  }
+  function seenOf(id) {
+    return !!(progress[id] && progress[id].seen);
+  }
+
+  function recomputeView(keepCurrentId=true) {
+    const prevId = view[pos];
+    const term = (searchTerm || "").trim().toLowerCase();
+
+    view = order.filter(id => {
+      const c = deck[id];
+      const st = statusOf(id);
+      const seen = seenOf(id);
+
+      if (mode === "unknown" && (seen || st)) return false;
+      if (mode === "known" && st !== "known") return false;
+      if (mode === "unsure" && st !== "unsure") return false;
+
+      if (topicFilter !== "__ALL__" && c.topic !== topicFilter) return false;
+
+      if (term) {
+        return c.qLower.includes(term) || c.aLower.includes(term) || c.topicLower.includes(term);
+      }
+      return true;
+    });
+
+    document.getElementById("total").textContent = view.length;
+
+    const badge = document.getElementById("filterBadge");
+    let label = "All";
+    if (mode === "unknown") label = "Only unseen";
+    if (mode === "known") label = "Known";
+    if (mode === "unsure") label = "Unsure";
+    if (topicFilter !== "__ALL__") label = topicFilter + " • " + label;
+    if (term) label += " • Search";
+    badge.textContent = label;
+
+    if (view.length === 0) {
+      pos = 0;
+      renderEmpty();
+      updateStats();
+      return;
+    }
+
+    if (keepCurrentId && prevId != null) {
+      const newPos = view.indexOf(prevId);
+      pos = newPos >= 0 ? newPos : clamp(pos, 0, view.length - 1);
+    } else {
+      pos = clamp(pos, 0, view.length - 1);
+    }
+    renderCard();
+    updateStats();
+  }
+
+  function renderEmpty() {
+    document.getElementById("qText").textContent = "No cards match your filter/search 🤷‍♂️";
+    document.getElementById("aText").textContent = "Try clearing search or switching filters.";
+    document.getElementById("topicTagQ").textContent = "🧩 Topic";
+    document.getElementById("topicTagA").textContent = "🧩 Topic";
+    document.getElementById("idx").textContent = "0";
+    document.getElementById("bar").style.width = "0%";
+    document.getElementById("qLen").textContent = "";
+    document.getElementById("aLen").textContent = "";
+    document.getElementById("card").classList.remove("flipped");
+  }
+
+  function markSeen(id) {
+    progress[id] = progress[id] || {};
+    if (!progress[id].seen) {
+      progress[id].seen = true;
+      progress[id].updatedAt = nowISO();
+      saveProgress(progress);
+    }
+  }
+
+  function setStatus(id, s) {
+    progress[id] = progress[id] || {};
+    progress[id].status = s;
+    progress[id].seen = true;
+    progress[id].updatedAt = nowISO();
+    saveProgress(progress);
+  }
+
+  function renderCard() {
+    if (view.length === 0) return renderEmpty();
+    const id = view[pos];
+    const c = deck[id];
+
+    markSeen(id);
+
+    document.getElementById("qText").textContent = c.q || "(no question)";
+    document.getElementById("aText").textContent = c.a || "(no answer)";
+    document.getElementById("topicTagQ").textContent = "🧩 " + c.topic;
+    document.getElementById("topicTagA").textContent = "🧩 " + c.topic;
+
+    document.getElementById("idx").textContent = String(pos + 1);
+
+    const pct = ((pos + 1) / view.length) * 100;
+    document.getElementById("bar").style.width = pct.toFixed(1) + "%";
+
+    document.getElementById("qLen").textContent = c.q.length ? ("📝 " + c.q.length + " chars") : "";
+    document.getElementById("aLen").textContent = c.a.length ? ("📝 " + c.a.length + " chars") : "";
+
+    const st = statusOf(id);
+    if (st === "known") toast("✅ You previously marked this as Known");
+    if (st === "unsure") toast("🤔 You previously marked this as Unsure");
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const ids = deck.map(c => c.id);
+    let known = 0, unsure = 0, seen = 0;
+    for (const id of ids) {
+      const st = statusOf(id);
+      if (st === "known") known++;
+      if (st === "unsure") unsure++;
+      if (seenOf(id) || st) seen++;
+    }
+    document.getElementById("knownCount").textContent = known;
+    document.getElementById("unsureCount").textContent = unsure;
+    document.getElementById("seenCount").textContent = seen;
+    const completion = ids.length ? Math.round((known / ids.length) * 100) : 0;
+    document.getElementById("pct").textContent = completion + "%";
+  }
+
+  function flip() { document.getElementById("card").classList.toggle("flipped"); }
+  function next() {
+    if (view.length === 0) return;
+    pos = (pos + 1) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+  function prev() {
+    if (view.length === 0) return;
+    pos = (pos - 1 + view.length) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+
+  function shuffleOrder() {
+    const arr = order.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    order = arr;
+    saveOrder(order);
+    recomputeView(false);
+    toast("🔀 Shuffled!");
+  }
+
+  function resetAll() {
+    if (!confirm("Reset your progress (Known/Unsure/Seen) and shuffle order?")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_ORDER);
+    progress = loadProgress();
+    order = deck.map(c => c.id);
+    searchTerm = "";
+    topicFilter = "__ALL__";
+    document.getElementById("search").value = "";
+    document.getElementById("topicSelect").value = "__ALL__";
+    mode = "all";
+    document.querySelector('input[name="mode"][value="all"]').checked = true;
+    recomputeView(false);
+    toast("♻️ Reset done!");
+  }
+
+  function exportProgress() {
+    const payload = {
+      exportedAt: nowISO(),
+      deckSize: deck.length,
+      progress,
+      order
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flashcards_progress.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("⬇️ Exported progress");
+  }
+
+  document.getElementById("card").addEventListener("click", flip);
+  document.getElementById("flipBtn").addEventListener("click", flip);
+  document.getElementById("nextBtn").addEventListener("click", next);
+  document.getElementById("prevBtn").addEventListener("click", prev);
+  document.getElementById("shuffleBtn").addEventListener("click", shuffleOrder);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("downloadBtn").addEventListener("click", exportProgress);
+
+  document.getElementById("knownBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "known");
+    toast("✅ Marked Known");
+    next();
+  });
+
+  document.getElementById("unsureBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "unsure");
+    toast("🤔 Marked Unsure");
+    next();
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    searchTerm = e.target.value || "";
+    recomputeView(true);
+  });
+
+  document.getElementById("topicSelect").addEventListener("change", (e) => {
+    topicFilter = e.target.value;
+    recomputeView(false);
+  });
+
+  for (const r of document.querySelectorAll('input[name="mode"]')) {
+    r.addEventListener("change", (e) => {
+      mode = e.target.value;
+      recomputeView(true);
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+    const typing = tag === "input" || tag === "textarea" || tag === "select";
+    if (typing) return;
+
+    if (e.key === " " ) { e.preventDefault(); flip(); }
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === "ArrowLeft") prev();
+    else if (e.key.toLowerCase() === "s") shuffleOrder();
+    else if (e.key.toLowerCase() === "k") {
+      if (view.length) { setStatus(view[pos], "known"); toast("✅ Known"); next(); }
+    }
+    else if (e.key.toLowerCase() === "u") {
+      if (view.length) { setStatus(view[pos], "unsure"); toast("🤔 Unsure"); next(); }
+    }
+  });
+
+  document.getElementById("deckName").textContent = "Deck • " + deck.length + " cards";
+  recomputeView(false);
+</script>
+</body>
+</html>
