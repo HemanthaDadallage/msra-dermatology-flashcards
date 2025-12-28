@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MSRA Flash Cards — CSV 4</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #160b2a;
+      --glass: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 22px;
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(1000px 700px at 85% 15%, rgba(6,182,212,.32), transparent 55%),
+        radial-gradient(900px 600px at 55% 90%, rgba(245,158,11,.25), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+    .blob { position: fixed; width: 420px; height: 420px; filter: blur(40px); opacity: .55; z-index: -1; border-radius: 999px; animation: float 9s ease-in-out infinite; pointer-events: none; }
+    .b1 { left: -120px; top: -140px; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.95), rgba(124,58,237,.05)); }
+    .b2 { right: -140px; top: 60px; background: radial-gradient(circle at 40% 40%, rgba(6,182,212,.95), rgba(6,182,212,.05)); animation-duration: 12s; }
+    .b3 { left: 35%; bottom: -180px; background: radial-gradient(circle at 35% 40%, rgba(245,158,11,.9), rgba(245,158,11,.05)); animation-duration: 14s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18px, -22px) scale(1.05); } }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 18px 38px; }
+    header { display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:44px; height:44px; border-radius:14px; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); box-shadow: 0 12px 30px rgba(0,0,0,.35); position:relative; overflow:hidden; }
+    .logo:after { content:""; position:absolute; inset:-40%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%); transform: rotate(18deg); opacity: .6; }
+    h1 { font-size:20px; margin:0; letter-spacing:.3px; }
+    .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; width:100%; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:9px 12px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.25); }
+    .pill input[type="search"] { width: 220px; max-width: 70vw; background:transparent; border:none; outline:none; color:var(--text); font-size:14px; }
+    .pill select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      appearance: none;
+      padding-right: 18px;
+      cursor: pointer;
+    }
+    .pill select option { color: #111; }
+    .pill .caret { opacity: .75; }
+
+    .btn { border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.10); color: var(--text); padding: 10px 12px; border-radius:14px; cursor:pointer; transition: transform .08s ease, background .2s ease, border-color .2s ease; user-select:none; box-shadow: 0 10px 26px rgba(0,0,0,.22); backdrop-filter: blur(10px); display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13px; }
+    .btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn.primary { border:none; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); }
+    .btn.good { border:none; background: linear-gradient(135deg, rgba(34,197,94,1), rgba(6,182,212,1)); }
+    .btn.bad { border:none; background: linear-gradient(135deg, rgba(239,68,68,1), rgba(245,158,11,1)); }
+
+    .grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; align-items:stretch; margin-top:14px; }
+    @media (max-width:900px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(12px); overflow:hidden; }
+    .panel-head { padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border-bottom: 1px solid rgba(255,255,255,.12); }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; color: var(--muted); font-size: 13px; }
+    .badge { padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.85); font-weight:700; letter-spacing:.2px; }
+
+    .progress { height: 10px; border-radius:999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.12); overflow:hidden; min-width:220px; }
+    .bar { height:100%; width:0%; background: linear-gradient(90deg, rgba(124,58,237,1), rgba(6,182,212,1), rgba(34,197,94,1)); border-radius:999px; transition: width .25s ease; }
+
+    .stage { padding: 18px; display:grid; place-items:center; }
+    .card { width: min(720px, 100%); height: 360px; perspective: 1400px; }
+    .inner { width:100%; height:100%; position:relative; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+    .card.flipped .inner { transform: rotateY(180deg); }
+    .face { position:absolute; inset:0; border-radius:26px; border: 1px solid rgba(255,255,255,.20); box-shadow: 0 22px 60px rgba(0,0,0,.45); overflow:hidden; backface-visibility:hidden; display:flex; flex-direction:column; }
+    .face::before { content:""; position:absolute; inset:0; background: radial-gradient(900px 500px at 10% 20%, rgba(255,255,255,.18), transparent 55%), radial-gradient(700px 500px at 90% 20%, rgba(255,255,255,.16), transparent 55%), radial-gradient(800px 650px at 50% 120%, rgba(0,0,0,.25), transparent 60%); pointer-events:none; }
+    .qface { background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(6,182,212,.70)); }
+    .aface { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(34,197,94,.82), rgba(245,158,11,.65)); }
+
+    .tagrow { display:flex; gap:10px; flex-wrap:wrap; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; margin:14px 14px 0; border-radius:999px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.22); width: fit-content; font-weight:800; letter-spacing:.2px; font-size:12px; }
+    .tag.topic { background: rgba(0,0,0,.22); }
+
+    .content { flex:1; padding: 18px 20px 16px; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; }
+    .text { font-size:22px; line-height:1.3; font-weight:800; text-shadow: 0 2px 14px rgba(0,0,0,.25); white-space: pre-wrap; }
+    .small { font-weight:700; font-size:14px; color: rgba(255,255,255,.85); text-shadow:none; }
+    .hint { padding: 10px 16px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.80); font-size:12px; }
+    kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,.20); border: 1px solid rgba(255,255,255,.18); }
+
+    .controls { padding: 16px; border-top: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .left, .right { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .stats { padding: 14px 16px 16px; }
+    .statgrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; box-shadow: 0 10px 24px rgba(0,0,0,.20); }
+    .stat b { font-size:18px; }
+    .stat span { color: var(--muted); font-weight:700; font-size:12px; }
+
+    .list { padding: 10px 16px 16px; }
+    .mini { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+    .mini h3 { margin:0 0 8px; font-size:14px; letter-spacing:.2px; }
+    .toggle { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .switch { display:inline-flex; align-items:center; gap:8px; padding: 8px 10px; border-radius:999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); cursor:pointer; user-select:none; font-size:12px; font-weight:800; color: rgba(255,255,255,.88); }
+    .switch input { accent-color:white; }
+
+    .footer { margin-top:14px; color: rgba(255,255,255,.55); font-size:12px; text-align:center; }
+
+    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.92); padding: 10px 12px; border-radius:999px; box-shadow: 0 18px 50px rgba(0,0,0,.35); backdrop-filter: blur(10px); opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; font-weight:700; font-size:13px; }
+    .toast.show { opacity:1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>MSRA Flash Cards — CSV 4</h1>
+          <div class="subtitle">Categorised by topic • <kbd>Space</kbd> flip, <kbd>←</kbd>/<kbd>→</kbd> navigate, <kbd>S</kbd> shuffle</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="pill" title="Topic filter">
+          🧩
+          <select id="topicSelect" aria-label="Topic">
+            <option value="__ALL__">All topics</option>
+            <option value="Autoimmune &amp; blistering">Autoimmune &amp; blistering (4)</option>
+<option value="Benign lesions &amp; tumours">Benign lesions &amp; tumours (4)</option>
+<option value="Drug reactions">Drug reactions (4)</option>
+<option value="Emergencies">Emergencies (5)</option>
+<option value="Hair &amp; nails">Hair &amp; nails (5)</option>
+<option value="Infections &amp; infestations">Infections &amp; infestations (17)</option>
+<option value="Inflammatory conditions">Inflammatory conditions (26)</option>
+<option value="Other dermatology">Other dermatology (33)</option>
+<option value="Pigment disorders">Pigment disorders (4)</option>
+<option value="Skin cancer &amp; premalignant">Skin cancer &amp; premalignant (20)</option>
+<option value="Vascular &amp; ulcers">Vascular &amp; ulcers (5)</option>
+          </select>
+          <span class="caret">▾</span>
+        </div>
+
+        <div class="pill" title="Search questions/answers">
+          🔎
+          <input id="search" type="search" placeholder="Search (e.g., melanoma, BCC, scabies…)" autocomplete="off" />
+        </div>
+
+        <button class="btn" id="shuffleBtn" title="Shuffle deck (S)">🔀 Shuffle</button>
+        <button class="btn" id="resetBtn" title="Reset progress">♻️ Reset</button>
+        <button class="btn primary" id="downloadBtn" title="Download your progress as JSON">⬇️ Export</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge" id="deckName">Deck</span>
+            <span>Card <b id="idx">1</b>/<b id="total">0</b></span>
+            <span class="badge" id="filterBadge">All</span>
+          </div>
+          <div class="progress" aria-label="Progress">
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="card" id="card" role="button" aria-label="Flashcard (click to flip)" tabindex="0">
+            <div class="inner">
+              <div class="face qface">
+                <div class="tagrow">
+                  <div class="tag">❓ Question</div>
+                  <div class="tag topic" id="topicTagQ">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="qText"></div>
+                </div>
+                <div class="hint">
+                  <span>Tip: press <kbd>Space</kbd> to flip</span>
+                  <span class="small" id="qLen"></span>
+                </div>
+              </div>
+
+              <div class="face aface">
+                <div class="tagrow">
+                  <div class="tag">✅ Answer</div>
+                  <div class="tag topic" id="topicTagA">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="aText"></div>
+                </div>
+                <div class="hint">
+                  <span>Mark it: <kbd>K</kbd> Known, <kbd>U</kbd> Unsure</span>
+                  <span class="small" id="aLen"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="left">
+            <button class="btn" id="prevBtn" title="Previous (←)">⬅️ Prev</button>
+            <button class="btn" id="flipBtn" title="Flip (Space)">🪄 Flip</button>
+            <button class="btn" id="nextBtn" title="Next (→)">Next ➡️</button>
+          </div>
+          <div class="right">
+            <button class="btn good" id="knownBtn" title="Mark known (K)">✅ Known</button>
+            <button class="btn bad" id="unsureBtn" title="Mark unsure (U)">🤔 Unsure</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge">Dashboard</span>
+            <span class="small">Progress is saved in your browser (localStorage).</span>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="statgrid">
+            <div class="stat"><span>✅ Known</span><b id="knownCount">0</b></div>
+            <div class="stat"><span>🤔 Unsure</span><b id="unsureCount">0</b></div>
+            <div class="stat"><span>🧠 Seen</span><b id="seenCount">0</b></div>
+            <div class="stat"><span>🎯 Completion</span><b id="pct">0%</b></div>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="mini">
+            <h3>Filters</h3>
+            <div class="toggle">
+              <label class="switch"><input type="radio" name="mode" value="all" checked> All</label>
+              <label class="switch"><input type="radio" name="mode" value="unknown"> Only unseen</label>
+              <label class="switch"><input type="radio" name="mode" value="known"> Known</label>
+              <label class="switch"><input type="radio" name="mode" value="unsure"> Unsure</label>
+            </div>
+            <div class="small" style="margin-top:10px; line-height:1.5;">
+              Topic filter (top bar) narrows the whole deck.
+            </div>
+          </div>
+
+          <div style="height: 12px"></div>
+
+          <div class="mini">
+            <h3>Study tips</h3>
+            <div class="small" style="line-height:1.6;">
+              • Choose a <b>Topic</b> to focus on one area.<br/>
+              • Use <b>Search</b> to jump to a matching card.<br/>
+              • Shuffle for spaced repetition vibes.<br/>
+              • Export if you want to save/share your progress file.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Built as a single offline HTML file ✨
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const RAW_DECK = [{"q": "What is the most common cause of acromegaly?", "a": "A growth hormone (GH) secreting pituitary adenoma.", "topic": "MSRA (CSV 4)"}, {"q": "In acromegaly, excess growth hormone stimulates the liver to release what substance, which causes most of the clinical features?", "a": "Insulin-like growth factor 1 (IGF-1).", "topic": "MSRA (CSV 4)"}, {"q": "What is the recommended initial screening test for suspected acromegaly?", "a": "Serum IGF-1 levels.", "topic": "MSRA (CSV 4)"}, {"q": "What is the gold standard diagnostic test to confirm acromegaly?", "a": "Oral Glucose Tolerance Test (OGTT), which shows a failure of GH suppression.", "topic": "MSRA (CSV 4)"}, {"q": "A failure of growth hormone (GH) to suppress to less than _____ after a 75g glucose load is diagnostic of acromegaly.", "a": "1 µg/L.", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line treatment for acromegaly caused by a pituitary adenoma?", "a": "Transsphenoidal resection of the adenoma.", "topic": "MSRA (CSV 4)"}, {"q": "Patients with acromegaly are at an increased risk of which type of cancer, necessitating regular screening?", "a": "Colorectal cancer.", "topic": "MSRA (CSV 4)"}, {"q": "What is the gold standard investigation for confirming Growth Hormone (GH) deficiency?", "a": "The Insulin Tolerance Test (ITT).", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line treatment for confirmed Growth Hormone (GH) deficiency?", "a": "Recombinant human growth hormone (rHGH) replacement therapy.", "topic": "MSRA (CSV 4)"}, {"q": "What visual field defect is classically associated with a pituitary adenoma compressing the optic chiasm?", "a": "Bitemporal hemianopia.", "topic": "MSRA (CSV 4)"}, {"q": "What is the defined serum phosphate level for hypophosphataemia?", "a": "Serum phosphate <0.8 mmol/L.", "topic": "MSRA (CSV 4)"}, {"q": "Hypophosphataemia is a common complication of what metabolic syndrome, caused by an intracellular shift of phosphate?", "a": "Refeeding syndrome.", "topic": "MSRA (CSV 4)"}, {"q": "What is the management for severe hypophosphataemia (e.g., <0.5 mmol/L or symptomatic)?", "a": "IV phosphate replacement under monitoring.", "topic": "MSRA (CSV 4)"}, {"q": "A phaeochromocytoma is a rare catecholamine-secreting tumour arising from _____ cells in the adrenal medulla.", "a": "Chromaffin cells.", "topic": "MSRA (CSV 4)"}, {"q": "What is the classic triad of symptoms associated with a phaeochromocytoma?", "a": "Paroxysmal hypertension, headache, and sweating (palpitations are also classic).", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line biochemical investigation for a suspected phaeochromocytoma?", "a": "Plasma free metanephrines or 24-hour urinary metanephrines.", "topic": "MSRA (CSV 4)"}, {"q": "In the pre-operative management of a phaeochromocytoma, which class of drug must be started first?", "a": "Alpha-blockers (e.g., phenoxybenzamine).", "topic": "MSRA (CSV 4)"}, {"q": "Why must alpha-blockade precede beta-blockade in the management of phaeochromocytoma?", "a": "To prevent a hypertensive crisis from unopposed alpha-adrenergic receptor stimulation.", "topic": "MSRA (CSV 4)"}, {"q": "Phaeochromocytoma can be associated with which familial syndrome that also includes medullary thyroid cancer and hyperparathyroidism?", "a": "Multiple Endocrine Neoplasia type 2A (MEN2A).", "topic": "MSRA (CSV 4)"}, {"q": "What is the most common cause of hyperthyroidism (thyrotoxicosis)?", "a": "Graves' disease.", "topic": "MSRA (CSV 4)"}, {"q": "In hyperthyroidism, what are the typical findings for TSH, T3, and T4 levels?", "a": "Suppressed (low) TSH and raised (high) T3/T4.", "topic": "MSRA (CSV 4)"}, {"q": "What is the mechanism of action of carbimazole in treating hyperthyroidism?", "a": "It inhibits thyroid peroxidase (TPO), reducing the synthesis of thyroid hormones.", "topic": "MSRA (CSV 4)"}, {"q": "A patient on carbimazole presents with a sore throat. What is the most important investigation to perform urgently?", "a": "A full blood count (FBC) to check for agranulocytosis.", "topic": "MSRA (CSV 4)"}, {"q": "In a pregnant patient with Graves' disease, what is the preferred antithyroid drug during the first trimester?", "a": "Propylthiouracil (PTU).", "topic": "MSRA (CSV 4)"}, {"q": "The pathophysiology of Graves' disease involves autoimmune IgG antibodies against which receptor?", "a": "The TSH receptor.", "topic": "MSRA (CSV 4)"}, {"q": "What are the three characteristic extrathyroidal manifestations of Graves' disease?", "a": "Thyroid eye disease (exophthalmos), pretibial myxoedema, and thyroid acropachy.", "topic": "MSRA (CSV 4)"}, {"q": "What is the typical finding on a thyroid scintigraphy scan in a patient with Graves' disease?", "a": "Diffuse increased uptake in both thyroid lobes.", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line treatment for Toxic Multinodular Goitre (TMNG)?", "a": "Radio-iodine (I-131).", "topic": "MSRA (CSV 4)"}, {"q": "A painful goitre following a recent viral upper respiratory tract infection is characteristic of what condition?", "a": "De Quervain's (subacute) thyroiditis.", "topic": "MSRA (CSV 4)"}, {"q": "A thyroid scintigraphy scan showing globally reduced uptake is characteristic of ____.", "a": "Thyroiditis (e.g., De Quervain's).", "topic": "MSRA (CSV 4)"}, {"q": "What is the term for a state of low TSH with normal T3 and T4 levels?", "a": "Subclinical hyperthyroidism.", "topic": "MSRA (CSV 4)"}, {"q": "A patient with known hyperthyroidism presents with fever, tachycardia, agitation, and confusion. What is the likely diagnosis?", "a": "Thyroid storm.", "topic": "MSRA (CSV 4)"}, {"q": "In the management of thyroid storm, what is the role of IV dexamethasone?", "a": "It blocks the peripheral conversion of T4 to the more active T3.", "topic": "MSRA (CSV 4)"}, {"q": "Radio-iodine therapy is contraindicated in pregnancy and in patients with active _____.", "a": "Thyroid eye disease.", "topic": "MSRA (CSV 4)"}, {"q": "What are the characteristic electrolyte and acid-base disturbances seen in hyperaldosteronism?", "a": "Hypokalaemia and metabolic alkalosis.", "topic": "MSRA (CSV 4)"}, {"q": "How is primary hyperaldosteronism differentiated from secondary hyperaldosteronism using blood tests?", "a": "By the aldosterone:renin ratio (ARR).", "topic": "MSRA (CSV 4)"}, {"q": "In primary hyperaldosteronism, the aldosterone:renin ratio (ARR) is expected to show high aldosterone and _____ renin.", "a": "Low (suppressed) renin.", "topic": "MSRA (CSV 4)"}, {"q": "What is the most common cause of primary hyperaldosteronism?", "a": "Bilateral adrenal hyperplasia (BAH).", "topic": "MSRA (CSV 4)"}, {"q": "What is the definitive treatment for Conn's syndrome (a unilateral aldosterone-secreting adenoma)?", "a": "Laparoscopic adrenalectomy.", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line medical therapy for bilateral adrenal hyperplasia?", "a": "An aldosterone antagonist, such as spironolactone or eplerenone.", "topic": "MSRA (CSV 4)"}, {"q": "What is the most common cause of secondary hyperaldosteronism in a young female?", "a": "Fibromuscular dysplasia (FMD) causing renal artery stenosis.", "topic": "MSRA (CSV 4)"}, {"q": "Addison's disease is defined as primary adrenal insufficiency, leading to a deficiency in which two key hormones?", "a": "Cortisol and aldosterone.", "topic": "MSRA (CSV 4)"}, {"q": "What is the cause of hyperpigmentation in primary adrenal insufficiency (Addison's disease)?", "a": "Excess ACTH (due to loss of negative feedback) stimulates melanocytes.", "topic": "MSRA (CSV 4)"}, {"q": "What are the classic electrolyte abnormalities seen in Addison's disease?", "a": "Hyponatraemia and hyperkalaemia.", "topic": "MSRA (CSV 4)"}, {"q": "What is the definitive diagnostic test for Addison's disease?", "a": "The short Synacthen test (ACTH stimulation test).", "topic": "MSRA (CSV 4)"}, {"q": "An inadequate rise in cortisol after administration of Synacthen confirms a diagnosis of _____.", "a": "Primary adrenal insufficiency (Addison's disease).", "topic": "MSRA (CSV 4)"}, {"q": "What is the immediate management for a patient in an Addisonian crisis?", "a": "100mg IV hydrocortisone STAT and IV fluids (0.9% NaCl).", "topic": "MSRA (CSV 4)"}, {"q": "Patients with primary adrenal insufficiency require replacement of which two types of corticosteroids?", "a": "A glucocorticoid (hydrocortisone) and a mineralocorticoid (fludrocortisone).", "topic": "MSRA (CSV 4)"}, {"q": "What is the 'sick day rule' for patients on steroid replacement for Addison's disease?", "a": "Double the daily dose of hydrocortisone during intercurrent illness.", "topic": "MSRA (CSV 4)"}, {"q": "Diabetic neuropathy typically presents with painful sensory symptoms in a _____ distribution.", "a": "Glove and stocking.", "topic": "MSRA (CSV 4)"}, {"q": "What are the first-line pharmacological agents for managing neuropathic pain in diabetes?", "a": "Amitriptyline, duloxetine, gabapentin, or pregabalin.", "topic": "MSRA (CSV 4)"}, {"q": "Bloating, early satiety, and nausea in a patient with long-standing diabetes may suggest which autonomic complication?", "a": "Gastroparesis.", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line emergency treatment to stabilize the cardiac membrane in severe hyperkalaemia?", "a": "IV calcium gluconate.", "topic": "MSRA (CSV 4)"}, {"q": "What are the two main treatments used to cause an intracellular shift of potassium in hyperkalaemia?", "a": "IV insulin with glucose and nebulised salbutamol.", "topic": "MSRA (CSV 4)"}, {"q": "What is the characteristic ECG finding in mild-to-moderate hyperkalaemia?", "a": "Peaked T waves.", "topic": "MSRA (CSV 4)"}, {"q": "In severe hyperkalaemia, the ECG may show a widened QRS complex which can progress to a _____ pattern.", "a": "Sine wave.", "topic": "MSRA (CSV 4)"}, {"q": "The primary cause of hypernatraemia is a deficit of _____ relative to sodium.", "a": "Water.", "topic": "MSRA (CSV 4)"}, {"q": "What is the maximum recommended rate of correction for chronic hypernatraemia to avoid cerebral oedema?", "a": "No more than 10–12 mmol/L per 24 hours.", "topic": "MSRA (CSV 4)"}, {"q": "What is the most common cause of euvolaemic hypernatraemia?", "a": "Diabetes insipidus (central or nephrogenic).", "topic": "MSRA (CSV 4)"}, {"q": "Hypocalcaemia is defined as a serum adjusted calcium level below _____.", "a": "2.2 mmol/L.", "topic": "MSRA (CSV 4)"}, {"q": "Tapping over the facial nerve and causing a facial twitch (_____ sign) is a sign of hypocalcaemia.", "a": "Chvostek's sign.", "topic": "MSRA (CSV 4)"}, {"q": "Inflating a blood pressure cuff and observing a carpal spasm (_____ sign) is a classic sign of hypocalcaemia.", "a": "Trousseau's sign.", "topic": "MSRA (CSV 4)"}, {"q": "What is the characteristic ECG finding in hypocalcaemia?", "a": "Prolonged QT interval.", "topic": "MSRA (CSV 4)"}, {"q": "What is the most common cause of hypoparathyroidism, a major cause of hypocalcaemia?", "a": "Surgical damage or removal during thyroidectomy.", "topic": "MSRA (CSV 4)"}, {"q": "What are the characteristic ECG findings in hypokalaemia?", "a": "U waves, flattened T waves, and ST depression.", "topic": "MSRA (CSV 4)"}, {"q": "A patient with hypokalaemia is not responding to potassium replacement. Which other electrolyte should be checked and corrected?", "a": "Magnesium.", "topic": "MSRA (CSV 4)"}, {"q": "In a patient with hypovolaemic hyponatraemia, what is the appropriate intravenous fluid for resuscitation?", "a": "0.9% sodium chloride (normal saline).", "topic": "MSRA (CSV 4)"}, {"q": "In patients with euvolaemic or hypervolaemic hyponatraemia, what is the cornerstone of initial management?", "a": "Fluid restriction.", "topic": "MSRA (CSV 4)"}, {"q": "Rapid correction of chronic hyponatraemia carries a significant risk of what neurological complication?", "a": "Osmotic demyelination syndrome (formerly central pontine myelinolysis).", "topic": "MSRA (CSV 4)"}, {"q": "The diagnosis of SIADH typically involves euvolaemic hyponatraemia with _____ serum osmolality and inappropriately _____ urine osmolality.", "a": "Low; high.", "topic": "MSRA (CSV 4)"}, {"q": "Which zone of the adrenal cortex produces aldosterone?", "a": "Zona glomerulosa.", "topic": "MSRA (CSV 4)"}, {"q": "Which zone of the adrenal cortex produces cortisol?", "a": "Zona fasciculata.", "topic": "MSRA (CSV 4)"}, {"q": "Which zone of the adrenal cortex produces androgens like DHEA?", "a": "Zona reticularis.", "topic": "MSRA (CSV 4)"}, {"q": "The adrenal medulla is composed of chromaffin cells and secretes which two hormones?", "a": "Adrenaline (epinephrine) and noradrenaline (norepinephrine).", "topic": "MSRA (CSV 4)"}, {"q": "Aldosterone secretion is primarily regulated by the _____ system.", "a": "Renin-angiotensin-aldosterone system (RAAS).", "topic": "MSRA (CSV 4)"}, {"q": "Cortisol secretion is regulated by the hypothalamic-pituitary-adrenal (HPA) axis, specifically by which pituitary hormone?", "a": "Adrenocorticotropic hormone (ACTH).", "topic": "MSRA (CSV 4)"}, {"q": "What is the most common endogenous cause of Cushing's syndrome?", "a": "Cushing's disease, which is an ACTH-secreting pituitary adenoma.", "topic": "MSRA (CSV 4)"}, {"q": "A patient with Cushing's syndrome has a low plasma ACTH level. This suggests an ACTH-_____ cause, such as an adrenal adenoma or exogenous steroid use.", "a": "independent.", "topic": "MSRA (CSV 4)"}, {"q": "What is the initial screening test to confirm glucocorticoid excess in suspected Cushing's syndrome?", "a": "The 1mg overnight dexamethasone suppression test.", "topic": "MSRA (CSV 4)"}, {"q": "In a patient with ACTH-dependent Cushing's syndrome, how does the high-dose dexamethasone suppression test differentiate between a pituitary and an ectopic source?", "a": "Cortisol typically suppresses with a high dose in pituitary disease, but not with an ectopic source (e.g., small cell lung cancer).", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line treatment for Cushing's disease?", "a": "Transsphenoidal resection of the pituitary adenoma.", "topic": "MSRA (CSV 4)"}, {"q": "Central diabetes insipidus (CDI) is caused by a deficiency of _____, while nephrogenic diabetes insipidus (NDI) is caused by renal resistance to it.", "a": "Antidiuretic hormone (ADH).", "topic": "MSRA (CSV 4)"}, {"q": "How does the vasopressin (desmopressin) challenge test differentiate between central and nephrogenic DI?", "a": "Urine osmolality increases in central DI but shows little or no response in nephrogenic DI.", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line treatment for central diabetes insipidus (CDI)?", "a": "Desmopressin (a synthetic ADH analogue).", "topic": "MSRA (CSV 4)"}, {"q": "Lithium therapy is a classic cause of which type of diabetes insipidus?", "a": "Nephrogenic diabetes insipidus (NDI).", "topic": "MSRA (CSV 4)"}, {"q": "The '3 Ps' of MEN1 syndrome are tumours of which three glands?", "a": "Parathyroid, Pituitary, and Pancreas.", "topic": "MSRA (CSV 4)"}, {"q": "MEN2a syndrome is characterized by medullary thyroid cancer, phaeochromocytoma, and _____.", "a": "Hyperparathyroidism.", "topic": "MSRA (CSV 4)"}, {"q": "MEN2b syndrome is characterized by medullary thyroid cancer, phaeochromocytoma, marfanoid habitus, and _____.", "a": "Mucosal neuromas.", "topic": "MSRA (CSV 4)"}, {"q": "A person with a 46 XY karyotype, a female phenotype, and primary amenorrhoea likely has what condition?", "a": "Androgen Insensitivity Syndrome.", "topic": "MSRA (CSV 4)"}, {"q": "Carcinoid syndrome, featuring flushing, diarrhoea, and bronchospasm, is caused by systemic release of _____ from a neuroendocrine tumour.", "a": "Serotonin.", "topic": "MSRA (CSV 4)"}, {"q": "What is the key diagnostic investigation for carcinoid syndrome?", "a": "24-hour urinary 5-HIAA (a serotonin metabolite).", "topic": "MSRA (CSV 4)"}, {"q": "What are the two most common causes of hypercalcaemia?", "a": "Primary hyperparathyroidism and malignancy.", "topic": "MSRA (CSV 4)"}, {"q": "What is the classic mnemonic for the clinical features of hypercalcaemia?", "a": "'Bones, Stones, Groans, Thrones, Moans'.", "topic": "MSRA (CSV 4)"}, {"q": "What is the characteristic ECG finding in hypercalcaemia?", "a": "Shortened QT interval.", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line and most important initial management for severe, symptomatic hypercalcaemia?", "a": "Aggressive IV fluid rehydration with 0.9% sodium chloride.", "topic": "MSRA (CSV 4)"}, {"q": "In an investigation of hypoglycaemia, raised insulin and raised C-peptide levels suggest an endogenous source like an insulinoma or _____ abuse.", "a": "Sulfonylurea.", "topic": "MSRA (CSV 4)"}, {"q": "In an investigation of hypoglycaemia, raised insulin but low C-peptide levels are indicative of _____.", "a": "Exogenous insulin abuse.", "topic": "MSRA (CSV 4)"}, {"q": "What is the most common cause of hypothyroidism in the UK?", "a": "Hashimoto's thyroiditis.", "topic": "MSRA (CSV 4)"}, {"q": "What is the most common cause of hypothyroidism worldwide?", "a": "Iodine deficiency.", "topic": "MSRA (CSV 4)"}, {"q": "Hashimoto's thyroiditis is an autoimmune condition associated with antibodies against _____ and thyroglobulin.", "a": "Thyroid peroxidase (Anti-TPO).", "topic": "MSRA (CSV 4)"}, {"q": "Hashimoto's thyroiditis is associated with an increased risk of which type of malignancy?", "a": "MALT lymphoma.", "topic": "MSRA (CSV 4)"}, {"q": "According to NICE, when should levothyroxine be considered for subclinical hypothyroidism?", "a": "If TSH is >10 on two occasions, or if TSH is <10 but the patient is <65 and symptomatic.", "topic": "MSRA (CSV 4)"}, {"q": "A patient admitted for a severe non-thyroidal illness has low TSH, T3, and T4. What is the likely diagnosis?", "a": "Sick euthyroid syndrome.", "topic": "MSRA (CSV 4)"}, {"q": "A patient presents with severe hypothyroidism, hypothermia, bradycardia, and reduced consciousness. What is the emergency diagnosis and initial management?", "a": "Myxoedema coma; treat with IV hydrocortisone and IV levothyroxine.", "topic": "MSRA (CSV 4)"}, {"q": "Why might a pregnant woman with hypothyroidism need her levothyroxine dose increased?", "a": "Pregnancy increases thyroid binding globulin (TBG), requiring a higher total T4 to maintain normal free T4 levels.", "topic": "MSRA (CSV 4)"}, {"q": "Diagnosis of metabolic syndrome requires at least 3 of 5 criteria, including increased waist circumference, raised triglycerides, low HDL, hypertension, and _____.", "a": "Insulin resistance (or raised fasting glucose).", "topic": "MSRA (CSV 4)"}, {"q": "What is the mechanism of action of orlistat for weight loss?", "a": "It is a pancreatic lipase inhibitor that reduces fat absorption.", "topic": "MSRA (CSV 4)"}, {"q": "What is the NICE criterion for continuing orlistat beyond 12 weeks?", "a": "The patient must have achieved at least 5% weight loss.", "topic": "MSRA (CSV 4)"}, {"q": "According to NICE, bariatric surgery should be considered for individuals with a BMI $\\geq$ 40, or a BMI of 35-40 with significant _____.", "a": "Comorbidities (like type 2 diabetes or hypertension).", "topic": "MSRA (CSV 4)"}, {"q": "What is the target for statin therapy in terms of lipid reduction within the first 3 months?", "a": "A greater than 40% reduction in non-HDL cholesterol.", "topic": "MSRA (CSV 4)"}, {"q": "Familial hypercholesterolaemia should be considered if total cholesterol is > 7.5 mmol/L with a family history of premature CVD, or if total cholesterol is > _____ mmol/L.", "a": "9.0.", "topic": "MSRA (CSV 4)"}, {"q": "Yellow palmar creases and tuberous xanthomas are characteristic of what genetic lipid disorder?", "a": "Remnant hyperlipidaemia (dysbetalipoproteinaemia).", "topic": "MSRA (CSV 4)"}, {"q": "What is the most common cause of primary hyperparathyroidism?", "a": "A solitary parathyroid adenoma.", "topic": "MSRA (CSV 4)"}, {"q": "In primary hyperparathyroidism, blood tests typically show high calcium, high PTH, and _____ phosphate.", "a": "Low.", "topic": "MSRA (CSV 4)"}, {"q": "What is the most common cause of secondary hyperparathyroidism?", "a": "Chronic kidney disease (CKD).", "topic": "MSRA (CSV 4)"}, {"q": "Secondary hyperparathyroidism is a physiological response to _____, often due to vitamin D deficiency or CKD.", "a": "Hypocalcaemia.", "topic": "MSRA (CSV 4)"}, {"q": "What is the term for the development of severe hypocalcaemia and hypophosphataemia following parathyroidectomy?", "a": "Hungry bone syndrome.", "topic": "MSRA (CSV 4)"}, {"q": "In pseudohypoparathyroidism, PTH levels are high but calcium is low due to _____.", "a": "End-organ resistance to PTH.", "topic": "MSRA (CSV 4)"}, {"q": "What is the most common type of functional pituitary adenoma?", "a": "Prolactinoma.", "topic": "MSRA (CSV 4)"}, {"q": "A young woman presents with amenorrhoea and galactorrhoea. What is the most likely diagnosis after excluding pregnancy?", "a": "Prolactinoma.", "topic": "MSRA (CSV 4)"}, {"q": "Prolactin secretion is under tonic inhibition by which neurotransmitter from the hypothalamus?", "a": "Dopamine.", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line medical treatment for a prolactinoma?", "a": "Dopamine agonists (e.g., cabergoline or bromocriptine).", "topic": "MSRA (CSV 4)"}, {"q": "What is the most common type of thyroid cancer?", "a": "Papillary thyroid carcinoma.", "topic": "MSRA (CSV 4)"}, {"q": "The histological finding of pale, empty nuclei described as 'Orphan Annie eyes' is characteristic of which cancer?", "a": "Papillary thyroid cancer.", "topic": "MSRA (CSV 4)"}, {"q": "Medullary thyroid carcinoma arises from parafollicular C-cells and secretes which hormone, which can be used as a tumour marker?", "a": "Calcitonin.", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line investigation for a thyroid nodule or lump?", "a": "Ultrasound, often with ultrasound-guided fine-needle aspiration biopsy.", "topic": "MSRA (CSV 4)"}, {"q": "Type 1 diabetes mellitus results from the autoimmune destruction of _____ cells in the pancreas.", "a": "Beta cells.", "topic": "MSRA (CSV 4)"}, {"q": "What are the three diagnostic criteria for Diabetic Ketoacidosis (DKA)?", "a": "Hyperglycaemia (BM >11 or known DM), ketonaemia (>3 mmol/L), and acidosis (pH <7.3 or HCO3 <15).", "topic": "MSRA (CSV 4)"}, {"q": "What is the standard initial insulin regimen for treating DKA?", "a": "A fixed-rate intravenous insulin infusion at 0.1 units/kg/hr.", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line treatment for Maturity Onset Diabetes of the Young (MODY), especially type 3 (HNF1-α mutation)?", "a": "Sulfonylureas (e.g., gliclazide).", "topic": "MSRA (CSV 4)"}, {"q": "What is the first-line pharmacological agent for managing Type 2 Diabetes Mellitus?", "a": "Metformin.", "topic": "MSRA (CSV 4)"}, {"q": "According to NICE, an SGLT-2 inhibitor should be added first-line with metformin in T2DM if the patient has established CVD, HF, CKD, or a QRISK score >_____%.", "a": "10%.", "topic": "MSRA (CSV 4)"}, {"q": "What is a common side effect of SGLT-2 inhibitors (e.g., dapagliflozin)?", "a": "Genitourinary infections (UTIs, genital candidiasis).", "topic": "MSRA (CSV 4)"}, {"q": "Which class of anti-diabetic medication is contraindicated in patients with heart failure?", "a": "Thiazolidinediones (e.g., pioglitazone).", "topic": "MSRA (CSV 4)"}, {"q": "A GLP-1 mimetic should be continued after 6 months only if HbA1c has fallen by at least 11 mmol/mol AND weight has been lost by at least _____%.", "a": "3%.", "topic": "MSRA (CSV 4)"}, {"q": "In which clinical situations is an HbA1c measurement not considered valid for diagnosing diabetes?", "a": "Pregnancy, end-stage renal disease, haemoglobinopathies, recent steroid use, or age <18.", "topic": "MSRA (CSV 4)"}, {"q": "What is the diagnostic triad for Hyperosmolar Hyperglycaemic State (HHS)?", "a": "Severe hyperglycaemia (glucose >30), hyperosmolality (>320), and no significant ketosis/acidosis.", "topic": "MSRA (CSV 4)"}, {"q": "Sheehan's syndrome is postpartum pituitary infarction, which classically presents with failure to _____ after delivery and amenorrhoea.", "a": "Lactate.", "topic": "MSRA (CSV 4)"}, {"q": "A sudden severe headache, visual loss, and hypotension in a patient with a known pituitary adenoma suggests _____.", "a": "Pituitary apoplexy.", "topic": "MSRA (CSV 4)"}];
+
+  const LS_KEY = "flashcards_progress_v2";
+  const LS_ORDER = "flashcards_order_v2";
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function nowISO() { return new Date().toISOString(); }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
+  }
+
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function saveProgress(p) { localStorage.setItem(LS_KEY, JSON.stringify(p)); }
+
+  function loadOrder() {
+    try {
+      const o = JSON.parse(localStorage.getItem(LS_ORDER) || "null");
+      if (Array.isArray(o) && o.length === RAW_DECK.length) return o;
+      return null;
+    } catch (e) { return null; }
+  }
+  function saveOrder(order) { localStorage.setItem(LS_ORDER, JSON.stringify(order)); }
+
+  const deck = RAW_DECK.map((c, i) => ({
+    id: i,
+    q: (c.q || "").trim(),
+    a: (c.a || "").trim(),
+    topic: (c.topic || "Other").trim(),
+    qLower: (c.q || "").toLowerCase(),
+    aLower: (c.a || "").toLowerCase(),
+    topicLower: (c.topic || "other").toLowerCase(),
+  }));
+
+  let progress = loadProgress();
+  let order = loadOrder() || deck.map(c => c.id);
+
+  let mode = "all";
+  let searchTerm = "";
+  let topicFilter = "__ALL__";
+  let view = [];
+  let pos = 0;
+
+  function statusOf(id) {
+    return (progress[id] && progress[id].status) || null;
+  }
+  function seenOf(id) {
+    return !!(progress[id] && progress[id].seen);
+  }
+
+  function recomputeView(keepCurrentId=true) {
+    const prevId = view[pos];
+    const term = (searchTerm || "").trim().toLowerCase();
+
+    view = order.filter(id => {
+      const c = deck[id];
+      const st = statusOf(id);
+      const seen = seenOf(id);
+
+      if (mode === "unknown" && (seen || st)) return false;
+      if (mode === "known" && st !== "known") return false;
+      if (mode === "unsure" && st !== "unsure") return false;
+
+      if (topicFilter !== "__ALL__" && c.topic !== topicFilter) return false;
+
+      if (term) {
+        return c.qLower.includes(term) || c.aLower.includes(term) || c.topicLower.includes(term);
+      }
+      return true;
+    });
+
+    document.getElementById("total").textContent = view.length;
+
+    const badge = document.getElementById("filterBadge");
+    let label = "All";
+    if (mode === "unknown") label = "Only unseen";
+    if (mode === "known") label = "Known";
+    if (mode === "unsure") label = "Unsure";
+    if (topicFilter !== "__ALL__") label = topicFilter + " • " + label;
+    if (term) label += " • Search";
+    badge.textContent = label;
+
+    if (view.length === 0) {
+      pos = 0;
+      renderEmpty();
+      updateStats();
+      return;
+    }
+
+    if (keepCurrentId && prevId != null) {
+      const newPos = view.indexOf(prevId);
+      pos = newPos >= 0 ? newPos : clamp(pos, 0, view.length - 1);
+    } else {
+      pos = clamp(pos, 0, view.length - 1);
+    }
+    renderCard();
+    updateStats();
+  }
+
+  function renderEmpty() {
+    document.getElementById("qText").textContent = "No cards match your filter/search 🤷‍♂️";
+    document.getElementById("aText").textContent = "Try clearing search or switching filters.";
+    document.getElementById("topicTagQ").textContent = "🧩 Topic";
+    document.getElementById("topicTagA").textContent = "🧩 Topic";
+    document.getElementById("idx").textContent = "0";
+    document.getElementById("bar").style.width = "0%";
+    document.getElementById("qLen").textContent = "";
+    document.getElementById("aLen").textContent = "";
+    document.getElementById("card").classList.remove("flipped");
+  }
+
+  function markSeen(id) {
+    progress[id] = progress[id] || {};
+    if (!progress[id].seen) {
+      progress[id].seen = true;
+      progress[id].updatedAt = nowISO();
+      saveProgress(progress);
+    }
+  }
+
+  function setStatus(id, s) {
+    progress[id] = progress[id] || {};
+    progress[id].status = s;
+    progress[id].seen = true;
+    progress[id].updatedAt = nowISO();
+    saveProgress(progress);
+  }
+
+  function renderCard() {
+    if (view.length === 0) return renderEmpty();
+    const id = view[pos];
+    const c = deck[id];
+
+    markSeen(id);
+
+    document.getElementById("qText").textContent = c.q || "(no question)";
+    document.getElementById("aText").textContent = c.a || "(no answer)";
+    document.getElementById("topicTagQ").textContent = "🧩 " + c.topic;
+    document.getElementById("topicTagA").textContent = "🧩 " + c.topic;
+
+    document.getElementById("idx").textContent = String(pos + 1);
+
+    const pct = ((pos + 1) / view.length) * 100;
+    document.getElementById("bar").style.width = pct.toFixed(1) + "%";
+
+    document.getElementById("qLen").textContent = c.q.length ? ("📝 " + c.q.length + " chars") : "";
+    document.getElementById("aLen").textContent = c.a.length ? ("📝 " + c.a.length + " chars") : "";
+
+    const st = statusOf(id);
+    if (st === "known") toast("✅ You previously marked this as Known");
+    if (st === "unsure") toast("🤔 You previously marked this as Unsure");
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const ids = deck.map(c => c.id);
+    let known = 0, unsure = 0, seen = 0;
+    for (const id of ids) {
+      const st = statusOf(id);
+      if (st === "known") known++;
+      if (st === "unsure") unsure++;
+      if (seenOf(id) || st) seen++;
+    }
+    document.getElementById("knownCount").textContent = known;
+    document.getElementById("unsureCount").textContent = unsure;
+    document.getElementById("seenCount").textContent = seen;
+    const completion = ids.length ? Math.round((known / ids.length) * 100) : 0;
+    document.getElementById("pct").textContent = completion + "%";
+  }
+
+  function flip() { document.getElementById("card").classList.toggle("flipped"); }
+  function next() {
+    if (view.length === 0) return;
+    pos = (pos + 1) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+  function prev() {
+    if (view.length === 0) return;
+    pos = (pos - 1 + view.length) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+
+  function shuffleOrder() {
+    const arr = order.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    order = arr;
+    saveOrder(order);
+    recomputeView(false);
+    toast("🔀 Shuffled!");
+  }
+
+  function resetAll() {
+    if (!confirm("Reset your progress (Known/Unsure/Seen) and shuffle order?")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_ORDER);
+    progress = loadProgress();
+    order = deck.map(c => c.id);
+    searchTerm = "";
+    topicFilter = "__ALL__";
+    document.getElementById("search").value = "";
+    document.getElementById("topicSelect").value = "__ALL__";
+    mode = "all";
+    document.querySelector('input[name="mode"][value="all"]').checked = true;
+    recomputeView(false);
+    toast("♻️ Reset done!");
+  }
+
+  function exportProgress() {
+    const payload = {
+      exportedAt: nowISO(),
+      deckSize: deck.length,
+      progress,
+      order
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flashcards_progress.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("⬇️ Exported progress");
+  }
+
+  document.getElementById("card").addEventListener("click", flip);
+  document.getElementById("flipBtn").addEventListener("click", flip);
+  document.getElementById("nextBtn").addEventListener("click", next);
+  document.getElementById("prevBtn").addEventListener("click", prev);
+  document.getElementById("shuffleBtn").addEventListener("click", shuffleOrder);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("downloadBtn").addEventListener("click", exportProgress);
+
+  document.getElementById("knownBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "known");
+    toast("✅ Marked Known");
+    next();
+  });
+
+  document.getElementById("unsureBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "unsure");
+    toast("🤔 Marked Unsure");
+    next();
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    searchTerm = e.target.value || "";
+    recomputeView(true);
+  });
+
+  document.getElementById("topicSelect").addEventListener("change", (e) => {
+    topicFilter = e.target.value;
+    recomputeView(false);
+  });
+
+  for (const r of document.querySelectorAll('input[name="mode"]')) {
+    r.addEventListener("change", (e) => {
+      mode = e.target.value;
+      recomputeView(true);
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+    const typing = tag === "input" || tag === "textarea" || tag === "select";
+    if (typing) return;
+
+    if (e.key === " " ) { e.preventDefault(); flip(); }
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === "ArrowLeft") prev();
+    else if (e.key.toLowerCase() === "s") shuffleOrder();
+    else if (e.key.toLowerCase() === "k") {
+      if (view.length) { setStatus(view[pos], "known"); toast("✅ Known"); next(); }
+    }
+    else if (e.key.toLowerCase() === "u") {
+      if (view.length) { setStatus(view[pos], "unsure"); toast("🤔 Unsure"); next(); }
+    }
+  });
+
+  document.getElementById("deckName").textContent = "Deck • " + deck.length + " cards";
+  recomputeView(false);
+</script>
+</body>
+</html>
