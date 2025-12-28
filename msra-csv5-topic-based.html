@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MSRA Flash Cards — CSV 5</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #160b2a;
+      --glass: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 22px;
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(1000px 700px at 85% 15%, rgba(6,182,212,.32), transparent 55%),
+        radial-gradient(900px 600px at 55% 90%, rgba(245,158,11,.25), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+    .blob { position: fixed; width: 420px; height: 420px; filter: blur(40px); opacity: .55; z-index: -1; border-radius: 999px; animation: float 9s ease-in-out infinite; pointer-events: none; }
+    .b1 { left: -120px; top: -140px; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.95), rgba(124,58,237,.05)); }
+    .b2 { right: -140px; top: 60px; background: radial-gradient(circle at 40% 40%, rgba(6,182,212,.95), rgba(6,182,212,.05)); animation-duration: 12s; }
+    .b3 { left: 35%; bottom: -180px; background: radial-gradient(circle at 35% 40%, rgba(245,158,11,.9), rgba(245,158,11,.05)); animation-duration: 14s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18px, -22px) scale(1.05); } }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 18px 38px; }
+    header { display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:44px; height:44px; border-radius:14px; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); box-shadow: 0 12px 30px rgba(0,0,0,.35); position:relative; overflow:hidden; }
+    .logo:after { content:""; position:absolute; inset:-40%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%); transform: rotate(18deg); opacity: .6; }
+    h1 { font-size:20px; margin:0; letter-spacing:.3px; }
+    .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; width:100%; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:9px 12px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.25); }
+    .pill input[type="search"] { width: 220px; max-width: 70vw; background:transparent; border:none; outline:none; color:var(--text); font-size:14px; }
+    .pill select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      appearance: none;
+      padding-right: 18px;
+      cursor: pointer;
+    }
+    .pill select option { color: #111; }
+    .pill .caret { opacity: .75; }
+
+    .btn { border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.10); color: var(--text); padding: 10px 12px; border-radius:14px; cursor:pointer; transition: transform .08s ease, background .2s ease, border-color .2s ease; user-select:none; box-shadow: 0 10px 26px rgba(0,0,0,.22); backdrop-filter: blur(10px); display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13px; }
+    .btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn.primary { border:none; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); }
+    .btn.good { border:none; background: linear-gradient(135deg, rgba(34,197,94,1), rgba(6,182,212,1)); }
+    .btn.bad { border:none; background: linear-gradient(135deg, rgba(239,68,68,1), rgba(245,158,11,1)); }
+
+    .grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; align-items:stretch; margin-top:14px; }
+    @media (max-width:900px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(12px); overflow:hidden; }
+    .panel-head { padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border-bottom: 1px solid rgba(255,255,255,.12); }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; color: var(--muted); font-size: 13px; }
+    .badge { padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.85); font-weight:700; letter-spacing:.2px; }
+
+    .progress { height: 10px; border-radius:999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.12); overflow:hidden; min-width:220px; }
+    .bar { height:100%; width:0%; background: linear-gradient(90deg, rgba(124,58,237,1), rgba(6,182,212,1), rgba(34,197,94,1)); border-radius:999px; transition: width .25s ease; }
+
+    .stage { padding: 18px; display:grid; place-items:center; }
+    .card { width: min(720px, 100%); height: 360px; perspective: 1400px; }
+    .inner { width:100%; height:100%; position:relative; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+    .card.flipped .inner { transform: rotateY(180deg); }
+    .face { position:absolute; inset:0; border-radius:26px; border: 1px solid rgba(255,255,255,.20); box-shadow: 0 22px 60px rgba(0,0,0,.45); overflow:hidden; backface-visibility:hidden; display:flex; flex-direction:column; }
+    .face::before { content:""; position:absolute; inset:0; background: radial-gradient(900px 500px at 10% 20%, rgba(255,255,255,.18), transparent 55%), radial-gradient(700px 500px at 90% 20%, rgba(255,255,255,.16), transparent 55%), radial-gradient(800px 650px at 50% 120%, rgba(0,0,0,.25), transparent 60%); pointer-events:none; }
+    .qface { background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(6,182,212,.70)); }
+    .aface { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(34,197,94,.82), rgba(245,158,11,.65)); }
+
+    .tagrow { display:flex; gap:10px; flex-wrap:wrap; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; margin:14px 14px 0; border-radius:999px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.22); width: fit-content; font-weight:800; letter-spacing:.2px; font-size:12px; }
+    .tag.topic { background: rgba(0,0,0,.22); }
+
+    .content { flex:1; padding: 18px 20px 16px; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; }
+    .text { font-size:22px; line-height:1.3; font-weight:800; text-shadow: 0 2px 14px rgba(0,0,0,.25); white-space: pre-wrap; }
+    .small { font-weight:700; font-size:14px; color: rgba(255,255,255,.85); text-shadow:none; }
+    .hint { padding: 10px 16px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.80); font-size:12px; }
+    kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,.20); border: 1px solid rgba(255,255,255,.18); }
+
+    .controls { padding: 16px; border-top: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .left, .right { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .stats { padding: 14px 16px 16px; }
+    .statgrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; box-shadow: 0 10px 24px rgba(0,0,0,.20); }
+    .stat b { font-size:18px; }
+    .stat span { color: var(--muted); font-weight:700; font-size:12px; }
+
+    .list { padding: 10px 16px 16px; }
+    .mini { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+    .mini h3 { margin:0 0 8px; font-size:14px; letter-spacing:.2px; }
+    .toggle { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .switch { display:inline-flex; align-items:center; gap:8px; padding: 8px 10px; border-radius:999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); cursor:pointer; user-select:none; font-size:12px; font-weight:800; color: rgba(255,255,255,.88); }
+    .switch input { accent-color:white; }
+
+    .footer { margin-top:14px; color: rgba(255,255,255,.55); font-size:12px; text-align:center; }
+
+    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.92); padding: 10px 12px; border-radius:999px; box-shadow: 0 18px 50px rgba(0,0,0,.35); backdrop-filter: blur(10px); opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; font-weight:700; font-size:13px; }
+    .toast.show { opacity:1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>MSRA Flash Cards — CSV 5</h1>
+          <div class="subtitle">Categorised by topic • <kbd>Space</kbd> flip, <kbd>←</kbd>/<kbd>→</kbd> navigate, <kbd>S</kbd> shuffle</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="pill" title="Topic filter">
+          🧩
+          <select id="topicSelect" aria-label="Topic">
+            <option value="__ALL__">All topics</option>
+            <option value="Autoimmune &amp; blistering">Autoimmune &amp; blistering (4)</option>
+<option value="Benign lesions &amp; tumours">Benign lesions &amp; tumours (4)</option>
+<option value="Drug reactions">Drug reactions (4)</option>
+<option value="Emergencies">Emergencies (5)</option>
+<option value="Hair &amp; nails">Hair &amp; nails (5)</option>
+<option value="Infections &amp; infestations">Infections &amp; infestations (17)</option>
+<option value="Inflammatory conditions">Inflammatory conditions (26)</option>
+<option value="Other dermatology">Other dermatology (33)</option>
+<option value="Pigment disorders">Pigment disorders (4)</option>
+<option value="Skin cancer &amp; premalignant">Skin cancer &amp; premalignant (20)</option>
+<option value="Vascular &amp; ulcers">Vascular &amp; ulcers (5)</option>
+          </select>
+          <span class="caret">▾</span>
+        </div>
+
+        <div class="pill" title="Search questions/answers">
+          🔎
+          <input id="search" type="search" placeholder="Search (e.g., melanoma, BCC, scabies…)" autocomplete="off" />
+        </div>
+
+        <button class="btn" id="shuffleBtn" title="Shuffle deck (S)">🔀 Shuffle</button>
+        <button class="btn" id="resetBtn" title="Reset progress">♻️ Reset</button>
+        <button class="btn primary" id="downloadBtn" title="Download your progress as JSON">⬇️ Export</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge" id="deckName">Deck</span>
+            <span>Card <b id="idx">1</b>/<b id="total">0</b></span>
+            <span class="badge" id="filterBadge">All</span>
+          </div>
+          <div class="progress" aria-label="Progress">
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="card" id="card" role="button" aria-label="Flashcard (click to flip)" tabindex="0">
+            <div class="inner">
+              <div class="face qface">
+                <div class="tagrow">
+                  <div class="tag">❓ Question</div>
+                  <div class="tag topic" id="topicTagQ">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="qText"></div>
+                </div>
+                <div class="hint">
+                  <span>Tip: press <kbd>Space</kbd> to flip</span>
+                  <span class="small" id="qLen"></span>
+                </div>
+              </div>
+
+              <div class="face aface">
+                <div class="tagrow">
+                  <div class="tag">✅ Answer</div>
+                  <div class="tag topic" id="topicTagA">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="aText"></div>
+                </div>
+                <div class="hint">
+                  <span>Mark it: <kbd>K</kbd> Known, <kbd>U</kbd> Unsure</span>
+                  <span class="small" id="aLen"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="left">
+            <button class="btn" id="prevBtn" title="Previous (←)">⬅️ Prev</button>
+            <button class="btn" id="flipBtn" title="Flip (Space)">🪄 Flip</button>
+            <button class="btn" id="nextBtn" title="Next (→)">Next ➡️</button>
+          </div>
+          <div class="right">
+            <button class="btn good" id="knownBtn" title="Mark known (K)">✅ Known</button>
+            <button class="btn bad" id="unsureBtn" title="Mark unsure (U)">🤔 Unsure</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge">Dashboard</span>
+            <span class="small">Progress is saved in your browser (localStorage).</span>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="statgrid">
+            <div class="stat"><span>✅ Known</span><b id="knownCount">0</b></div>
+            <div class="stat"><span>🤔 Unsure</span><b id="unsureCount">0</b></div>
+            <div class="stat"><span>🧠 Seen</span><b id="seenCount">0</b></div>
+            <div class="stat"><span>🎯 Completion</span><b id="pct">0%</b></div>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="mini">
+            <h3>Filters</h3>
+            <div class="toggle">
+              <label class="switch"><input type="radio" name="mode" value="all" checked> All</label>
+              <label class="switch"><input type="radio" name="mode" value="unknown"> Only unseen</label>
+              <label class="switch"><input type="radio" name="mode" value="known"> Known</label>
+              <label class="switch"><input type="radio" name="mode" value="unsure"> Unsure</label>
+            </div>
+            <div class="small" style="margin-top:10px; line-height:1.5;">
+              Topic filter (top bar) narrows the whole deck.
+            </div>
+          </div>
+
+          <div style="height: 12px"></div>
+
+          <div class="mini">
+            <h3>Study tips</h3>
+            <div class="small" style="line-height:1.6;">
+              • Choose a <b>Topic</b> to focus on one area.<br/>
+              • Use <b>Search</b> to jump to a matching card.<br/>
+              • Shuffle for spaced repetition vibes.<br/>
+              • Export if you want to save/share your progress file.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Built as a single offline HTML file ✨
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const RAW_DECK = [{"q": "What are the two main components of the UK colorectal cancer (CRC) screening programme for individuals aged 60-74?", "a": "A Faecal Immunochemical Test (FIT) every 2 years and a one-off Flexible Sigmoidoscopy at age 55.", "topic": "MSRA (CSV 5)"}, {"q": "According to NICE 2023 guidelines, what is the first step in investigating an adult with an abdominal mass or unexplained weight loss plus abdominal pain (age 40+)?", "a": "Offer a Faecal Immunochemical Test (FIT).", "topic": "MSRA (CSV 5)"}, {"q": "A patient's FIT result is $\\geq 10$ micrograms Hb/g faeces. What is the next step in the management pathway?", "a": "Refer for a 2-week wait (2WW) pathway for a colonoscopy.", "topic": "MSRA (CSV 5)"}, {"q": "Which conditions warrant a direct 2WW referral for colonoscopy without a preceding FIT test?", "a": "A rectal mass, an unexplained anal mass, or unexplained anal ulceration.", "topic": "MSRA (CSV 5)"}, {"q": "What is the most common histological type of colorectal cancer (CRC)?", "a": "Adenocarcinoma.", "topic": "MSRA (CSV 5)"}, {"q": "The majority of colorectal cancers arise from pre-existing _____.", "a": "adenomatous polyps", "topic": "MSRA (CSV 5)"}, {"q": "What are the two most common anatomical sites for colorectal cancer?", "a": "The rectum (40%) and the sigmoid colon (30%).", "topic": "MSRA (CSV 5)"}, {"q": "Right-sided colorectal cancers typically present with which two clinical features?", "a": "Iron deficiency anaemia and weight loss.", "topic": "MSRA (CSV 5)"}, {"q": "Left-sided colorectal cancers typically present with which two clinical features?", "a": "Change in bowel habit and rectal bleeding.", "topic": "MSRA (CSV 5)"}, {"q": "What is the mainstay of management for colorectal cancer?", "a": "Surgical excision.", "topic": "MSRA (CSV 5)"}, {"q": "What tumour marker is used to monitor treatment response or disease recurrence in colorectal cancer?", "a": "Carcinoembryonic antigen (CEA).", "topic": "MSRA (CSV 5)"}, {"q": "Lynch syndrome is an autosomal dominant condition caused by mutations in what type of genes?", "a": "DNA mismatch repair genes (e.g., MSH2).", "topic": "MSRA (CSV 5)"}, {"q": "Besides colorectal cancer, which other cancer is strongly associated with Lynch syndrome?", "a": "Endometrial cancer.", "topic": "MSRA (CSV 5)"}, {"q": "Familial Adenomatous Polyposis (FAP) is caused by a mutation in which gene?", "a": "The APC gene on chromosome 5.", "topic": "MSRA (CSV 5)"}, {"q": "What is the recommended management for a patient diagnosed with Familial Adenomatous Polyposis (FAP)?", "a": "Prophylactic colectomy, typically in their 20s.", "topic": "MSRA (CSV 5)"}, {"q": "An MCQ describes a patient with pigmented freckles on their lips and hamartomatous polyps. What is the likely diagnosis?", "a": "Peutz-Jeghers Syndrome.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line investigation for a patient of any age presenting with dysphagia?", "a": "A 2-week wait referral including an OGD (Oesophago-Gastro-Duodenoscopy).", "topic": "MSRA (CSV 5)"}, {"q": "A patient over 55 presents with weight loss and upper abdominal pain. What is the appropriate referral pathway?", "a": "A 2-week wait (2WW) referral including an OGD.", "topic": "MSRA (CSV 5)"}, {"q": "What is the appropriate referral pathway for a patient over 40 presenting with jaundice?", "a": "A 2-week wait (2WW) referral including an abdominal ultrasound +/- CT.", "topic": "MSRA (CSV 5)"}, {"q": "What is the most common type of oesophageal cancer in the UK, and where is it typically located?", "a": "Adenocarcinoma, located in the lower third of the oesophagus.", "topic": "MSRA (CSV 5)"}, {"q": "What is the worldwide predominant type of oesophageal cancer, and where is it typically located?", "a": "Squamous cell carcinoma, located in the upper two-thirds of the oesophagus.", "topic": "MSRA (CSV 5)"}, {"q": "A patient describes difficulty swallowing that started with solids and has now progressed to liquids. What is this a classic presentation of?", "a": "Oesophageal cancer.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line investigation for suspected oesophageal or gastric cancer?", "a": "OGD (Oesophago-Gastro-Duodenoscopy) with biopsy.", "topic": "MSRA (CSV 5)"}, {"q": "What is the most common histological type of gastric cancer?", "a": "Adenocarcinoma.", "topic": "MSRA (CSV 5)"}, {"q": "A gastric biopsy shows a 'signet ring cell' appearance. What is the diagnosis?", "a": "Gastric adenocarcinoma.", "topic": "MSRA (CSV 5)"}, {"q": "Gastric MALT lymphoma is strongly associated with infection by which organism?", "a": "Helicobacter pylori.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line treatment for Gastric MALT lymphoma?", "a": "H. pylori eradication therapy, which leads to remission in about 80% of cases.", "topic": "MSRA (CSV 5)"}, {"q": "A patient presents with profuse, large-volume watery diarrhoea, hypokalaemia, and hypochlorhydria. What diagnosis should be considered?", "a": "VIPoma (a tumour secreting vasoactive intestinal peptide).", "topic": "MSRA (CSV 5)"}, {"q": "Multiple, refractory peptic ulcers are a key feature of which syndrome?", "a": "Zollinger-Ellison Syndrome (caused by a gastrin-secreting tumour).", "topic": "MSRA (CSV 5)"}, {"q": "What is the recommended screening protocol for patients at high risk of developing hepatocellular carcinoma (HCC)?", "a": "Abdominal ultrasound and Alpha-fetoprotein (AFP) levels every 6 months.", "topic": "MSRA (CSV 5)"}, {"q": "What is the classic presentation of cancer in the head of the pancreas?", "a": "Painless jaundice.", "topic": "MSRA (CSV 5)"}, {"q": "Concept: Courvoisier's sign.", "a": "A palpable, non-tender gallbladder in a jaundiced patient, suggestive of a pancreatic or biliary tumour.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line imaging investigation for suspected pancreatic cancer?", "a": "CT pancreas.", "topic": "MSRA (CSV 5)"}, {"q": "What tumour marker is associated with pancreatic cancer?", "a": "Ca19-9.", "topic": "MSRA (CSV 5)"}, {"q": "The 'double duct sign' on imaging, showing a dilated common bile duct and pancreatic duct, is characteristic of which condition?", "a": "Pancreatic cancer (typically in the head of the pancreas).", "topic": "MSRA (CSV 5)"}, {"q": "Which inflammatory bowel disease can affect any part of the GI tract from mouth to anus and is characterized by skip lesions?", "a": "Crohn's disease.", "topic": "MSRA (CSV 5)"}, {"q": "Which inflammatory bowel disease is limited to the colon and features continuous inflammation starting from the rectum?", "a": "Ulcerative colitis.", "topic": "MSRA (CSV 5)"}, {"q": "What is the characteristic endoscopic appearance of Crohn's disease?", "a": "Cobblestone appearance with deep ulcers and skip lesions.", "topic": "MSRA (CSV 5)"}, {"q": "What are the characteristic histological findings in Crohn's disease?", "a": "Transmural inflammation and granulomas.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line treatment for inducing remission in a flare of Crohn's disease?", "a": "Glucocorticoids.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line agent for maintaining remission in Crohn's disease?", "a": "Azathioprine or mercaptopurine.", "topic": "MSRA (CSV 5)"}, {"q": "What blood test must be performed before starting a patient on azathioprine or mercaptopurine?", "a": "Thiopurine methyltransferase (TPMT) activity level.", "topic": "MSRA (CSV 5)"}, {"q": "What are the characteristic clinical features of ulcerative colitis?", "a": "Bloody diarrhoea, left iliac fossa (LIF) pain, and tenesmus.", "topic": "MSRA (CSV 5)"}, {"q": "What is the endoscopic appearance of ulcerative colitis?", "a": "Continuous inflammation with pseudopolyps and a friable mucosa.", "topic": "MSRA (CSV 5)"}, {"q": "Which autoimmune liver condition is a known complication of ulcerative colitis?", "a": "Primary sclerosing cholangitis (PSC).", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line treatment for a mild-to-moderate flare of ulcerative proctitis?", "a": "Topical aminosalicylates (e.g., rectal mesalazine).", "topic": "MSRA (CSV 5)"}, {"q": "What is the initial management for a severe flare of ulcerative colitis?", "a": "Admission for IV steroids.", "topic": "MSRA (CSV 5)"}, {"q": "Pancreatitis and agranulocytosis are potential side effects of which 5-ASA drug used in IBD?", "a": "Mesalazine.", "topic": "MSRA (CSV 5)"}, {"q": "Heinz body anaemia, oligospermia, and lung fibrosis are potential side effects of which 5-ASA drug used in IBD?", "a": "Sulphasalazine.", "topic": "MSRA (CSV 5)"}, {"q": "What is the primary pathophysiology of acute cholecystitis?", "a": "Obstruction of the cystic duct by a gallstone, leading to gallbladder distension and inflammation.", "topic": "MSRA (CSV 5)"}, {"q": "Concept: Murphy's sign.", "a": "Inhibition of inspiration upon palpation of the right upper quadrant, a key finding in acute cholecystitis.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line imaging investigation for suspected acute cholecystitis?", "a": "Abdominal ultrasound.", "topic": "MSRA (CSV 5)"}, {"q": "Sudden onset, severe, colicky RUQ pain that is often triggered by fatty food and resolves after a few hours suggests what diagnosis?", "a": "Biliary colic.", "topic": "MSRA (CSV 5)"}, {"q": "What is Charcot's triad, and what condition does it suggest?", "a": "The triad is fever, right upper quadrant pain, and jaundice; it suggests acute cholangitis.", "topic": "MSRA (CSV 5)"}, {"q": "What is Reynolds' pentad, and what does it indicate?", "a": "It is Charcot's triad (fever, RUQ pain, jaundice) plus hypotension and confusion, indicating severe sepsis from acute cholangitis.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line imaging investigation for suspected acute cholangitis, and what is the key finding?", "a": "Abdominal ultrasound, which typically shows a dilated common bile duct (>6mm).", "topic": "MSRA (CSV 5)"}, {"q": "What is the definitive management for acute cholangitis to relieve the biliary obstruction?", "a": "Urgent biliary decompression, preferably via ERCP (Endoscopic Retrograde Cholangiopancreatography).", "topic": "MSRA (CSV 5)"}, {"q": "Acute liver failure (ALF) is defined by the rapid onset of _____ and _____ in a patient without pre-existing liver disease.", "a": "coagulopathy (raised INR); encephalopathy", "topic": "MSRA (CSV 5)"}, {"q": "What is the most common cause of acute liver failure in the UK?", "a": "Paracetamol overdose.", "topic": "MSRA (CSV 5)"}, {"q": "Extremely high ALT/AST levels (often > 1000 IU/L) in acute liver failure are characteristic of which two causes?", "a": "Paracetamol toxicity or ischaemic hepatitis.", "topic": "MSRA (CSV 5)"}, {"q": "Angiodysplasia, a cause of GI bleeding, is associated with which three conditions?", "a": "Chronic kidney disease, aortic stenosis, and von Willebrand disease.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line management for bleeding angiodysplasia?", "a": "Endoscopic coagulation (e.g., argon plasma coagulation).", "topic": "MSRA (CSV 5)"}, {"q": "A patient with autoimmune hepatitis will typically have which autoantibodies present?", "a": "Type 1: Anti-Smooth Muscle Antibodies (SMA) and/or ANA.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line management for autoimmune hepatitis?", "a": "Prednisolone, with azathioprine often used for maintenance.", "topic": "MSRA (CSV 5)"}, {"q": "A middle-aged female presents with pruritus, fatigue, and a raised ALP. What diagnosis is suggested?", "a": "Primary Biliary Cirrhosis (PBC).", "topic": "MSRA (CSV 5)"}, {"q": "What is the highly specific autoantibody marker for Primary Biliary Cirrhosis (PBC)?", "a": "Anti-Mitochondrial Antibodies (AMA-M2).", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line medical treatment for Primary Biliary Cirrhosis (PBC)?", "a": "Ursodeoxycholic acid (UDCA).", "topic": "MSRA (CSV 5)"}, {"q": "Primary Sclerosing Cholangitis (PSC) is strongly associated with which other condition?", "a": "Ulcerative Colitis.", "topic": "MSRA (CSV 5)"}, {"q": "What is the characteristic appearance of the bile ducts on MRCP/ERCP in Primary Sclerosing Cholangitis (PSC)?", "a": "A 'beaded' appearance of intra- and extra-hepatic bile ducts.", "topic": "MSRA (CSV 5)"}, {"q": "Patients with Primary Sclerosing Cholangitis (PSC) are at a significant risk of developing which malignancy?", "a": "Cholangiocarcinoma.", "topic": "MSRA (CSV 5)"}, {"q": "What is the cause of chronic watery diarrhoea in Bile Acid Malabsorption (BAM)?", "a": "Excess bile acids entering the colon stimulate water secretion and motility.", "topic": "MSRA (CSV 5)"}, {"q": "A patient with a history of ileal resection for Crohn's disease develops chronic watery diarrhoea. What is a likely diagnosis?", "a": "Bile Acid Malabsorption (Secondary/Type 2).", "topic": "MSRA (CSV 5)"}, {"q": "What is the gold standard investigation for diagnosing Bile Acid Malabsorption?", "a": "The SeHCAT scan.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line medication for managing Bile Acid Malabsorption?", "a": "Bile acid sequestrants, such as cholestyramine.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line serological test for coeliac disease?", "a": "IgA tissue transglutaminase (anti-TTG) antibodies.", "topic": "MSRA (CSV 5)"}, {"q": "When testing for IgA anti-TTG, what other level must be measured concurrently and why?", "a": "Total IgA level, to exclude IgA deficiency which would cause a false negative anti-TTG result.", "topic": "MSRA (CSV 5)"}, {"q": "What are the characteristic histological findings on a duodenal biopsy in coeliac disease?", "a": "Villous atrophy, crypt hyperplasia, and increased intraepithelial lymphocytes.", "topic": "MSRA (CSV 5)"}, {"q": "An itchy, papulo-vesicular rash on the extensor surfaces is known as dermatitis herpetiformis and is strongly associated with which GI condition?", "a": "Coeliac disease.", "topic": "MSRA (CSV 5)"}, {"q": "Due to the risk of _____, patients with coeliac disease should receive a pneumococcal vaccination every 5 years.", "a": "hyposplenism", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line pharmacological agent for short-duration constipation according to NICE?", "a": "A bulk-forming laxative, such as ispaghula.", "topic": "MSRA (CSV 5)"}, {"q": "If a patient's stools remain hard despite using a bulk-forming laxative, what is the next type of laxative to add or switch to?", "a": "An osmotic laxative, such as macrogol.", "topic": "MSRA (CSV 5)"}, {"q": "If a patient's stools are soft but difficult to pass, what type of laxative should be added?", "a": "A stimulant laxative, such as senna.", "topic": "MSRA (CSV 5)"}, {"q": "Which type of laxative should be avoided in opioid-induced constipation?", "a": "Bulk-forming laxatives.", "topic": "MSRA (CSV 5)"}, {"q": "A patient develops foul-smelling, watery diarrhoea after a course of antibiotics. What is the likely causative organism?", "a": "Clostridium difficile.", "topic": "MSRA (CSV 5)"}, {"q": "What is the correct diagnostic test for Clostridium difficile infection?", "a": "Stool C. difficile TOXIN assay (not antigen test).", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line treatment for a first episode of C. difficile infection?", "a": "Oral vancomycin (125mg QDS for 10 days).", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line treatment for a relapse of C. difficile infection (within 12 weeks)?", "a": "Oral fidaxomicin.", "topic": "MSRA (CSV 5)"}, {"q": "A patient develops diarrhoea after eating at a BBQ, preceded by a flu-like prodrome. What is the most likely pathogen?", "a": "Campylobacter jejuni.", "topic": "MSRA (CSV 5)"}, {"q": "Severe vomiting occurring less than 6 hours after eating reheated rice is characteristic of intoxication with a toxin from which bacterium?", "a": "Bacillus cereus.", "topic": "MSRA (CSV 5)"}, {"q": "A patient with a history of travel presents with prolonged, greasy, non-bloody diarrhoea and bloating. What is the likely cause?", "a": "Giardiasis (caused by Giardia lamblia).", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line treatment for Giardiasis?", "a": "Metronidazole.", "topic": "MSRA (CSV 5)"}, {"q": "What is the standard triple therapy for H. pylori eradication?", "a": "A Proton Pump Inhibitor (PPI) plus amoxicillin and either clarithromycin or metronidazole for 7 days.", "topic": "MSRA (CSV 5)"}, {"q": "Whipple's disease is a multi-system disorder caused by which bacterium?", "a": "Tropheryma whipplei.", "topic": "MSRA (CSV 5)"}, {"q": "Jejunal biopsy in Whipple's disease classically shows _____.", "a": "PAS-positive macrophages", "topic": "MSRA (CSV 5)"}, {"q": "A patient has intermittent jaundice, especially during periods of illness or fasting, but all other LFTs are normal. What is the most likely diagnosis?", "a": "Gilbert's syndrome.", "topic": "MSRA (CSV 5)"}, {"q": "Gilbert's syndrome is caused by a mild deficiency in which enzyme?", "a": "UDP-glucuronyl transferase (UDP-GT).", "topic": "MSRA (CSV 5)"}, {"q": "In alcoholic hepatitis, what is the classic ratio of AST to ALT?", "a": "AST:ALT ratio is greater than 2:1.", "topic": "MSRA (CSV 5)"}, {"q": "According to the Rome IV criteria, IBS is characterized by abdominal pain related to defecation, associated with a change in _____ and/or _____.", "a": "stool frequency; stool form", "topic": "MSRA (CSV 5)"}, {"q": "Which laxative should be avoided in patients with constipation-predominant IBS because it can worsen bloating?", "a": "Lactulose.", "topic": "MSRA (CSV 5)"}, {"q": "What is the second-line treatment for abdominal pain in IBS if antispasmodics are ineffective?", "a": "A low-dose tricyclic antidepressant (e.g., amitriptyline).", "topic": "MSRA (CSV 5)"}, {"q": "A patient with a history of travel to an endemic area presents with fever, RUQ pain, and bloody diarrhoea. A liver abscess is suspected. What is the likely organism?", "a": "Entamoeba histolytica (causing an amoebic liver abscess).", "topic": "MSRA (CSV 5)"}, {"q": "The aspirate from an amoebic liver abscess is classically described as looking like what?", "a": "'Anchovy sauce' pus.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line treatment for an amoebic liver abscess?", "a": "Metronidazole.", "topic": "MSRA (CSV 5)"}, {"q": "In a diagnostic ascitic tap, what does a Serum-Ascites Albumin Gradient (SAAG) of >1.1g/dl indicate?", "a": "The ascites is due to portal hypertension.", "topic": "MSRA (CSV 5)"}, {"q": "What is the initial pharmacological management for ascites due to cirrhosis?", "a": "Diuretics, typically spironolactone +/- furosemide.", "topic": "MSRA (CSV 5)"}, {"q": "What is the immediate medical management for a patient with acute variceal bleeding?", "a": "IV terlipressin and IV antibiotics.", "topic": "MSRA (CSV 5)"}, {"q": "What class of medication is used for the primary and secondary prevention of variceal bleeding?", "a": "Non-selective beta-blockers (e.g., propranolol).", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line treatment for hepatic encephalopathy?", "a": "Lactulose, titrated to 2-3 soft stools per day.", "topic": "MSRA (CSV 5)"}, {"q": "What is the diagnostic criterion for Spontaneous Bacterial Peritonitis (SBP) from an ascitic fluid sample?", "a": "A neutrophil count greater than 250 cells/µL.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line antibiotic treatment for Spontaneous Bacterial Peritonitis (SBP)?", "a": "IV cefotaxime.", "topic": "MSRA (CSV 5)"}, {"q": "Hepatorenal syndrome is characterized by intense renal _____ secondary to splanchnic _____ in the context of portal hypertension.", "a": "vasoconstriction; vasodilation", "topic": "MSRA (CSV 5)"}, {"q": "A dark brown/black pigmentation of the colonic mucosa found incidentally on colonoscopy is characteristic of what benign condition?", "a": "Melanosis coli.", "topic": "MSRA (CSV 5)"}, {"q": "Melanosis coli is caused by the chronic use of which type of laxative?", "a": "Anthraquinone laxatives (e.g., senna).", "topic": "MSRA (CSV 5)"}, {"q": "A patient presents with chronic watery diarrhoea, but their colonoscopy appears macroscopically normal. What diagnosis should be considered?", "a": "Microscopic colitis.", "topic": "MSRA (CSV 5)"}, {"q": "Use of which three classes of medication is strongly associated with microscopic colitis?", "a": "Proton pump inhibitors (PPIs), NSAIDs, and SSRIs.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line medical treatment for moderate-to-severe symptoms of microscopic colitis?", "a": "Budesonide.", "topic": "MSRA (CSV 5)"}, {"q": "Non-alcoholic fatty liver disease (NAFLD) is strongly associated with insulin resistance and _____.", "a": "metabolic syndrome", "topic": "MSRA (CSV 5)"}, {"q": "What is the typical pattern of LFT derangement in NAFLD?", "a": "Raised ALT, with an ALT > AST pattern.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line imaging modality for suspected NAFLD?", "a": "Ultrasound of the liver.", "topic": "MSRA (CSV 5)"}, {"q": "Dysphagia to both solids and liquids from the onset is a key feature of which oesophageal motility disorder?", "a": "Achalasia.", "topic": "MSRA (CSV 5)"}, {"q": "What is the characteristic 'bird's beak' appearance on a barium swallow indicative of?", "a": "Achalasia.", "topic": "MSRA (CSV 5)"}, {"q": "What is the gold standard investigation for diagnosing achalasia?", "a": "Oesophageal manometry.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line treatment for achalasia?", "a": "Pneumatic balloon dilatation of the lower oesophageal sphincter.", "topic": "MSRA (CSV 5)"}, {"q": "A patient complains of regurgitation of undigested food, halitosis, and a gurgling midline neck lump. What is the likely diagnosis?", "a": "A pharyngeal pouch (Zenker's diverticulum).", "topic": "MSRA (CSV 5)"}, {"q": "The triad of dysphagia, iron deficiency anaemia, and glossitis is characteristic of which syndrome?", "a": "Plummer-Vinson syndrome.", "topic": "MSRA (CSV 5)"}, {"q": "Full-thickness rupture of the oesophagus after severe vomiting, leading to pneumomediastinum, is known as _____.", "a": "Boerhaave’s syndrome", "topic": "MSRA (CSV 5)"}, {"q": "Haematemesis following forceful vomiting or retching, caused by a mucosal tear at the gastro-oesophageal junction, is known as a _____.", "a": "Mallory-Weiss tear", "topic": "MSRA (CSV 5)"}, {"q": "In Barrett's oesophagus, the normal squamous epithelium of the lower oesophagus undergoes metaplasia to what type of epithelium?", "a": "Columnar epithelium.", "topic": "MSRA (CSV 5)"}, {"q": "Barrett's oesophagus is a major risk factor for which type of cancer?", "a": "Oesophageal adenocarcinoma.", "topic": "MSRA (CSV 5)"}, {"q": "How does the epigastric pain of a duodenal ulcer typically relate to eating?", "a": "The pain is relieved by eating.", "topic": "MSRA (CSV 5)"}, {"q": "How does the epigastric pain of a gastric ulcer typically relate to eating?", "a": "The pain is worsened by eating.", "topic": "MSRA (CSV 5)"}, {"q": "A patient with a confirmed gastric ulcer must have a repeat endoscopy after 6-8 weeks of PPI treatment. Why?", "a": "To confirm healing and to exclude malignancy.", "topic": "MSRA (CSV 5)"}, {"q": "Short bowel syndrome patients with less than _____ of remaining small intestine usually require Total Parenteral Nutrition (TPN).", "a": "100 cm", "topic": "MSRA (CSV 5)"}, {"q": "Which two hepatitis viruses are transmitted via the faeco-oral route and do not cause chronic disease?", "a": "Hepatitis A and Hepatitis E.", "topic": "MSRA (CSV 5)"}, {"q": "A patient's hepatitis B serology shows positive Anti-HBs only. What does this indicate?", "a": "Immunity from vaccination.", "topic": "MSRA (CSV 5)"}, {"q": "A patient's hepatitis B serology shows positive Anti-HBc and positive HBsAg. What does this indicate?", "a": "Chronic hepatitis B infection.", "topic": "MSRA (CSV 5)"}, {"q": "A patient's hepatitis B serology shows positive Anti-HBc and positive Anti-HBs, but HBsAg is negative. What does this indicate?", "a": "Cleared past infection with natural immunity.", "topic": "MSRA (CSV 5)"}, {"q": "Which hepatitis virus requires co-infection with Hepatitis B to replicate?", "a": "Hepatitis D.", "topic": "MSRA (CSV 5)"}, {"q": "Infection with which hepatitis virus carries a high mortality rate (up to 20%) in pregnant women?", "a": "Hepatitis E.", "topic": "MSRA (CSV 5)"}, {"q": "Wilson's disease is an autosomal recessive disorder of copper metabolism caused by a mutation in which gene?", "a": "ATP7B gene on chromosome 13.", "topic": "MSRA (CSV 5)"}, {"q": "What is the name for the copper deposition in the cornea seen in Wilson's disease?", "a": "Kayser-Fleischer rings.", "topic": "MSRA (CSV 5)"}, {"q": "What are the characteristic findings for serum caeruloplasmin and 24-hour urinary copper excretion in Wilson's disease?", "a": "Serum caeruloplasmin is low, and 24-hour urinary copper excretion is high.", "topic": "MSRA (CSV 5)"}, {"q": "What is the first-line medical treatment for Wilson's disease?", "a": "Copper chelators, such as penicillamine or trientine.", "topic": "MSRA (CSV 5)"}, {"q": "Malnutrition can be diagnosed if there is unintentional weight loss of greater than _____% over 3-6 months.", "a": "10", "topic": "MSRA (CSV 5)"}, {"q": "What is the name of the screening tool used to identify adults at risk of malnutrition?", "a": "MUST score (Malnutrition Universal Screening Tool).", "topic": "MSRA (CSV 5)"}];
+
+  const LS_KEY = "flashcards_progress_v2";
+  const LS_ORDER = "flashcards_order_v2";
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function nowISO() { return new Date().toISOString(); }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
+  }
+
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function saveProgress(p) { localStorage.setItem(LS_KEY, JSON.stringify(p)); }
+
+  function loadOrder() {
+    try {
+      const o = JSON.parse(localStorage.getItem(LS_ORDER) || "null");
+      if (Array.isArray(o) && o.length === RAW_DECK.length) return o;
+      return null;
+    } catch (e) { return null; }
+  }
+  function saveOrder(order) { localStorage.setItem(LS_ORDER, JSON.stringify(order)); }
+
+  const deck = RAW_DECK.map((c, i) => ({
+    id: i,
+    q: (c.q || "").trim(),
+    a: (c.a || "").trim(),
+    topic: (c.topic || "Other").trim(),
+    qLower: (c.q || "").toLowerCase(),
+    aLower: (c.a || "").toLowerCase(),
+    topicLower: (c.topic || "other").toLowerCase(),
+  }));
+
+  let progress = loadProgress();
+  let order = loadOrder() || deck.map(c => c.id);
+
+  let mode = "all";
+  let searchTerm = "";
+  let topicFilter = "__ALL__";
+  let view = [];
+  let pos = 0;
+
+  function statusOf(id) {
+    return (progress[id] && progress[id].status) || null;
+  }
+  function seenOf(id) {
+    return !!(progress[id] && progress[id].seen);
+  }
+
+  function recomputeView(keepCurrentId=true) {
+    const prevId = view[pos];
+    const term = (searchTerm || "").trim().toLowerCase();
+
+    view = order.filter(id => {
+      const c = deck[id];
+      const st = statusOf(id);
+      const seen = seenOf(id);
+
+      if (mode === "unknown" && (seen || st)) return false;
+      if (mode === "known" && st !== "known") return false;
+      if (mode === "unsure" && st !== "unsure") return false;
+
+      if (topicFilter !== "__ALL__" && c.topic !== topicFilter) return false;
+
+      if (term) {
+        return c.qLower.includes(term) || c.aLower.includes(term) || c.topicLower.includes(term);
+      }
+      return true;
+    });
+
+    document.getElementById("total").textContent = view.length;
+
+    const badge = document.getElementById("filterBadge");
+    let label = "All";
+    if (mode === "unknown") label = "Only unseen";
+    if (mode === "known") label = "Known";
+    if (mode === "unsure") label = "Unsure";
+    if (topicFilter !== "__ALL__") label = topicFilter + " • " + label;
+    if (term) label += " • Search";
+    badge.textContent = label;
+
+    if (view.length === 0) {
+      pos = 0;
+      renderEmpty();
+      updateStats();
+      return;
+    }
+
+    if (keepCurrentId && prevId != null) {
+      const newPos = view.indexOf(prevId);
+      pos = newPos >= 0 ? newPos : clamp(pos, 0, view.length - 1);
+    } else {
+      pos = clamp(pos, 0, view.length - 1);
+    }
+    renderCard();
+    updateStats();
+  }
+
+  function renderEmpty() {
+    document.getElementById("qText").textContent = "No cards match your filter/search 🤷‍♂️";
+    document.getElementById("aText").textContent = "Try clearing search or switching filters.";
+    document.getElementById("topicTagQ").textContent = "🧩 Topic";
+    document.getElementById("topicTagA").textContent = "🧩 Topic";
+    document.getElementById("idx").textContent = "0";
+    document.getElementById("bar").style.width = "0%";
+    document.getElementById("qLen").textContent = "";
+    document.getElementById("aLen").textContent = "";
+    document.getElementById("card").classList.remove("flipped");
+  }
+
+  function markSeen(id) {
+    progress[id] = progress[id] || {};
+    if (!progress[id].seen) {
+      progress[id].seen = true;
+      progress[id].updatedAt = nowISO();
+      saveProgress(progress);
+    }
+  }
+
+  function setStatus(id, s) {
+    progress[id] = progress[id] || {};
+    progress[id].status = s;
+    progress[id].seen = true;
+    progress[id].updatedAt = nowISO();
+    saveProgress(progress);
+  }
+
+  function renderCard() {
+    if (view.length === 0) return renderEmpty();
+    const id = view[pos];
+    const c = deck[id];
+
+    markSeen(id);
+
+    document.getElementById("qText").textContent = c.q || "(no question)";
+    document.getElementById("aText").textContent = c.a || "(no answer)";
+    document.getElementById("topicTagQ").textContent = "🧩 " + c.topic;
+    document.getElementById("topicTagA").textContent = "🧩 " + c.topic;
+
+    document.getElementById("idx").textContent = String(pos + 1);
+
+    const pct = ((pos + 1) / view.length) * 100;
+    document.getElementById("bar").style.width = pct.toFixed(1) + "%";
+
+    document.getElementById("qLen").textContent = c.q.length ? ("📝 " + c.q.length + " chars") : "";
+    document.getElementById("aLen").textContent = c.a.length ? ("📝 " + c.a.length + " chars") : "";
+
+    const st = statusOf(id);
+    if (st === "known") toast("✅ You previously marked this as Known");
+    if (st === "unsure") toast("🤔 You previously marked this as Unsure");
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const ids = deck.map(c => c.id);
+    let known = 0, unsure = 0, seen = 0;
+    for (const id of ids) {
+      const st = statusOf(id);
+      if (st === "known") known++;
+      if (st === "unsure") unsure++;
+      if (seenOf(id) || st) seen++;
+    }
+    document.getElementById("knownCount").textContent = known;
+    document.getElementById("unsureCount").textContent = unsure;
+    document.getElementById("seenCount").textContent = seen;
+    const completion = ids.length ? Math.round((known / ids.length) * 100) : 0;
+    document.getElementById("pct").textContent = completion + "%";
+  }
+
+  function flip() { document.getElementById("card").classList.toggle("flipped"); }
+  function next() {
+    if (view.length === 0) return;
+    pos = (pos + 1) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+  function prev() {
+    if (view.length === 0) return;
+    pos = (pos - 1 + view.length) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+
+  function shuffleOrder() {
+    const arr = order.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    order = arr;
+    saveOrder(order);
+    recomputeView(false);
+    toast("🔀 Shuffled!");
+  }
+
+  function resetAll() {
+    if (!confirm("Reset your progress (Known/Unsure/Seen) and shuffle order?")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_ORDER);
+    progress = loadProgress();
+    order = deck.map(c => c.id);
+    searchTerm = "";
+    topicFilter = "__ALL__";
+    document.getElementById("search").value = "";
+    document.getElementById("topicSelect").value = "__ALL__";
+    mode = "all";
+    document.querySelector('input[name="mode"][value="all"]').checked = true;
+    recomputeView(false);
+    toast("♻️ Reset done!");
+  }
+
+  function exportProgress() {
+    const payload = {
+      exportedAt: nowISO(),
+      deckSize: deck.length,
+      progress,
+      order
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flashcards_progress.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("⬇️ Exported progress");
+  }
+
+  document.getElementById("card").addEventListener("click", flip);
+  document.getElementById("flipBtn").addEventListener("click", flip);
+  document.getElementById("nextBtn").addEventListener("click", next);
+  document.getElementById("prevBtn").addEventListener("click", prev);
+  document.getElementById("shuffleBtn").addEventListener("click", shuffleOrder);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("downloadBtn").addEventListener("click", exportProgress);
+
+  document.getElementById("knownBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "known");
+    toast("✅ Marked Known");
+    next();
+  });
+
+  document.getElementById("unsureBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "unsure");
+    toast("🤔 Marked Unsure");
+    next();
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    searchTerm = e.target.value || "";
+    recomputeView(true);
+  });
+
+  document.getElementById("topicSelect").addEventListener("change", (e) => {
+    topicFilter = e.target.value;
+    recomputeView(false);
+  });
+
+  for (const r of document.querySelectorAll('input[name="mode"]')) {
+    r.addEventListener("change", (e) => {
+      mode = e.target.value;
+      recomputeView(true);
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+    const typing = tag === "input" || tag === "textarea" || tag === "select";
+    if (typing) return;
+
+    if (e.key === " " ) { e.preventDefault(); flip(); }
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === "ArrowLeft") prev();
+    else if (e.key.toLowerCase() === "s") shuffleOrder();
+    else if (e.key.toLowerCase() === "k") {
+      if (view.length) { setStatus(view[pos], "known"); toast("✅ Known"); next(); }
+    }
+    else if (e.key.toLowerCase() === "u") {
+      if (view.length) { setStatus(view[pos], "unsure"); toast("🤔 Unsure"); next(); }
+    }
+  });
+
+  document.getElementById("deckName").textContent = "Deck • " + deck.length + " cards";
+  recomputeView(false);
+</script>
+</body>
+</html>
