@@ -23,6 +23,12 @@
       "title": "Set 2 (71 cards – topic-based rules)",
       "file": "set-2-71-cards-topic-based-rules.html",
       "cards": 71
-    }
+    },
+{
+  "id": "msra-new-deck",
+  "title": "MSRA – New Flashcards (from CSV 4)",
+  "file": "msra-new-deck.html",
+  "cards":  /* put the number of rows in your CSV */
+}
   ]
 }
