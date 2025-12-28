@@ -25,9 +25,9 @@
       "cards": 71
     },
 {
-  "id": "msra-new-deck",
-  "title": "MSRA – New Flashcards (from CSV 4)",
-  "file": "msra-new-deck.html",
+  "id": "msra-csv4-topic-based",
+  "title": "MSRA – CSV 4 (Colour Deck)",
+  "file": "msra-csv4-topic-based.html",
   "cards": 139
 }
   ]
