@@ -47,6 +47,12 @@
   "title": "Haematology",
   "file": "msra-csv7-topic-based.html",
   "cards": 116
+},
+    {
+  "id": "msra-csv8-topic-based",
+  "title": "Pharmacology",
+  "file": "msra-csv8-topic-based.html",
+  "cards": 195
 }
   ]
 }
