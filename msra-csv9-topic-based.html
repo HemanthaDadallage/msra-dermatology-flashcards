@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MSRA Flash Cards — CSV 9</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #160b2a;
+      --glass: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 22px;
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(1000px 700px at 85% 15%, rgba(6,182,212,.32), transparent 55%),
+        radial-gradient(900px 600px at 55% 90%, rgba(245,158,11,.25), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+    .blob { position: fixed; width: 420px; height: 420px; filter: blur(40px); opacity: .55; z-index: -1; border-radius: 999px; animation: float 9s ease-in-out infinite; pointer-events: none; }
+    .b1 { left: -120px; top: -140px; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.95), rgba(124,58,237,.05)); }
+    .b2 { right: -140px; top: 60px; background: radial-gradient(circle at 40% 40%, rgba(6,182,212,.95), rgba(6,182,212,.05)); animation-duration: 12s; }
+    .b3 { left: 35%; bottom: -180px; background: radial-gradient(circle at 35% 40%, rgba(245,158,11,.9), rgba(245,158,11,.05)); animation-duration: 14s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18px, -22px) scale(1.05); } }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 18px 38px; }
+    header { display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:44px; height:44px; border-radius:14px; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); box-shadow: 0 12px 30px rgba(0,0,0,.35); position:relative; overflow:hidden; }
+    .logo:after { content:""; position:absolute; inset:-40%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%); transform: rotate(18deg); opacity: .6; }
+    h1 { font-size:20px; margin:0; letter-spacing:.3px; }
+    .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; width:100%; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:9px 12px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.25); }
+    .pill input[type="search"] { width: 220px; max-width: 70vw; background:transparent; border:none; outline:none; color:var(--text); font-size:14px; }
+    .pill select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      appearance: none;
+      padding-right: 18px;
+      cursor: pointer;
+    }
+    .pill select option { color: #111; }
+    .pill .caret { opacity: .75; }
+
+    .btn { border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.10); color: var(--text); padding: 10px 12px; border-radius:14px; cursor:pointer; transition: transform .08s ease, background .2s ease, border-color .2s ease; user-select:none; box-shadow: 0 10px 26px rgba(0,0,0,.22); backdrop-filter: blur(10px); display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13px; }
+    .btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn.primary { border:none; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); }
+    .btn.good { border:none; background: linear-gradient(135deg, rgba(34,197,94,1), rgba(6,182,212,1)); }
+    .btn.bad { border:none; background: linear-gradient(135deg, rgba(239,68,68,1), rgba(245,158,11,1)); }
+
+    .grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; align-items:stretch; margin-top:14px; }
+    @media (max-width:900px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(12px); overflow:hidden; }
+    .panel-head { padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border-bottom: 1px solid rgba(255,255,255,.12); }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; color: var(--muted); font-size: 13px; }
+    .badge { padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.85); font-weight:700; letter-spacing:.2px; }
+
+    .progress { height: 10px; border-radius:999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.12); overflow:hidden; min-width:220px; }
+    .bar { height:100%; width:0%; background: linear-gradient(90deg, rgba(124,58,237,1), rgba(6,182,212,1), rgba(34,197,94,1)); border-radius:999px; transition: width .25s ease; }
+
+    .stage { padding: 18px; display:grid; place-items:center; }
+    .card { width: min(720px, 100%); height: 360px; perspective: 1400px; }
+    .inner { width:100%; height:100%; position:relative; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+    .card.flipped .inner { transform: rotateY(180deg); }
+    .face { position:absolute; inset:0; border-radius:26px; border: 1px solid rgba(255,255,255,.20); box-shadow: 0 22px 60px rgba(0,0,0,.45); overflow:hidden; backface-visibility:hidden; display:flex; flex-direction:column; }
+    .face::before { content:""; position:absolute; inset:0; background: radial-gradient(900px 500px at 10% 20%, rgba(255,255,255,.18), transparent 55%), radial-gradient(700px 500px at 90% 20%, rgba(255,255,255,.16), transparent 55%), radial-gradient(800px 650px at 50% 120%, rgba(0,0,0,.25), transparent 60%); pointer-events:none; }
+    .qface { background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(6,182,212,.70)); }
+    .aface { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(34,197,94,.82), rgba(245,158,11,.65)); }
+
+    .tagrow { display:flex; gap:10px; flex-wrap:wrap; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; margin:14px 14px 0; border-radius:999px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.22); width: fit-content; font-weight:800; letter-spacing:.2px; font-size:12px; }
+    .tag.topic { background: rgba(0,0,0,.22); }
+
+    .content { flex:1; padding: 18px 20px 16px; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; }
+    .text { font-size:22px; line-height:1.3; font-weight:800; text-shadow: 0 2px 14px rgba(0,0,0,.25); white-space: pre-wrap; }
+    .small { font-weight:700; font-size:14px; color: rgba(255,255,255,.85); text-shadow:none; }
+    .hint { padding: 10px 16px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.80); font-size:12px; }
+    kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,.20); border: 1px solid rgba(255,255,255,.18); }
+
+    .controls { padding: 16px; border-top: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .left, .right { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .stats { padding: 14px 16px 16px; }
+    .statgrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; box-shadow: 0 10px 24px rgba(0,0,0,.20); }
+    .stat b { font-size:18px; }
+    .stat span { color: var(--muted); font-weight:700; font-size:12px; }
+
+    .list { padding: 10px 16px 16px; }
+    .mini { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+    .mini h3 { margin:0 0 8px; font-size:14px; letter-spacing:.2px; }
+    .toggle { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .switch { display:inline-flex; align-items:center; gap:8px; padding: 8px 10px; border-radius:999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); cursor:pointer; user-select:none; font-size:12px; font-weight:800; color: rgba(255,255,255,.88); }
+    .switch input { accent-color:white; }
+
+    .footer { margin-top:14px; color: rgba(255,255,255,.55); font-size:12px; text-align:center; }
+
+    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.92); padding: 10px 12px; border-radius:999px; box-shadow: 0 18px 50px rgba(0,0,0,.35); backdrop-filter: blur(10px); opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; font-weight:700; font-size:13px; }
+    .toast.show { opacity:1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>MSRA Flash Cards — CSV 9</h1>
+          <div class="subtitle">Categorised by topic • <kbd>Space</kbd> flip, <kbd>←</kbd>/<kbd>→</kbd> navigate, <kbd>S</kbd> shuffle</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="pill" title="Topic filter">
+          🧩
+          <select id="topicSelect" aria-label="Topic">
+            <option value="__ALL__">All topics</option>
+            <option value="Autoimmune &amp; blistering">Autoimmune &amp; blistering (4)</option>
+<option value="Benign lesions &amp; tumours">Benign lesions &amp; tumours (4)</option>
+<option value="Drug reactions">Drug reactions (4)</option>
+<option value="Emergencies">Emergencies (5)</option>
+<option value="Hair &amp; nails">Hair &amp; nails (5)</option>
+<option value="Infections &amp; infestations">Infections &amp; infestations (17)</option>
+<option value="Inflammatory conditions">Inflammatory conditions (26)</option>
+<option value="Other dermatology">Other dermatology (33)</option>
+<option value="Pigment disorders">Pigment disorders (4)</option>
+<option value="Skin cancer &amp; premalignant">Skin cancer &amp; premalignant (20)</option>
+<option value="Vascular &amp; ulcers">Vascular &amp; ulcers (5)</option>
+          </select>
+          <span class="caret">▾</span>
+        </div>
+
+        <div class="pill" title="Search questions/answers">
+          🔎
+          <input id="search" type="search" placeholder="Search (e.g., melanoma, BCC, scabies…)" autocomplete="off" />
+        </div>
+
+        <button class="btn" id="shuffleBtn" title="Shuffle deck (S)">🔀 Shuffle</button>
+        <button class="btn" id="resetBtn" title="Reset progress">♻️ Reset</button>
+        <button class="btn primary" id="downloadBtn" title="Download your progress as JSON">⬇️ Export</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge" id="deckName">Deck</span>
+            <span>Card <b id="idx">1</b>/<b id="total">0</b></span>
+            <span class="badge" id="filterBadge">All</span>
+          </div>
+          <div class="progress" aria-label="Progress">
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="card" id="card" role="button" aria-label="Flashcard (click to flip)" tabindex="0">
+            <div class="inner">
+              <div class="face qface">
+                <div class="tagrow">
+                  <div class="tag">❓ Question</div>
+                  <div class="tag topic" id="topicTagQ">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="qText"></div>
+                </div>
+                <div class="hint">
+                  <span>Tip: press <kbd>Space</kbd> to flip</span>
+                  <span class="small" id="qLen"></span>
+                </div>
+              </div>
+
+              <div class="face aface">
+                <div class="tagrow">
+                  <div class="tag">✅ Answer</div>
+                  <div class="tag topic" id="topicTagA">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="aText"></div>
+                </div>
+                <div class="hint">
+                  <span>Mark it: <kbd>K</kbd> Known, <kbd>U</kbd> Unsure</span>
+                  <span class="small" id="aLen"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="left">
+            <button class="btn" id="prevBtn" title="Previous (←)">⬅️ Prev</button>
+            <button class="btn" id="flipBtn" title="Flip (Space)">🪄 Flip</button>
+            <button class="btn" id="nextBtn" title="Next (→)">Next ➡️</button>
+          </div>
+          <div class="right">
+            <button class="btn good" id="knownBtn" title="Mark known (K)">✅ Known</button>
+            <button class="btn bad" id="unsureBtn" title="Mark unsure (U)">🤔 Unsure</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge">Dashboard</span>
+            <span class="small">Progress is saved in your browser (localStorage).</span>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="statgrid">
+            <div class="stat"><span>✅ Known</span><b id="knownCount">0</b></div>
+            <div class="stat"><span>🤔 Unsure</span><b id="unsureCount">0</b></div>
+            <div class="stat"><span>🧠 Seen</span><b id="seenCount">0</b></div>
+            <div class="stat"><span>🎯 Completion</span><b id="pct">0%</b></div>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="mini">
+            <h3>Filters</h3>
+            <div class="toggle">
+              <label class="switch"><input type="radio" name="mode" value="all" checked> All</label>
+              <label class="switch"><input type="radio" name="mode" value="unknown"> Only unseen</label>
+              <label class="switch"><input type="radio" name="mode" value="known"> Known</label>
+              <label class="switch"><input type="radio" name="mode" value="unsure"> Unsure</label>
+            </div>
+            <div class="small" style="margin-top:10px; line-height:1.5;">
+              Topic filter (top bar) narrows the whole deck.
+            </div>
+          </div>
+
+          <div style="height: 12px"></div>
+
+          <div class="mini">
+            <h3>Study tips</h3>
+            <div class="small" style="line-height:1.6;">
+              • Choose a <b>Topic</b> to focus on one area.<br/>
+              • Use <b>Search</b> to jump to a matching card.<br/>
+              • Shuffle for spaced repetition vibes.<br/>
+              • Export if you want to save/share your progress file.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Built as a single offline HTML file ✨
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const RAW_DECK = [{"q": "According to KDIGO criteria, what increase in serum creatinine within 48 hours is diagnostic of Acute Kidney Injury (AKI)?", "a": "An increase in serum creatinine of $≥ 26.5 µmol/L$ within 48 hours.", "topic": "MSRA (CSV 9)"}, {"q": "What relative increase in serum creatinine from baseline is diagnostic of AKI according to KDIGO criteria?", "a": "An increase in serum creatinine to $≥ 1.5$ times baseline.", "topic": "MSRA (CSV 9)"}, {"q": "What is the minimum duration of low urine output that defines AKI by KDIGO criteria?", "a": "Urine output $< 0.5 mL/kg/hr$ for $≥ 6$ hours.", "topic": "MSRA (CSV 9)"}, {"q": "In KDIGO staging for AKI, Stage 1 is defined by a serum creatinine rise to _____ times baseline.", "a": "1.5–1.9 times baseline.", "topic": "MSRA (CSV 9)"}, {"q": "What urine output criteria define Stage 2 AKI according to KDIGO guidelines?", "a": "Urine output $< 0.5 mL/kg/hr$ for $≥ 12$ hours.", "topic": "MSRA (CSV 9)"}, {"q": "A patient requiring dialysis for AKI is automatically classified as which KDIGO stage?", "a": "Stage 3.", "topic": "MSRA (CSV 9)"}, {"q": "What is the primary pathophysiology of pre-renal AKI?", "a": "Renal hypoperfusion with an intact tubular structure.", "topic": "MSRA (CSV 9)"}, {"q": "In pre-renal AKI, what would you expect the urine sodium concentration to be?", "a": "Urine $Na⁺ < 20 mmol/L$.", "topic": "MSRA (CSV 9)"}, {"q": "What is the typical urine osmolality in a patient with pre-renal AKI?", "a": "Urine osmolality $> 500 mOsm/kg$.", "topic": "MSRA (CSV 9)"}, {"q": "How does the urea-to-creatinine ratio typically change in pre-renal AKI?", "a": "The ratio increases, with urea being disproportionately high.", "topic": "MSRA (CSV 9)"}, {"q": "What is the characteristic response to a fluid challenge in pre-renal AKI?", "a": "A good response, with rapid improvement in renal function.", "topic": "MSRA (CSV 9)"}, {"q": "What is the underlying pathophysiology of Acute Tubular Necrosis (ATN)?", "a": "Necrosis of tubular epithelial cells caused by prolonged ischaemia or exposure to toxins.", "topic": "MSRA (CSV 9)"}, {"q": "What is a characteristic finding on urinalysis in a patient with Acute Tubular Necrosis (ATN)?", "a": "Muddy brown granular casts.", "topic": "MSRA (CSV 9)"}, {"q": "In Acute Tubular Necrosis (ATN), what would you expect the urine sodium concentration to be?", "a": "Urine $Na⁺ > 40 mmol/L$.", "topic": "MSRA (CSV 9)"}, {"q": "What is the typical urine osmolality in a patient with Acute Tubular Necrosis (ATN)?", "a": "Urine osmolality $< 350 mOsm/kg$.", "topic": "MSRA (CSV 9)"}, {"q": "What is the typical clinical course of Acute Tubular Necrosis (ATN)?", "a": "It progresses through an oliguric phase, then a polyuric phase, followed by recovery.", "topic": "MSRA (CSV 9)"}, {"q": "A child who develops AKI after a diarrhoeal illness should be investigated for which condition?", "a": "Haemolytic-Uraemic Syndrome (HUS).", "topic": "MSRA (CSV 9)"}, {"q": "What is the classic triad of Haemolytic-Uraemic Syndrome (HUS)?", "a": "Microangiopathic haemolytic anaemia, thrombocytopenia, and Acute Kidney Injury (AKI).", "topic": "MSRA (CSV 9)"}, {"q": "What is the most common infectious cause of Haemolytic-Uraemic Syndrome (HUS)?", "a": "E. coli O157:H7, which produces a Shiga toxin.", "topic": "MSRA (CSV 9)"}, {"q": "Name two key causes of renal papillary necrosis.", "a": "Sickle cell disease and use of NSAIDs.", "topic": "MSRA (CSV 9)"}, {"q": "What is the pathognomonic finding on an IV urogram for renal papillary necrosis?", "a": "A \"cup and spill\" appearance.", "topic": "MSRA (CSV 9)"}, {"q": "Alport syndrome is a genetic disorder affecting which type of collagen?", "a": "Type IV collagen.", "topic": "MSRA (CSV 9)"}, {"q": "What is the most common inheritance pattern for Alport syndrome?", "a": "X-linked dominant.", "topic": "MSRA (CSV 9)"}, {"q": "What are the three main clinical domains affected by Alport syndrome?", "a": "Renal disease, sensorineural hearing loss, and ocular abnormalities.", "topic": "MSRA (CSV 9)"}, {"q": "What is the pathognomonic ocular finding in Alport syndrome?", "a": "Anterior lenticonus.", "topic": "MSRA (CSV 9)"}, {"q": "What is the characteristic appearance of the glomerular basement membrane (GBM) on electron microscopy in Alport syndrome?", "a": "A thickened, laminated GBM with a \"basket weave\" appearance.", "topic": "MSRA (CSV 9)"}, {"q": "Which class of drugs is used in Alport syndrome to reduce proteinuria and slow disease progression?", "a": "ACE inhibitors or ARBs.", "topic": "MSRA (CSV 9)"}, {"q": "What are the two most common causes of Chronic Kidney Disease (CKD)?", "a": "Diabetes and hypertension.", "topic": "MSRA (CSV 9)"}, {"q": "What medication should be offered to all adults with CKD to reduce cardiovascular risk?", "a": "Atorvastatin 20 mg.", "topic": "MSRA (CSV 9)"}, {"q": "In a patient with CKD, what is the target blood pressure if their urine ACR is $≥ 70$?", "a": "Less than 130/80 mmHg.", "topic": "MSRA (CSV 9)"}, {"q": "An ACE inhibitor or ARB is first-line treatment for a person with CKD and T2DM if their ACR is above what level?", "a": "$ACR ≥ 3 mg/mmol$.", "topic": "MSRA (CSV 9)"}, {"q": "An SGLT-2 inhibitor may be added to an optimized ACEi/ARB in a patient with CKD if their T2DM and/or their ACR is above what threshold?", "a": "$ACR ≥ 22.6 mg/mmol$.", "topic": "MSRA (CSV 9)"}, {"q": "What is Finerenone, and in which specific CKD patient group is it used?", "a": "It is a non-steroidal mineralocorticoid receptor antagonist used as an add-on therapy for patients with CKD and type 2 diabetes.", "topic": "MSRA (CSV 9)"}, {"q": "CKD causes hypocalcaemia due to impaired renal conversion of _____.", "a": "Vitamin D.", "topic": "MSRA (CSV 9)"}, {"q": "What is the first step in managing anaemia in a patient with CKD?", "a": "Correcting any iron deficiency (targeting ferritin > 200 µg/L).", "topic": "MSRA (CSV 9)"}, {"q": "Name a major side effect of erythropoietin (EPO) therapy.", "a": "Hypertension, seizures, or thrombosis.", "topic": "MSRA (CSV 9)"}, {"q": "A patient with ESRF on warfarin develops painful purpuric skin lesions and necrosis. What is the likely diagnosis?", "a": "Calciphylaxis.", "topic": "MSRA (CSV 9)"}, {"q": "What is the most common causative organism of peritonitis in a patient on continuous ambulatory peritoneal dialysis (CAPD)?", "a": "Staphylococcus epidermidis.", "topic": "MSRA (CSV 9)"}, {"q": "What are the characteristic histological findings in diabetic nephropathy?", "a": "Glomerular basement membrane (GBM) thickening and Kimmelstiel-Wilson nodules.", "topic": "MSRA (CSV 9)"}, {"q": "Mutations in the PKD1 gene on chromosome 16 are associated with which type of Autosomal Dominant Polycystic Kidney Disease (ADPKD)?", "a": "Type 1 ADPKD, which accounts for about 85% of cases.", "topic": "MSRA (CSV 9)"}, {"q": "What is a major extra-renal vascular complication associated with ADPKD?", "a": "Berry aneurysms, which can lead to subarachnoid haemorrhage.", "topic": "MSRA (CSV 9)"}, {"q": "What is the first-line investigation for diagnosing ADPKD in a patient with a positive family history?", "a": "Abdominal ultrasound.", "topic": "MSRA (CSV 9)"}, {"q": "What is the underlying enzyme deficiency in Fabry disease?", "a": "Deficiency of α-galactosidase A.", "topic": "MSRA (CSV 9)"}, {"q": "What are the characteristic dermatological lesions seen in Fabry disease?", "a": "Angiokeratomas, which are small dark red skin lesions.", "topic": "MSRA (CSV 9)"}, {"q": "Patients with Fabry disease often experience burning limb pain, particularly in the hands and feet. What is this symptom called?", "a": "Acroparesthesias.", "topic": "MSRA (CSV 9)"}, {"q": "What is the primary treatment for Fabry disease?", "a": "Enzyme replacement therapy (ERT) with agalsidase alfa or beta.", "topic": "MSRA (CSV 9)"}, {"q": "What is the target of the autoantibodies in Goodpasture's syndrome?", "a": "Type IV collagen in the glomerular and alveolar basement membranes.", "topic": "MSRA (CSV 9)"}, {"q": "What is the classic clinical presentation of Goodpasture's syndrome?", "a": "Rapidly progressive glomerulonephritis (RPGN) and pulmonary haemorrhage (haemoptysis).", "topic": "MSRA (CSV 9)"}, {"q": "What is the characteristic finding on immunofluorescence of a renal biopsy in Goodpasture's syndrome?", "a": "Linear IgG deposits along the glomerular basement membrane.", "topic": "MSRA (CSV 9)"}, {"q": "The management of Goodpasture's syndrome includes high-dose corticosteroids, immunosuppressants, and _____.", "a": "Plasma exchange (plasmapheresis).", "topic": "MSRA (CSV 9)"}, {"q": "What is a major clinical feature that helps differentiate Granulomatosis with Polyangiitis (GPA) from Goodpasture's syndrome?", "a": "ENT involvement (e.g., sinusitis, nasal crusting) is present in GPA but absent in Goodpasture's.", "topic": "MSRA (CSV 9)"}, {"q": "What is the defining triad of nephrotic syndrome?", "a": "Proteinuria > 3g/24hrs, hypoalbuminaemia (<30 g/L), and oedema.", "topic": "MSRA (CSV 9)"}, {"q": "Why are patients with nephrotic syndrome at an increased risk of thrombosis?", "a": "Due to the renal loss of anticoagulant proteins like antithrombin III, protein C, and protein S.", "topic": "MSRA (CSV 9)"}, {"q": "What is the most common cause of nephrotic syndrome in children?", "a": "Minimal change disease.", "topic": "MSRA (CSV 9)"}, {"q": "What is a common cause of nephrotic syndrome in adults?", "a": "Membranous glomerulonephritis.", "topic": "MSRA (CSV 9)"}, {"q": "What is the defining triad of nephritic syndrome?", "a": "Haematuria, hypertension, and subnephrotic proteinuria with oedema.", "topic": "MSRA (CSV 9)"}, {"q": "A young adult presenting with macroscopic haematuria 1-2 days after an upper respiratory tract infection most likely has which condition?", "a": "IgA nephropathy (Berger's disease).", "topic": "MSRA (CSV 9)"}, {"q": "How does the timing of haematuria onset after a URTI differ between IgA nephropathy and post-streptococcal glomerulonephritis?", "a": "In IgA nephropathy, haematuria occurs within days (syn-pharyngitic), whereas in post-streptococcal GN, it occurs around 2 weeks later.", "topic": "MSRA (CSV 9)"}, {"q": "What is the characteristic finding on electron microscopy in minimal change disease?", "a": "Effacement (fusion) of podocyte foot processes.", "topic": "MSRA (CSV 9)"}, {"q": "What is the first-line treatment for minimal change disease in children?", "a": "High-dose corticosteroids (e.g., prednisolone).", "topic": "MSRA (CSV 9)"}, {"q": "What antibody is often positive in idiopathic membranous glomerulonephritis?", "a": "Anti-phospholipase A2 (anti-PLA2R) antibodies.", "topic": "MSRA (CSV 9)"}, {"q": "Electron microscopy in membranous glomerulonephritis typically shows a _____ and _____ appearance.", "a": "Spike and dome.", "topic": "MSRA (CSV 9)"}, {"q": "Focal Segmental Glomerulosclerosis (FSGS) is strongly associated with which two conditions/exposures?", "a": "HIV infection and heroin use.", "topic": "MSRA (CSV 9)"}, {"q": "What is the characteristic histological finding in rapidly progressive glomerulonephritis (RPGN)?", "a": "Crescent formation in the glomeruli.", "topic": "MSRA (CSV 9)"}, {"q": "What is the mechanism of hyperacute renal transplant rejection?", "a": "Pre-formed IgG antibodies against ABO or HLA antigens cause immediate necrosis and thrombosis of the graft.", "topic": "MSRA (CSV 9)"}, {"q": "Acute renal transplant rejection, occurring within the first 6 months, is primarily mediated by which type of immune cells?", "a": "T-cells (specifically CD8+ cytotoxic T-cells).", "topic": "MSRA (CSV 9)"}, {"q": "What is the first-line treatment for acute renal transplant rejection?", "a": "High-dose steroids.", "topic": "MSRA (CSV 9)"}, {"q": "Sudden anuria in the immediate post-operative period after a renal transplant should raise suspicion for what complication?", "a": "Renal artery thrombosis.", "topic": "MSRA (CSV 9)"}, {"q": "Which class of immunosuppressants, including ciclosporin and tacrolimus, is known for causing nephrotoxicity?", "a": "Calcineurin inhibitors.", "topic": "MSRA (CSV 9)"}, {"q": "A post-transplant patient develops new-onset diabetes. Which immunosuppressant is most likely responsible?", "a": "Tacrolimus.", "topic": "MSRA (CSV 9)"}, {"q": "A post-transplant patient develops significant hyperlipidaemia. Which immunosuppressant is a likely cause?", "a": "Sirolimus.", "topic": "MSRA (CSV 9)"}, {"q": "Immunosuppression after organ transplant significantly increases the risk of which type of malignancy?", "a": "Non-melanoma skin cancer (SCC and BCC).", "topic": "MSRA (CSV 9)"}, {"q": "Renal tubular acidosis (RTA) is characterized by a _____ anion gap metabolic acidosis.", "a": "Normal (hyperchloraemic).", "topic": "MSRA (CSV 9)"}, {"q": "Which type of Renal Tubular Acidosis (RTA) is caused by impaired distal H⁺ excretion and is associated with nephrocalcinosis?", "a": "Type 1 (Distal RTA).", "topic": "MSRA (CSV 9)"}, {"q": "In Type 1 (Distal) RTA, is the urine pH typically high or low, despite systemic acidosis?", "a": "High (Urine pH > 5.5).", "topic": "MSRA (CSV 9)"}, {"q": "Which type of Renal Tubular Acidosis (RTA) is caused by impaired proximal HCO₃⁻ reabsorption and is associated with osteomalacia?", "a": "Type 2 (Proximal RTA).", "topic": "MSRA (CSV 9)"}, {"q": "Which type of Renal Tubular Acidosis (RTA) is characterized by hyperkalaemia?", "a": "Type 4 RTA.", "topic": "MSRA (CSV 9)"}, {"q": "Fanconi syndrome, characterized by aminoaciduria, glycosuria, and phosphaturia, is associated with which type of RTA?", "a": "Type 2 (Proximal RTA).", "topic": "MSRA (CSV 9)"}, {"q": "What is the most common cause of renal artery stenosis in older adults?", "a": "Atherosclerosis.", "topic": "MSRA (CSV 9)"}, {"q": "What is the primary cause of renal artery stenosis in younger adults, particularly females?", "a": "Fibromuscular dysplasia (FMD).", "topic": "MSRA (CSV 9)"}, {"q": "A greater than 15% rise in serum creatinine after starting an ACE inhibitor strongly suggests what underlying condition?", "a": "Bilateral renal artery stenosis.", "topic": "MSRA (CSV 9)"}, {"q": "What is the classic angiographic finding in fibromuscular dysplasia (FMD)?", "a": "A \"string of beads\" appearance.", "topic": "MSRA (CSV 9)"}, {"q": "What is the preferred method of revascularization for fibromuscular dysplasia (FMD)?", "a": "Balloon angioplasty, often without stenting.", "topic": "MSRA (CSV 9)"}];
+
+  const LS_KEY = "flashcards_progress_v2";
+  const LS_ORDER = "flashcards_order_v2";
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function nowISO() { return new Date().toISOString(); }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
+  }
+
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function saveProgress(p) { localStorage.setItem(LS_KEY, JSON.stringify(p)); }
+
+  function loadOrder() {
+    try {
+      const o = JSON.parse(localStorage.getItem(LS_ORDER) || "null");
+      if (Array.isArray(o) && o.length === RAW_DECK.length) return o;
+      return null;
+    } catch (e) { return null; }
+  }
+  function saveOrder(order) { localStorage.setItem(LS_ORDER, JSON.stringify(order)); }
+
+  const deck = RAW_DECK.map((c, i) => ({
+    id: i,
+    q: (c.q || "").trim(),
+    a: (c.a || "").trim(),
+    topic: (c.topic || "Other").trim(),
+    qLower: (c.q || "").toLowerCase(),
+    aLower: (c.a || "").toLowerCase(),
+    topicLower: (c.topic || "other").toLowerCase(),
+  }));
+
+  let progress = loadProgress();
+  let order = loadOrder() || deck.map(c => c.id);
+
+  let mode = "all";
+  let searchTerm = "";
+  let topicFilter = "__ALL__";
+  let view = [];
+  let pos = 0;
+
+  function statusOf(id) {
+    return (progress[id] && progress[id].status) || null;
+  }
+  function seenOf(id) {
+    return !!(progress[id] && progress[id].seen);
+  }
+
+  function recomputeView(keepCurrentId=true) {
+    const prevId = view[pos];
+    const term = (searchTerm || "").trim().toLowerCase();
+
+    view = order.filter(id => {
+      const c = deck[id];
+      const st = statusOf(id);
+      const seen = seenOf(id);
+
+      if (mode === "unknown" && (seen || st)) return false;
+      if (mode === "known" && st !== "known") return false;
+      if (mode === "unsure" && st !== "unsure") return false;
+
+      if (topicFilter !== "__ALL__" && c.topic !== topicFilter) return false;
+
+      if (term) {
+        return c.qLower.includes(term) || c.aLower.includes(term) || c.topicLower.includes(term);
+      }
+      return true;
+    });
+
+    document.getElementById("total").textContent = view.length;
+
+    const badge = document.getElementById("filterBadge");
+    let label = "All";
+    if (mode === "unknown") label = "Only unseen";
+    if (mode === "known") label = "Known";
+    if (mode === "unsure") label = "Unsure";
+    if (topicFilter !== "__ALL__") label = topicFilter + " • " + label;
+    if (term) label += " • Search";
+    badge.textContent = label;
+
+    if (view.length === 0) {
+      pos = 0;
+      renderEmpty();
+      updateStats();
+      return;
+    }
+
+    if (keepCurrentId && prevId != null) {
+      const newPos = view.indexOf(prevId);
+      pos = newPos >= 0 ? newPos : clamp(pos, 0, view.length - 1);
+    } else {
+      pos = clamp(pos, 0, view.length - 1);
+    }
+    renderCard();
+    updateStats();
+  }
+
+  function renderEmpty() {
+    document.getElementById("qText").textContent = "No cards match your filter/search 🤷‍♂️";
+    document.getElementById("aText").textContent = "Try clearing search or switching filters.";
+    document.getElementById("topicTagQ").textContent = "🧩 Topic";
+    document.getElementById("topicTagA").textContent = "🧩 Topic";
+    document.getElementById("idx").textContent = "0";
+    document.getElementById("bar").style.width = "0%";
+    document.getElementById("qLen").textContent = "";
+    document.getElementById("aLen").textContent = "";
+    document.getElementById("card").classList.remove("flipped");
+  }
+
+  function markSeen(id) {
+    progress[id] = progress[id] || {};
+    if (!progress[id].seen) {
+      progress[id].seen = true;
+      progress[id].updatedAt = nowISO();
+      saveProgress(progress);
+    }
+  }
+
+  function setStatus(id, s) {
+    progress[id] = progress[id] || {};
+    progress[id].status = s;
+    progress[id].seen = true;
+    progress[id].updatedAt = nowISO();
+    saveProgress(progress);
+  }
+
+  function renderCard() {
+    if (view.length === 0) return renderEmpty();
+    const id = view[pos];
+    const c = deck[id];
+
+    markSeen(id);
+
+    document.getElementById("qText").textContent = c.q || "(no question)";
+    document.getElementById("aText").textContent = c.a || "(no answer)";
+    document.getElementById("topicTagQ").textContent = "🧩 " + c.topic;
+    document.getElementById("topicTagA").textContent = "🧩 " + c.topic;
+
+    document.getElementById("idx").textContent = String(pos + 1);
+
+    const pct = ((pos + 1) / view.length) * 100;
+    document.getElementById("bar").style.width = pct.toFixed(1) + "%";
+
+    document.getElementById("qLen").textContent = c.q.length ? ("📝 " + c.q.length + " chars") : "";
+    document.getElementById("aLen").textContent = c.a.length ? ("📝 " + c.a.length + " chars") : "";
+
+    const st = statusOf(id);
+    if (st === "known") toast("✅ You previously marked this as Known");
+    if (st === "unsure") toast("🤔 You previously marked this as Unsure");
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const ids = deck.map(c => c.id);
+    let known = 0, unsure = 0, seen = 0;
+    for (const id of ids) {
+      const st = statusOf(id);
+      if (st === "known") known++;
+      if (st === "unsure") unsure++;
+      if (seenOf(id) || st) seen++;
+    }
+    document.getElementById("knownCount").textContent = known;
+    document.getElementById("unsureCount").textContent = unsure;
+    document.getElementById("seenCount").textContent = seen;
+    const completion = ids.length ? Math.round((known / ids.length) * 100) : 0;
+    document.getElementById("pct").textContent = completion + "%";
+  }
+
+  function flip() { document.getElementById("card").classList.toggle("flipped"); }
+  function next() {
+    if (view.length === 0) return;
+    pos = (pos + 1) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+  function prev() {
+    if (view.length === 0) return;
+    pos = (pos - 1 + view.length) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+
+  function shuffleOrder() {
+    const arr = order.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    order = arr;
+    saveOrder(order);
+    recomputeView(false);
+    toast("🔀 Shuffled!");
+  }
+
+  function resetAll() {
+    if (!confirm("Reset your progress (Known/Unsure/Seen) and shuffle order?")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_ORDER);
+    progress = loadProgress();
+    order = deck.map(c => c.id);
+    searchTerm = "";
+    topicFilter = "__ALL__";
+    document.getElementById("search").value = "";
+    document.getElementById("topicSelect").value = "__ALL__";
+    mode = "all";
+    document.querySelector('input[name="mode"][value="all"]').checked = true;
+    recomputeView(false);
+    toast("♻️ Reset done!");
+  }
+
+  function exportProgress() {
+    const payload = {
+      exportedAt: nowISO(),
+      deckSize: deck.length,
+      progress,
+      order
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flashcards_progress.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("⬇️ Exported progress");
+  }
+
+  document.getElementById("card").addEventListener("click", flip);
+  document.getElementById("flipBtn").addEventListener("click", flip);
+  document.getElementById("nextBtn").addEventListener("click", next);
+  document.getElementById("prevBtn").addEventListener("click", prev);
+  document.getElementById("shuffleBtn").addEventListener("click", shuffleOrder);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("downloadBtn").addEventListener("click", exportProgress);
+
+  document.getElementById("knownBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "known");
+    toast("✅ Marked Known");
+    next();
+  });
+
+  document.getElementById("unsureBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "unsure");
+    toast("🤔 Marked Unsure");
+    next();
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    searchTerm = e.target.value || "";
+    recomputeView(true);
+  });
+
+  document.getElementById("topicSelect").addEventListener("change", (e) => {
+    topicFilter = e.target.value;
+    recomputeView(false);
+  });
+
+  for (const r of document.querySelectorAll('input[name="mode"]')) {
+    r.addEventListener("change", (e) => {
+      mode = e.target.value;
+      recomputeView(true);
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+    const typing = tag === "input" || tag === "textarea" || tag === "select";
+    if (typing) return;
+
+    if (e.key === " " ) { e.preventDefault(); flip(); }
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === "ArrowLeft") prev();
+    else if (e.key.toLowerCase() === "s") shuffleOrder();
+    else if (e.key.toLowerCase() === "k") {
+      if (view.length) { setStatus(view[pos], "known"); toast("✅ Known"); next(); }
+    }
+    else if (e.key.toLowerCase() === "u") {
+      if (view.length) { setStatus(view[pos], "unsure"); toast("🤔 Unsure"); next(); }
+    }
+  });
+
+  document.getElementById("deckName").textContent = "Deck • " + deck.length + " cards";
+  recomputeView(false);
+</script>
+</body>
+</html>
