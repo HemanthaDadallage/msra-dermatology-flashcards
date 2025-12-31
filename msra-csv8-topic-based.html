@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MSRA Flash Cards — CSV 8</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #160b2a;
+      --glass: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 22px;
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(1000px 700px at 85% 15%, rgba(6,182,212,.32), transparent 55%),
+        radial-gradient(900px 600px at 55% 90%, rgba(245,158,11,.25), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+    .blob { position: fixed; width: 420px; height: 420px; filter: blur(40px); opacity: .55; z-index: -1; border-radius: 999px; animation: float 9s ease-in-out infinite; pointer-events: none; }
+    .b1 { left: -120px; top: -140px; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.95), rgba(124,58,237,.05)); }
+    .b2 { right: -140px; top: 60px; background: radial-gradient(circle at 40% 40%, rgba(6,182,212,.95), rgba(6,182,212,.05)); animation-duration: 12s; }
+    .b3 { left: 35%; bottom: -180px; background: radial-gradient(circle at 35% 40%, rgba(245,158,11,.9), rgba(245,158,11,.05)); animation-duration: 14s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18px, -22px) scale(1.05); } }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 18px 38px; }
+    header { display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:44px; height:44px; border-radius:14px; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); box-shadow: 0 12px 30px rgba(0,0,0,.35); position:relative; overflow:hidden; }
+    .logo:after { content:""; position:absolute; inset:-40%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%); transform: rotate(18deg); opacity: .6; }
+    h1 { font-size:20px; margin:0; letter-spacing:.3px; }
+    .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; width:100%; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:9px 12px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.25); }
+    .pill input[type="search"] { width: 220px; max-width: 70vw; background:transparent; border:none; outline:none; color:var(--text); font-size:14px; }
+    .pill select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      appearance: none;
+      padding-right: 18px;
+      cursor: pointer;
+    }
+    .pill select option { color: #111; }
+    .pill .caret { opacity: .75; }
+
+    .btn { border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.10); color: var(--text); padding: 10px 12px; border-radius:14px; cursor:pointer; transition: transform .08s ease, background .2s ease, border-color .2s ease; user-select:none; box-shadow: 0 10px 26px rgba(0,0,0,.22); backdrop-filter: blur(10px); display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13px; }
+    .btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn.primary { border:none; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); }
+    .btn.good { border:none; background: linear-gradient(135deg, rgba(34,197,94,1), rgba(6,182,212,1)); }
+    .btn.bad { border:none; background: linear-gradient(135deg, rgba(239,68,68,1), rgba(245,158,11,1)); }
+
+    .grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; align-items:stretch; margin-top:14px; }
+    @media (max-width:900px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(12px); overflow:hidden; }
+    .panel-head { padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border-bottom: 1px solid rgba(255,255,255,.12); }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; color: var(--muted); font-size: 13px; }
+    .badge { padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.85); font-weight:700; letter-spacing:.2px; }
+
+    .progress { height: 10px; border-radius:999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.12); overflow:hidden; min-width:220px; }
+    .bar { height:100%; width:0%; background: linear-gradient(90deg, rgba(124,58,237,1), rgba(6,182,212,1), rgba(34,197,94,1)); border-radius:999px; transition: width .25s ease; }
+
+    .stage { padding: 18px; display:grid; place-items:center; }
+    .card { width: min(720px, 100%); height: 360px; perspective: 1400px; }
+    .inner { width:100%; height:100%; position:relative; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+    .card.flipped .inner { transform: rotateY(180deg); }
+    .face { position:absolute; inset:0; border-radius:26px; border: 1px solid rgba(255,255,255,.20); box-shadow: 0 22px 60px rgba(0,0,0,.45); overflow:hidden; backface-visibility:hidden; display:flex; flex-direction:column; }
+    .face::before { content:""; position:absolute; inset:0; background: radial-gradient(900px 500px at 10% 20%, rgba(255,255,255,.18), transparent 55%), radial-gradient(700px 500px at 90% 20%, rgba(255,255,255,.16), transparent 55%), radial-gradient(800px 650px at 50% 120%, rgba(0,0,0,.25), transparent 60%); pointer-events:none; }
+    .qface { background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(6,182,212,.70)); }
+    .aface { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(34,197,94,.82), rgba(245,158,11,.65)); }
+
+    .tagrow { display:flex; gap:10px; flex-wrap:wrap; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; margin:14px 14px 0; border-radius:999px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.22); width: fit-content; font-weight:800; letter-spacing:.2px; font-size:12px; }
+    .tag.topic { background: rgba(0,0,0,.22); }
+
+    .content { flex:1; padding: 18px 20px 16px; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; }
+    .text { font-size:22px; line-height:1.3; font-weight:800; text-shadow: 0 2px 14px rgba(0,0,0,.25); white-space: pre-wrap; }
+    .small { font-weight:700; font-size:14px; color: rgba(255,255,255,.85); text-shadow:none; }
+    .hint { padding: 10px 16px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.80); font-size:12px; }
+    kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,.20); border: 1px solid rgba(255,255,255,.18); }
+
+    .controls { padding: 16px; border-top: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .left, .right { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .stats { padding: 14px 16px 16px; }
+    .statgrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; box-shadow: 0 10px 24px rgba(0,0,0,.20); }
+    .stat b { font-size:18px; }
+    .stat span { color: var(--muted); font-weight:700; font-size:12px; }
+
+    .list { padding: 10px 16px 16px; }
+    .mini { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+    .mini h3 { margin:0 0 8px; font-size:14px; letter-spacing:.2px; }
+    .toggle { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .switch { display:inline-flex; align-items:center; gap:8px; padding: 8px 10px; border-radius:999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); cursor:pointer; user-select:none; font-size:12px; font-weight:800; color: rgba(255,255,255,.88); }
+    .switch input { accent-color:white; }
+
+    .footer { margin-top:14px; color: rgba(255,255,255,.55); font-size:12px; text-align:center; }
+
+    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.92); padding: 10px 12px; border-radius:999px; box-shadow: 0 18px 50px rgba(0,0,0,.35); backdrop-filter: blur(10px); opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; font-weight:700; font-size:13px; }
+    .toast.show { opacity:1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>MSRA Flash Cards — CSV 8</h1>
+          <div class="subtitle">Categorised by topic • <kbd>Space</kbd> flip, <kbd>←</kbd>/<kbd>→</kbd> navigate, <kbd>S</kbd> shuffle</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="pill" title="Topic filter">
+          🧩
+          <select id="topicSelect" aria-label="Topic">
+            <option value="__ALL__">All topics</option>
+            <option value="Autoimmune &amp; blistering">Autoimmune &amp; blistering (4)</option>
+<option value="Benign lesions &amp; tumours">Benign lesions &amp; tumours (4)</option>
+<option value="Drug reactions">Drug reactions (4)</option>
+<option value="Emergencies">Emergencies (5)</option>
+<option value="Hair &amp; nails">Hair &amp; nails (5)</option>
+<option value="Infections &amp; infestations">Infections &amp; infestations (17)</option>
+<option value="Inflammatory conditions">Inflammatory conditions (26)</option>
+<option value="Other dermatology">Other dermatology (33)</option>
+<option value="Pigment disorders">Pigment disorders (4)</option>
+<option value="Skin cancer &amp; premalignant">Skin cancer &amp; premalignant (20)</option>
+<option value="Vascular &amp; ulcers">Vascular &amp; ulcers (5)</option>
+          </select>
+          <span class="caret">▾</span>
+        </div>
+
+        <div class="pill" title="Search questions/answers">
+          🔎
+          <input id="search" type="search" placeholder="Search (e.g., melanoma, BCC, scabies…)" autocomplete="off" />
+        </div>
+
+        <button class="btn" id="shuffleBtn" title="Shuffle deck (S)">🔀 Shuffle</button>
+        <button class="btn" id="resetBtn" title="Reset progress">♻️ Reset</button>
+        <button class="btn primary" id="downloadBtn" title="Download your progress as JSON">⬇️ Export</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge" id="deckName">Deck</span>
+            <span>Card <b id="idx">1</b>/<b id="total">0</b></span>
+            <span class="badge" id="filterBadge">All</span>
+          </div>
+          <div class="progress" aria-label="Progress">
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="card" id="card" role="button" aria-label="Flashcard (click to flip)" tabindex="0">
+            <div class="inner">
+              <div class="face qface">
+                <div class="tagrow">
+                  <div class="tag">❓ Question</div>
+                  <div class="tag topic" id="topicTagQ">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="qText"></div>
+                </div>
+                <div class="hint">
+                  <span>Tip: press <kbd>Space</kbd> to flip</span>
+                  <span class="small" id="qLen"></span>
+                </div>
+              </div>
+
+              <div class="face aface">
+                <div class="tagrow">
+                  <div class="tag">✅ Answer</div>
+                  <div class="tag topic" id="topicTagA">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="aText"></div>
+                </div>
+                <div class="hint">
+                  <span>Mark it: <kbd>K</kbd> Known, <kbd>U</kbd> Unsure</span>
+                  <span class="small" id="aLen"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="left">
+            <button class="btn" id="prevBtn" title="Previous (←)">⬅️ Prev</button>
+            <button class="btn" id="flipBtn" title="Flip (Space)">🪄 Flip</button>
+            <button class="btn" id="nextBtn" title="Next (→)">Next ➡️</button>
+          </div>
+          <div class="right">
+            <button class="btn good" id="knownBtn" title="Mark known (K)">✅ Known</button>
+            <button class="btn bad" id="unsureBtn" title="Mark unsure (U)">🤔 Unsure</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge">Dashboard</span>
+            <span class="small">Progress is saved in your browser (localStorage).</span>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="statgrid">
+            <div class="stat"><span>✅ Known</span><b id="knownCount">0</b></div>
+            <div class="stat"><span>🤔 Unsure</span><b id="unsureCount">0</b></div>
+            <div class="stat"><span>🧠 Seen</span><b id="seenCount">0</b></div>
+            <div class="stat"><span>🎯 Completion</span><b id="pct">0%</b></div>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="mini">
+            <h3>Filters</h3>
+            <div class="toggle">
+              <label class="switch"><input type="radio" name="mode" value="all" checked> All</label>
+              <label class="switch"><input type="radio" name="mode" value="unknown"> Only unseen</label>
+              <label class="switch"><input type="radio" name="mode" value="known"> Known</label>
+              <label class="switch"><input type="radio" name="mode" value="unsure"> Unsure</label>
+            </div>
+            <div class="small" style="margin-top:10px; line-height:1.5;">
+              Topic filter (top bar) narrows the whole deck.
+            </div>
+          </div>
+
+          <div style="height: 12px"></div>
+
+          <div class="mini">
+            <h3>Study tips</h3>
+            <div class="small" style="line-height:1.6;">
+              • Choose a <b>Topic</b> to focus on one area.<br/>
+              • Use <b>Search</b> to jump to a matching card.<br/>
+              • Shuffle for spaced repetition vibes.<br/>
+              • Export if you want to save/share your progress file.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Built as a single offline HTML file ✨
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const RAW_DECK = [{"q": "A patient with an aspirin overdose presents with tinnitus, nausea, hyperventilation, and a mixed respiratory alkalosis and metabolic acidosis. What is the most likely diagnosis?", "a": "Salicylate overdose.", "topic": "MSRA (CSV 8)"}, {"q": "Which class of diabetes medications, exemplified by pioglitazone, is contraindicated in patients with bladder cancer or heart failure due to fluid retention?", "a": "Thiazolidinediones.", "topic": "MSRA (CSV 8)"}, {"q": "What effect do CYP450 inhibitors have on the metabolism and concentration of other drugs?", "a": "They decrease metabolism, leading to increased drug concentration and therapeutic effect.", "topic": "MSRA (CSV 8)"}, {"q": "What is the mnemonic used to remember common CYP450 inhibitors?", "a": "OAAK DEVICES (Omeprazole, Allopurinol, Amiodarone, Ketoconazole, Disulfiram, Erythromycin, Valproate, Isoniazid, Ciprofloxacin, Ethanol (acute), Sulfas).", "topic": "MSRA (CSV 8)"}, {"q": "What baseline investigations are required before starting a patient on amiodarone?", "a": "TFTs, LFTs, U&Es, CXR, and ECG.", "topic": "MSRA (CSV 8)"}, {"q": "The mnemonic 'DiaBetic Nick’s Sugar InTolerance' helps recall drugs that cause what specific adverse effect?", "a": "Impaired glucose tolerance.", "topic": "MSRA (CSV 8)"}, {"q": "Which corticosteroid is listed as a cause of impaired glucose tolerance under the 'DiaBetic Nick’s Sugar InTolerance' mnemonic?", "a": "Prednisolone.", "topic": "MSRA (CSV 8)"}, {"q": "After commencing ramipril, a patient's creatinine rises from 72 to 80 after two weeks. What is the subsequent monitoring schedule for U&Es?", "a": "Monthly for 3 months, then every 6 months.", "topic": "MSRA (CSV 8)"}, {"q": "The mnemonic 'Terminate DAN’s (urine) Output' is used to remember drugs that cause which side effect?", "a": "Urinary retention.", "topic": "MSRA (CSV 8)"}, {"q": "Which class of drugs, including codeine, is a common cause of urinary retention according to the 'Terminate DAN’s Output' mnemonic?", "a": "Opiates.", "topic": "MSRA (CSV 8)"}, {"q": "What is the specific antidote used in the management of iron poisoning (e.g., ferrous sulfate overdose)?", "a": "Desferrioxamine.", "topic": "MSRA (CSV 8)"}, {"q": "What is the first-line medication for managing nausea and vomiting in palliative care patients without bowel obstruction?", "a": "Levomepromazine.", "topic": "MSRA (CSV 8)"}, {"q": "For a patient in palliative care with an eGFR < 30, which opioid is preferred over morphine for managing pain and breathlessness?", "a": "Fentanyl or alfentanil.", "topic": "MSRA (CSV 8)"}, {"q": "What is the recommended frequency for TSH monitoring in a patient on a stable dose of levothyroxine for over 6 months?", "a": "Annually.", "topic": "MSRA (CSV 8)"}, {"q": "A patient presents with alcohol-like intoxication, a high anion gap metabolic acidosis, and acute kidney injury after an overdose. What substance is the most likely cause?", "a": "Ethylene glycol.", "topic": "MSRA (CSV 8)"}, {"q": "Which medication is co-prescribed with cyclophosphamide to reduce the risk of haemorrhagic cystitis?", "a": "Mesna (sodium 2-mercaptoethane sulfonate).", "topic": "MSRA (CSV 8)"}, {"q": "What screening test must be performed before starting a patient on azathioprine to avoid severe bone marrow suppression?", "a": "TPMT (thiopurine methyltransferase) activity testing.", "topic": "MSRA (CSV 8)"}, {"q": "What is the ongoing monitoring schedule for a patient on a stable dose of sodium valproate?", "a": "Annual FBC, LFTs, and BMI.", "topic": "MSRA (CSV 8)"}, {"q": "Trastuzumab (Herceptin), used for HER2-positive breast cancer, carries a risk of what major adverse effect, requiring baseline and regular monitoring?", "a": "Cardiotoxicity.", "topic": "MSRA (CSV 8)"}, {"q": "For an acute paracetamol overdose of 120 mg/kg taken 2 hours ago, when should bloods be checked to determine the need for N-acetylcysteine?", "a": "At 4 hours post-ingestion.", "topic": "MSRA (CSV 8)"}, {"q": "A patient develops chest pain and palpitations a few days after starting chemotherapy. Which agent is known for causing acute cardiotoxicity like myopericarditis?", "a": "Doxorubicin (an anthracycline).", "topic": "MSRA (CSV 8)"}, {"q": "Metformin is contraindicated in patients with an eGFR below what threshold due to the risk of lactic acidosis?", "a": "eGFR <30 mL/min.", "topic": "MSRA (CSV 8)"}, {"q": "What effect do CYP450 inducers have on the metabolism and concentration of other drugs?", "a": "They increase metabolism, leading to decreased drug concentration and therapeutic effect.", "topic": "MSRA (CSV 8)"}, {"q": "What is the mnemonic for remembering common CYP450 inducers?", "a": "PCBRASSS (Phenytoin, Carbamazepine, Barbiturates, Rifampicin, Alcohol (chronic), St John's Wort, Smoking, Sulfonylureas).", "topic": "MSRA (CSV 8)"}, {"q": "For a patient on warfarin whose INR has become elevated (e.g., INR 6) after starting a new medication, which CYP450 _____ is likely responsible?", "a": "inhibitor", "topic": "MSRA (CSV 8)"}, {"q": "In an acute paracetamol overdose where >150 mg/kg was ingested 30 minutes ago, what is the most appropriate immediate management?", "a": "Activated charcoal.", "topic": "MSRA (CSV 8)"}, {"q": "Which antibiotic is contraindicated in patients with myasthenia gravis as it can precipitate a crisis?", "a": "Gentamicin (aminoglycosides).", "topic": "MSRA (CSV 8)"}, {"q": "For managing pain in a palliative care patient with an eGFR of 20, what is the first-line opioid choice?", "a": "Fentanyl or alfentanil.", "topic": "MSRA (CSV 8)"}, {"q": "The mnemonic 'The 5 C’s of agranuloCytosis' includes which common anticonvulsant medication?", "a": "Carbamazepine.", "topic": "MSRA (CSV 8)"}, {"q": "What is the management for a tricyclic antidepressant (TCA) overdose that presents with a widened QRS complex on ECG?", "a": "IV sodium bicarbonate.", "topic": "MSRA (CSV 8)"}, {"q": "Salicylate overdose is characterized by tinnitus, hyperventilation, hypoglycaemia, and a mixed _____ and _____.", "a": "respiratory alkalosis; metabolic acidosis", "topic": "MSRA (CSV 8)"}, {"q": "What is the antidote for beta-blocker (e.g., carvedilol) overdose?", "a": "Glucagon.", "topic": "MSRA (CSV 8)"}, {"q": "The mnemonic 'NE SCARs' is used to recall drugs causing which serious pulmonary side effect?", "a": "Pulmonary fibrosis.", "topic": "MSRA (CSV 8)"}, {"q": "Which rheumatoid arthritis drug is a known cause of pulmonary fibrosis, as indicated by the 'NE SCARs' mnemonic?", "a": "Methotrexate.", "topic": "MSRA (CSV 8)"}, {"q": "A patient on clozapine develops a sore throat and fever. What is the immediate action and investigation required?", "a": "Stop the drug and check FBC immediately for agranulocytosis.", "topic": "MSRA (CSV 8)"}, {"q": "What is the first-line medication for managing respiratory secretions (the 'death rattle') in end-of-life care?", "a": "Hyoscine butylbromide or glycopyrronium bromide.", "topic": "MSRA (CSV 8)"}, {"q": "A patient on warfarin has a subtherapeutic INR after starting a new medication. The new drug is likely a CYP450 _____.", "a": "inducer", "topic": "MSRA (CSV 8)"}, {"q": "When starting a patient on a statin, if the non-HDL cholesterol has not decreased by at least 40% after 3 months, what is the next step?", "a": "Increase the dose of the statin.", "topic": "MSRA (CSV 8)"}, {"q": "What is the first-line treatment for ethylene glycol or methanol poisoning?", "a": "Fomepizole.", "topic": "MSRA (CSV 8)"}, {"q": "A woman becomes pregnant despite good compliance with her oral contraceptive pill after starting a new medication. Which CYP450 inducer is a likely cause?", "a": "Rifampicin.", "topic": "MSRA (CSV 8)"}, {"q": "What is the recommended dose of breakthrough analgesia for a patient on regular modified-release morphine?", "a": "1/6th of the total daily opioid dose, given as an immediate-release formulation.", "topic": "MSRA (CSV 8)"}, {"q": "What is the standard opioid conversion ratio from oral codeine to oral morphine?", "a": "Oral codeine is 1/10th the strength of oral morphine (e.g., 60 mg codeine = 6 mg morphine).", "topic": "MSRA (CSV 8)"}, {"q": "What is the ongoing monitoring schedule for a patient on amiodarone?", "a": "TFTs, U&Es, and LFTs every 6 months, with an annual ECG.", "topic": "MSRA (CSV 8)"}, {"q": "Which chemotherapy agent is most associated with dose-dependent pulmonary fibrosis?", "a": "Bleomycin.", "topic": "MSRA (CSV 8)"}, {"q": "For a patient with an eGFR > 30 in the final days of life, what is the first-line medication for managing breathlessness?", "a": "Morphine sulfate.", "topic": "MSRA (CSV 8)"}, {"q": "What is a characteristic visual side effect of PDE5 inhibitors like sildenafil?", "a": "Blue discolouration of vision (cyanopsia).", "topic": "MSRA (CSV 8)"}, {"q": "The mnemonic 'STan’s TAN' helps recall drugs that cause what adverse reaction related to sun exposure?", "a": "Photosensitivity.", "topic": "MSRA (CSV 8)"}, {"q": "Which antibiotic class, including doxycycline, is known to cause photosensitivity?", "a": "Tetracyclines.", "topic": "MSRA (CSV 8)"}, {"q": "Before starting allopurinol in patients of Han Chinese, Thai, or Korean origin, what screening is required to prevent SJS/TENS?", "a": "Screening for the HLA-B*58:01 allele.", "topic": "MSRA (CSV 8)"}, {"q": "A patient on chemotherapy develops muscle weakness and cramps, with bloods showing hypomagnesaemia and hypocalcaemia. Which drug is the likely cause?", "a": "Cisplatin.", "topic": "MSRA (CSV 8)"}, {"q": "What is the full monitoring schedule for a patient starting methotrexate?", "a": "FBC/UE/LFTs every 2 weeks until stable for 6 weeks, then monthly for 3 months, then at least every 3 months.", "topic": "MSRA (CSV 8)"}, {"q": "Which class of antibiotics is contraindicated in pregnancy due to the risk of teeth discolouration in the fetus?", "a": "Tetracyclines.", "topic": "MSRA (CSV 8)"}, {"q": "What is a very common and well-known side effect of calcium channel blockers like amlodipine?", "a": "Ankle swelling.", "topic": "MSRA (CSV 8)"}, {"q": "Which chemotherapy agent requires a baseline echocardiogram due to its risk of both acute and long-term cardiotoxicity?", "a": "Doxorubicin.", "topic": "MSRA (CSV 8)"}, {"q": "What is the initial management for a patient with a mild-to-moderate lithium overdose who is conscious and alert?", "a": "IV 0.9% sodium chloride.", "topic": "MSRA (CSV 8)"}, {"q": "The mnemonic 'MY CUSHINGOID' lists the side effects of which class of drugs?", "a": "Corticosteroids.", "topic": "MSRA (CSV 8)"}, {"q": "A patient on ciprofloxacin complains of tendon pain. This is a classic side effect of which antibiotic class?", "a": "Quinolones.", "topic": "MSRA (CSV 8)"}, {"q": "Which chemotherapy agent is known for causing haemorrhagic cystitis due to its toxic metabolite, acrolein?", "a": "Cyclophosphamide.", "topic": "MSRA (CSV 8)"}, {"q": "What is the mainstay of treatment for a significant beta-blocker overdose that is unresponsive to atropine?", "a": "Glucagon.", "topic": "MSRA (CSV 8)"}, {"q": "Facial puffiness and ankle swelling due to water retention are known side effects of which corticosteroid used in chemotherapy regimens?", "a": "Dexamethasone.", "topic": "MSRA (CSV 8)"}, {"q": "A patient with bipolar disorder presents with a coarse tremor, ataxia, hyperreflexia, and nystagmus. What is the most likely diagnosis?", "a": "Lithium overdose.", "topic": "MSRA (CSV 8)"}, {"q": "What is the first-line medication for managing agitation and anxiety in end-of-life care?", "a": "Midazolam.", "topic": "MSRA (CSV 8)"}, {"q": "A patient on warfarin has a dangerously high INR of 7 after starting a new medication. The new drug is likely a CYP450 _____.", "a": "inhibitor", "topic": "MSRA (CSV 8)"}, {"q": "Which common antibiotic for UTIs is a known cause of pulmonary fibrosis?", "a": "Nitrofurantoin.", "topic": "MSRA (CSV 8)"}, {"q": "Clozapine is indicated for treatment-resistant schizophrenia and has a notable side effect of _____, which can be managed with hyoscine butylbromide.", "a": "hypersalivation", "topic": "MSRA (CSV 8)"}, {"q": "What is the antidote for heparin (e.g., dalteparin) overdose?", "a": "Protamine sulfate.", "topic": "MSRA (CSV 8)"}, {"q": "For a patient presenting 12 hours after an acute paracetamol overdose of >150 mg/kg, what is the immediate management?", "a": "Commence N-acetylcysteine (NAC) immediately while awaiting blood results.", "topic": "MSRA (CSV 8)"}, {"q": "What is the monitoring requirement for pioglitazone due to its risk of liver impairment?", "a": "Periodic monitoring of LFTs.", "topic": "MSRA (CSV 8)"}, {"q": "Amiodarone is known to cause photosensitivity, which is recalled by what mnemonic?", "a": "STan's TAN.", "topic": "MSRA (CSV 8)"}, {"q": "What is the first-line medication for nausea and vomiting in a palliative care patient with a suspected bowel obstruction?", "a": "Hyoscine butylbromide.", "topic": "MSRA (CSV 8)"}, {"q": "Proton pump inhibitors (PPIs) like lansoprazole can cause what electrolyte abnormality by decreasing intestinal absorption?", "a": "Hypomagnesaemia.", "topic": "MSRA (CSV 8)"}, {"q": "Which chemotherapy agent is most associated with peripheral neuropathy, often presenting in a 'glove and stocking' pattern?", "a": "Vincristine.", "topic": "MSRA (CSV 8)"}, {"q": "When starting an ACE inhibitor like ramipril, what is the initial monitoring plan?", "a": "Baseline U&Es and BP, repeated 1-2 weeks after starting.", "topic": "MSRA (CSV 8)"}, {"q": "Why should thiazolidinediones (e.g., pioglitazone) be avoided in patients with heart failure?", "a": "They exacerbate fluid retention.", "topic": "MSRA (CSV 8)"}, {"q": "A patient presents with tinnitus, vomiting, hyperventilation, and hypoglycaemia after an overdose. Which substance is the most likely cause?", "a": "Aspirin (salicylates).", "topic": "MSRA (CSV 8)"}, {"q": "A patient with 'cherry-red' flushed skin, headache, and a falsely normal pulse oximetry reading is likely suffering from what type of poisoning?", "a": "Carbon monoxide (CO) poisoning.", "topic": "MSRA (CSV 8)"}, {"q": "What is the management for any patient who has taken a staggered paracetamol overdose?", "a": "Commence N-acetylcysteine (NAC) immediately and send bloods.", "topic": "MSRA (CSV 8)"}, {"q": "What is the monitoring schedule for a patient on atorvastatin?", "a": "Lipid profile and LFTs at 3 months, then LFTs at 12 months. CK only if symptomatic.", "topic": "MSRA (CSV 8)"}, {"q": "The antibiotic nitrofurantoin is contraindicated if a patient's eGFR is below what value?", "a": "eGFR <45 mL/min.", "topic": "MSRA (CSV 8)"}, {"q": "A patient on carbimazole presents with a sore throat and fever. This is a red flag for what serious adverse effect?", "a": "Agranulocytosis.", "topic": "MSRA (CSV 8)"}, {"q": "What is the first-line antidote for organophosphate poisoning?", "a": "Atropine.", "topic": "MSRA (CSV 8)"}, {"q": "In a patient with salicylate (aspirin) overdose and metabolic acidosis, what is a key management step?", "a": "IV sodium bicarbonate.", "topic": "MSRA (CSV 8)"}, {"q": "What is the acceptable percentage increase in creatinine after starting an ACE inhibitor before the dose needs to be reduced or stopped?", "a": "Up to a 30% increase is acceptable.", "topic": "MSRA (CSV 8)"}, {"q": "Rate-limiting calcium channel blockers like verapamil and diltiazem should be avoided in which cardiac condition?", "a": "Heart failure (due to negative inotropic effects).", "topic": "MSRA (CSV 8)"}, {"q": "What anti-epileptic drug is highly teratogenic and should be avoided in all women of childbearing potential due to the risk of neural tube defects?", "a": "Sodium valproate.", "topic": "MSRA (CSV 8)"}, {"q": "The clinical features of opiate overdose are respiratory depression, decreased level of consciousness, and _____.", "a": "pinpoint pupils (miosis)", "topic": "MSRA (CSV 8)"}, {"q": "What is the first-line anticoagulant used during pregnancy, as warfarin is teratogenic?", "a": "Low molecular weight heparin (LMWH).", "topic": "MSRA (CSV 8)"}, {"q": "Digoxin toxicity is precipitated by which electrolyte imbalance?", "a": "Hypokalaemia.", "topic": "MSRA (CSV 8)"}, {"q": "What is the antidote for benzodiazepine overdose?", "a": "Flumazenil.", "topic": "MSRA (CSV 8)"}, {"q": "Mefloquine, an antimalarial, is contraindicated in patients with a history of what conditions?", "a": "Psychiatric illness or seizures.", "topic": "MSRA (CSV 8)"}, {"q": "The 'OH BETA!' mnemonic for beta-blocker side effects includes orthostatic hypotension, bronchospasm, erectile dysfunction, and _____.", "a": "trouble sleeping and vivid dreams", "topic": "MSRA (CSV 8)"}, {"q": "Haemodialysis is indicated for severe lithium overdose, defined as a lithium level >5 mmol/L or >4 mmol/L in the presence of _____.", "a": "renal failure", "topic": "MSRA (CSV 8)"}, {"q": "What is the first-line management for a patient with carbon monoxide poisoning?", "a": "100% oxygen via a non-rebreathe mask.", "topic": "MSRA (CSV 8)"}, {"q": "Amiodarone side effects are recalled by the mnemonic 'Amiodarone is a BITCH'. What does the 'B' stand for?", "a": "Blue skin discolouration.", "topic": "MSRA (CSV 8)"}, {"q": "What is the management for an N-acetylcysteine (NAC) infusion reaction, such as a rash or wheeze?", "a": "Pause the infusion, administer antihistamines/steroids, and restart once symptoms settle.", "topic": "MSRA (CSV 8)"}];
+
+  const LS_KEY = "flashcards_progress_v2";
+  const LS_ORDER = "flashcards_order_v2";
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function nowISO() { return new Date().toISOString(); }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
+  }
+
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function saveProgress(p) { localStorage.setItem(LS_KEY, JSON.stringify(p)); }
+
+  function loadOrder() {
+    try {
+      const o = JSON.parse(localStorage.getItem(LS_ORDER) || "null");
+      if (Array.isArray(o) && o.length === RAW_DECK.length) return o;
+      return null;
+    } catch (e) { return null; }
+  }
+  function saveOrder(order) { localStorage.setItem(LS_ORDER, JSON.stringify(order)); }
+
+  const deck = RAW_DECK.map((c, i) => ({
+    id: i,
+    q: (c.q || "").trim(),
+    a: (c.a || "").trim(),
+    topic: (c.topic || "Other").trim(),
+    qLower: (c.q || "").toLowerCase(),
+    aLower: (c.a || "").toLowerCase(),
+    topicLower: (c.topic || "other").toLowerCase(),
+  }));
+
+  let progress = loadProgress();
+  let order = loadOrder() || deck.map(c => c.id);
+
+  let mode = "all";
+  let searchTerm = "";
+  let topicFilter = "__ALL__";
+  let view = [];
+  let pos = 0;
+
+  function statusOf(id) {
+    return (progress[id] && progress[id].status) || null;
+  }
+  function seenOf(id) {
+    return !!(progress[id] && progress[id].seen);
+  }
+
+  function recomputeView(keepCurrentId=true) {
+    const prevId = view[pos];
+    const term = (searchTerm || "").trim().toLowerCase();
+
+    view = order.filter(id => {
+      const c = deck[id];
+      const st = statusOf(id);
+      const seen = seenOf(id);
+
+      if (mode === "unknown" && (seen || st)) return false;
+      if (mode === "known" && st !== "known") return false;
+      if (mode === "unsure" && st !== "unsure") return false;
+
+      if (topicFilter !== "__ALL__" && c.topic !== topicFilter) return false;
+
+      if (term) {
+        return c.qLower.includes(term) || c.aLower.includes(term) || c.topicLower.includes(term);
+      }
+      return true;
+    });
+
+    document.getElementById("total").textContent = view.length;
+
+    const badge = document.getElementById("filterBadge");
+    let label = "All";
+    if (mode === "unknown") label = "Only unseen";
+    if (mode === "known") label = "Known";
+    if (mode === "unsure") label = "Unsure";
+    if (topicFilter !== "__ALL__") label = topicFilter + " • " + label;
+    if (term) label += " • Search";
+    badge.textContent = label;
+
+    if (view.length === 0) {
+      pos = 0;
+      renderEmpty();
+      updateStats();
+      return;
+    }
+
+    if (keepCurrentId && prevId != null) {
+      const newPos = view.indexOf(prevId);
+      pos = newPos >= 0 ? newPos : clamp(pos, 0, view.length - 1);
+    } else {
+      pos = clamp(pos, 0, view.length - 1);
+    }
+    renderCard();
+    updateStats();
+  }
+
+  function renderEmpty() {
+    document.getElementById("qText").textContent = "No cards match your filter/search 🤷‍♂️";
+    document.getElementById("aText").textContent = "Try clearing search or switching filters.";
+    document.getElementById("topicTagQ").textContent = "🧩 Topic";
+    document.getElementById("topicTagA").textContent = "🧩 Topic";
+    document.getElementById("idx").textContent = "0";
+    document.getElementById("bar").style.width = "0%";
+    document.getElementById("qLen").textContent = "";
+    document.getElementById("aLen").textContent = "";
+    document.getElementById("card").classList.remove("flipped");
+  }
+
+  function markSeen(id) {
+    progress[id] = progress[id] || {};
+    if (!progress[id].seen) {
+      progress[id].seen = true;
+      progress[id].updatedAt = nowISO();
+      saveProgress(progress);
+    }
+  }
+
+  function setStatus(id, s) {
+    progress[id] = progress[id] || {};
+    progress[id].status = s;
+    progress[id].seen = true;
+    progress[id].updatedAt = nowISO();
+    saveProgress(progress);
+  }
+
+  function renderCard() {
+    if (view.length === 0) return renderEmpty();
+    const id = view[pos];
+    const c = deck[id];
+
+    markSeen(id);
+
+    document.getElementById("qText").textContent = c.q || "(no question)";
+    document.getElementById("aText").textContent = c.a || "(no answer)";
+    document.getElementById("topicTagQ").textContent = "🧩 " + c.topic;
+    document.getElementById("topicTagA").textContent = "🧩 " + c.topic;
+
+    document.getElementById("idx").textContent = String(pos + 1);
+
+    const pct = ((pos + 1) / view.length) * 100;
+    document.getElementById("bar").style.width = pct.toFixed(1) + "%";
+
+    document.getElementById("qLen").textContent = c.q.length ? ("📝 " + c.q.length + " chars") : "";
+    document.getElementById("aLen").textContent = c.a.length ? ("📝 " + c.a.length + " chars") : "";
+
+    const st = statusOf(id);
+    if (st === "known") toast("✅ You previously marked this as Known");
+    if (st === "unsure") toast("🤔 You previously marked this as Unsure");
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const ids = deck.map(c => c.id);
+    let known = 0, unsure = 0, seen = 0;
+    for (const id of ids) {
+      const st = statusOf(id);
+      if (st === "known") known++;
+      if (st === "unsure") unsure++;
+      if (seenOf(id) || st) seen++;
+    }
+    document.getElementById("knownCount").textContent = known;
+    document.getElementById("unsureCount").textContent = unsure;
+    document.getElementById("seenCount").textContent = seen;
+    const completion = ids.length ? Math.round((known / ids.length) * 100) : 0;
+    document.getElementById("pct").textContent = completion + "%";
+  }
+
+  function flip() { document.getElementById("card").classList.toggle("flipped"); }
+  function next() {
+    if (view.length === 0) return;
+    pos = (pos + 1) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+  function prev() {
+    if (view.length === 0) return;
+    pos = (pos - 1 + view.length) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+
+  function shuffleOrder() {
+    const arr = order.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    order = arr;
+    saveOrder(order);
+    recomputeView(false);
+    toast("🔀 Shuffled!");
+  }
+
+  function resetAll() {
+    if (!confirm("Reset your progress (Known/Unsure/Seen) and shuffle order?")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_ORDER);
+    progress = loadProgress();
+    order = deck.map(c => c.id);
+    searchTerm = "";
+    topicFilter = "__ALL__";
+    document.getElementById("search").value = "";
+    document.getElementById("topicSelect").value = "__ALL__";
+    mode = "all";
+    document.querySelector('input[name="mode"][value="all"]').checked = true;
+    recomputeView(false);
+    toast("♻️ Reset done!");
+  }
+
+  function exportProgress() {
+    const payload = {
+      exportedAt: nowISO(),
+      deckSize: deck.length,
+      progress,
+      order
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flashcards_progress.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("⬇️ Exported progress");
+  }
+
+  document.getElementById("card").addEventListener("click", flip);
+  document.getElementById("flipBtn").addEventListener("click", flip);
+  document.getElementById("nextBtn").addEventListener("click", next);
+  document.getElementById("prevBtn").addEventListener("click", prev);
+  document.getElementById("shuffleBtn").addEventListener("click", shuffleOrder);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("downloadBtn").addEventListener("click", exportProgress);
+
+  document.getElementById("knownBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "known");
+    toast("✅ Marked Known");
+    next();
+  });
+
+  document.getElementById("unsureBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "unsure");
+    toast("🤔 Marked Unsure");
+    next();
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    searchTerm = e.target.value || "";
+    recomputeView(true);
+  });
+
+  document.getElementById("topicSelect").addEventListener("change", (e) => {
+    topicFilter = e.target.value;
+    recomputeView(false);
+  });
+
+  for (const r of document.querySelectorAll('input[name="mode"]')) {
+    r.addEventListener("change", (e) => {
+      mode = e.target.value;
+      recomputeView(true);
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+    const typing = tag === "input" || tag === "textarea" || tag === "select";
+    if (typing) return;
+
+    if (e.key === " " ) { e.preventDefault(); flip(); }
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === "ArrowLeft") prev();
+    else if (e.key.toLowerCase() === "s") shuffleOrder();
+    else if (e.key.toLowerCase() === "k") {
+      if (view.length) { setStatus(view[pos], "known"); toast("✅ Known"); next(); }
+    }
+    else if (e.key.toLowerCase() === "u") {
+      if (view.length) { setStatus(view[pos], "unsure"); toast("🤔 Unsure"); next(); }
+    }
+  });
+
+  document.getElementById("deckName").textContent = "Deck • " + deck.length + " cards";
+  recomputeView(false);
+</script>
+</body>
+</html>
