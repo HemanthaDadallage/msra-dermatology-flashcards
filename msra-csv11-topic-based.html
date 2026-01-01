@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MSRA Flash Cards — CSV 11</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #160b2a;
+      --glass: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 22px;
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(1000px 700px at 85% 15%, rgba(6,182,212,.32), transparent 55%),
+        radial-gradient(900px 600px at 55% 90%, rgba(245,158,11,.25), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+    .blob { position: fixed; width: 420px; height: 420px; filter: blur(40px); opacity: .55; z-index: -1; border-radius: 999px; animation: float 9s ease-in-out infinite; pointer-events: none; }
+    .b1 { left: -120px; top: -140px; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.95), rgba(124,58,237,.05)); }
+    .b2 { right: -140px; top: 60px; background: radial-gradient(circle at 40% 40%, rgba(6,182,212,.95), rgba(6,182,212,.05)); animation-duration: 12s; }
+    .b3 { left: 35%; bottom: -180px; background: radial-gradient(circle at 35% 40%, rgba(245,158,11,.9), rgba(245,158,11,.05)); animation-duration: 14s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18px, -22px) scale(1.05); } }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 18px 38px; }
+    header { display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:44px; height:44px; border-radius:14px; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); box-shadow: 0 12px 30px rgba(0,0,0,.35); position:relative; overflow:hidden; }
+    .logo:after { content:""; position:absolute; inset:-40%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%); transform: rotate(18deg); opacity: .6; }
+    h1 { font-size:20px; margin:0; letter-spacing:.3px; }
+    .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; width:100%; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:9px 12px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.25); }
+    .pill input[type="search"] { width: 220px; max-width: 70vw; background:transparent; border:none; outline:none; color:var(--text); font-size:14px; }
+    .pill select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      appearance: none;
+      padding-right: 18px;
+      cursor: pointer;
+    }
+    .pill select option { color: #111; }
+    .pill .caret { opacity: .75; }
+
+    .btn { border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.10); color: var(--text); padding: 10px 12px; border-radius:14px; cursor:pointer; transition: transform .08s ease, background .2s ease, border-color .2s ease; user-select:none; box-shadow: 0 10px 26px rgba(0,0,0,.22); backdrop-filter: blur(10px); display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13px; }
+    .btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn.primary { border:none; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); }
+    .btn.good { border:none; background: linear-gradient(135deg, rgba(34,197,94,1), rgba(6,182,212,1)); }
+    .btn.bad { border:none; background: linear-gradient(135deg, rgba(239,68,68,1), rgba(245,158,11,1)); }
+
+    .grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; align-items:stretch; margin-top:14px; }
+    @media (max-width:900px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(12px); overflow:hidden; }
+    .panel-head { padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border-bottom: 1px solid rgba(255,255,255,.12); }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; color: var(--muted); font-size: 13px; }
+    .badge { padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.85); font-weight:700; letter-spacing:.2px; }
+
+    .progress { height: 10px; border-radius:999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.12); overflow:hidden; min-width:220px; }
+    .bar { height:100%; width:0%; background: linear-gradient(90deg, rgba(124,58,237,1), rgba(6,182,212,1), rgba(34,197,94,1)); border-radius:999px; transition: width .25s ease; }
+
+    .stage { padding: 18px; display:grid; place-items:center; }
+    .card { width: min(720px, 100%); height: 360px; perspective: 1400px; }
+    .inner { width:100%; height:100%; position:relative; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+    .card.flipped .inner { transform: rotateY(180deg); }
+    .face { position:absolute; inset:0; border-radius:26px; border: 1px solid rgba(255,255,255,.20); box-shadow: 0 22px 60px rgba(0,0,0,.45); overflow:hidden; backface-visibility:hidden; display:flex; flex-direction:column; }
+    .face::before { content:""; position:absolute; inset:0; background: radial-gradient(900px 500px at 10% 20%, rgba(255,255,255,.18), transparent 55%), radial-gradient(700px 500px at 90% 20%, rgba(255,255,255,.16), transparent 55%), radial-gradient(800px 650px at 50% 120%, rgba(0,0,0,.25), transparent 60%); pointer-events:none; }
+    .qface { background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(6,182,212,.70)); }
+    .aface { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(34,197,94,.82), rgba(245,158,11,.65)); }
+
+    .tagrow { display:flex; gap:10px; flex-wrap:wrap; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; margin:14px 14px 0; border-radius:999px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.22); width: fit-content; font-weight:800; letter-spacing:.2px; font-size:12px; }
+    .tag.topic { background: rgba(0,0,0,.22); }
+
+    .content { flex:1; padding: 18px 20px 16px; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; }
+    .text { font-size:22px; line-height:1.3; font-weight:800; text-shadow: 0 2px 14px rgba(0,0,0,.25); white-space: pre-wrap; }
+    .small { font-weight:700; font-size:14px; color: rgba(255,255,255,.85); text-shadow:none; }
+    .hint { padding: 10px 16px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.80); font-size:12px; }
+    kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,.20); border: 1px solid rgba(255,255,255,.18); }
+
+    .controls { padding: 16px; border-top: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .left, .right { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .stats { padding: 14px 16px 16px; }
+    .statgrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; box-shadow: 0 10px 24px rgba(0,0,0,.20); }
+    .stat b { font-size:18px; }
+    .stat span { color: var(--muted); font-weight:700; font-size:12px; }
+
+    .list { padding: 10px 16px 16px; }
+    .mini { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+    .mini h3 { margin:0 0 8px; font-size:14px; letter-spacing:.2px; }
+    .toggle { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .switch { display:inline-flex; align-items:center; gap:8px; padding: 8px 10px; border-radius:999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); cursor:pointer; user-select:none; font-size:12px; font-weight:800; color: rgba(255,255,255,.88); }
+    .switch input { accent-color:white; }
+
+    .footer { margin-top:14px; color: rgba(255,255,255,.55); font-size:12px; text-align:center; }
+
+    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.92); padding: 10px 12px; border-radius:999px; box-shadow: 0 18px 50px rgba(0,0,0,.35); backdrop-filter: blur(10px); opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; font-weight:700; font-size:13px; }
+    .toast.show { opacity:1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>MSRA Flash Cards — CSV 11</h1>
+          <div class="subtitle">Categorised by topic • <kbd>Space</kbd> flip, <kbd>←</kbd>/<kbd>→</kbd> navigate, <kbd>S</kbd> shuffle</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="pill" title="Topic filter">
+          🧩
+          <select id="topicSelect" aria-label="Topic">
+            <option value="__ALL__">All topics</option>
+            <option value="Autoimmune &amp; blistering">Autoimmune &amp; blistering (4)</option>
+<option value="Benign lesions &amp; tumours">Benign lesions &amp; tumours (4)</option>
+<option value="Drug reactions">Drug reactions (4)</option>
+<option value="Emergencies">Emergencies (5)</option>
+<option value="Hair &amp; nails">Hair &amp; nails (5)</option>
+<option value="Infections &amp; infestations">Infections &amp; infestations (17)</option>
+<option value="Inflammatory conditions">Inflammatory conditions (26)</option>
+<option value="Other dermatology">Other dermatology (33)</option>
+<option value="Pigment disorders">Pigment disorders (4)</option>
+<option value="Skin cancer &amp; premalignant">Skin cancer &amp; premalignant (20)</option>
+<option value="Vascular &amp; ulcers">Vascular &amp; ulcers (5)</option>
+          </select>
+          <span class="caret">▾</span>
+        </div>
+
+        <div class="pill" title="Search questions/answers">
+          🔎
+          <input id="search" type="search" placeholder="Search (e.g., melanoma, BCC, scabies…)" autocomplete="off" />
+        </div>
+
+        <button class="btn" id="shuffleBtn" title="Shuffle deck (S)">🔀 Shuffle</button>
+        <button class="btn" id="resetBtn" title="Reset progress">♻️ Reset</button>
+        <button class="btn primary" id="downloadBtn" title="Download your progress as JSON">⬇️ Export</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge" id="deckName">Deck</span>
+            <span>Card <b id="idx">1</b>/<b id="total">0</b></span>
+            <span class="badge" id="filterBadge">All</span>
+          </div>
+          <div class="progress" aria-label="Progress">
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="card" id="card" role="button" aria-label="Flashcard (click to flip)" tabindex="0">
+            <div class="inner">
+              <div class="face qface">
+                <div class="tagrow">
+                  <div class="tag">❓ Question</div>
+                  <div class="tag topic" id="topicTagQ">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="qText"></div>
+                </div>
+                <div class="hint">
+                  <span>Tip: press <kbd>Space</kbd> to flip</span>
+                  <span class="small" id="qLen"></span>
+                </div>
+              </div>
+
+              <div class="face aface">
+                <div class="tagrow">
+                  <div class="tag">✅ Answer</div>
+                  <div class="tag topic" id="topicTagA">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="aText"></div>
+                </div>
+                <div class="hint">
+                  <span>Mark it: <kbd>K</kbd> Known, <kbd>U</kbd> Unsure</span>
+                  <span class="small" id="aLen"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="left">
+            <button class="btn" id="prevBtn" title="Previous (←)">⬅️ Prev</button>
+            <button class="btn" id="flipBtn" title="Flip (Space)">🪄 Flip</button>
+            <button class="btn" id="nextBtn" title="Next (→)">Next ➡️</button>
+          </div>
+          <div class="right">
+            <button class="btn good" id="knownBtn" title="Mark known (K)">✅ Known</button>
+            <button class="btn bad" id="unsureBtn" title="Mark unsure (U)">🤔 Unsure</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge">Dashboard</span>
+            <span class="small">Progress is saved in your browser (localStorage).</span>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="statgrid">
+            <div class="stat"><span>✅ Known</span><b id="knownCount">0</b></div>
+            <div class="stat"><span>🤔 Unsure</span><b id="unsureCount">0</b></div>
+            <div class="stat"><span>🧠 Seen</span><b id="seenCount">0</b></div>
+            <div class="stat"><span>🎯 Completion</span><b id="pct">0%</b></div>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="mini">
+            <h3>Filters</h3>
+            <div class="toggle">
+              <label class="switch"><input type="radio" name="mode" value="all" checked> All</label>
+              <label class="switch"><input type="radio" name="mode" value="unknown"> Only unseen</label>
+              <label class="switch"><input type="radio" name="mode" value="known"> Known</label>
+              <label class="switch"><input type="radio" name="mode" value="unsure"> Unsure</label>
+            </div>
+            <div class="small" style="margin-top:10px; line-height:1.5;">
+              Topic filter (top bar) narrows the whole deck.
+            </div>
+          </div>
+
+          <div style="height: 12px"></div>
+
+          <div class="mini">
+            <h3>Study tips</h3>
+            <div class="small" style="line-height:1.6;">
+              • Choose a <b>Topic</b> to focus on one area.<br/>
+              • Use <b>Search</b> to jump to a matching card.<br/>
+              • Shuffle for spaced repetition vibes.<br/>
+              • Export if you want to save/share your progress file.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Built as a single offline HTML file ✨
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const RAW_DECK = [{"q": "What is the gold-standard investigation for diagnosing bronchiectasis?", "a": "High-resolution computed tomography (HRCT) of the chest.", "topic": "MSRA (CSV 11)"}, {"q": "The _____ sign on an HRCT chest scan, where a dilated bronchus is seen adjacent to its accompanying artery, is characteristic of bronchiectasis.", "a": "signet ring", "topic": "MSRA (CSV 11)"}, {"q": "In bronchiectasis, what is the term for parallel thickened bronchial walls seen on a chest X-ray?", "a": "Tramlines.", "topic": "MSRA (CSV 11)"}, {"q": "What are three common categories of causes for bronchiectasis?", "a": "Post-infective (e.g., TB, pneumonia), genetic (e.g., cystic fibrosis), and immunodeficiency.", "topic": "MSRA (CSV 11)"}, {"q": "What is the classic triad of symptoms in Yellow Nail Syndrome?", "a": "Thick yellow nails, pleural effusions, and bronchiectasis.", "topic": "MSRA (CSV 11)"}, {"q": "A patient with bronchiectasis presents with a chronic productive cough. What is the typical character of the sputum?", "a": "Copious and mucopurulent.", "topic": "MSRA (CSV 11)"}, {"q": "What type of pattern is typically seen on spirometry in a patient with bronchiectasis?", "a": "An obstructive pattern, with an FEV1/FVC ratio < 0.7.", "topic": "MSRA (CSV 11)"}, {"q": "For a patient with bronchiectasis having three or more exacerbations per year, what prophylactic antibiotic therapy is recommended?", "a": "Long-term azithromycin or erythromycin.", "topic": "MSRA (CSV 11)"}, {"q": "What is the most common pathogen causing infective exacerbations of bronchiectasis?", "a": "Haemophilus influenzae.", "topic": "MSRA (CSV 11)"}, {"q": "What is the recommended antibiotic treatment for a non-severe infective exacerbation of bronchiectasis if no prior sensitivities are known?", "a": "A 14-day course of amoxicillin, clarithromycin, or doxycycline.", "topic": "MSRA (CSV 11)"}, {"q": "Cystic fibrosis is an autosomal recessive condition caused by a mutation in the CFTR gene on which chromosome?", "a": "Chromosome 7 (specifically the ΔF508 mutation is most common).", "topic": "MSRA (CSV 11)"}, {"q": "What is the diagnostic sweat chloride concentration for cystic fibrosis?", "a": "A chloride level greater than 60 mmol/L.", "topic": "MSRA (CSV 11)"}, {"q": "Kartagener's syndrome is a form of Primary Ciliary Dyskinesia (PCD) characterized by what triad of features?", "a": "Bronchiectasis, situs inversus, and chronic sinusitis.", "topic": "MSRA (CSV 11)"}, {"q": "What is the underlying defect in Primary Ciliary Dyskinesia (PCD)?", "a": "A defect in the dynein arms, which impairs ciliary motion.", "topic": "MSRA (CSV 11)"}, {"q": "A pneumothorax is defined as ____ in the pleural space, leading to lung collapse.", "a": "air", "topic": "MSRA (CSV 11)"}, {"q": "What is the size threshold that differentiates a 'small' from a 'large' pneumothorax on a chest X-ray?", "a": "A distance of 2 cm from the lung edge to the chest wall at the hilar level.", "topic": "MSRA (CSV 11)"}, {"q": "A _____ pneumothorax is a medical emergency caused by a one-way valve mechanism, requiring immediate needle decompression.", "a": "tension", "topic": "MSRA (CSV 11)"}, {"q": "What percussion note is characteristic of a pneumothorax?", "a": "Hyper-resonant.", "topic": "MSRA (CSV 11)"}, {"q": "According to 2023 BTS guidance, what is the management for a symptomatic patient with high-risk characteristics (e.g., secondary pneumothorax, >50 years old, hypoxic)?", "a": "Chest drain insertion.", "topic": "MSRA (CSV 11)"}, {"q": "A patient develops sudden shortness of breath and coughing immediately after chest drain insertion. What complication should be suspected?", "a": "Re-expansion pulmonary oedema.", "topic": "MSRA (CSV 11)"}, {"q": "What is the immediate management for a suspected tension pneumothorax?", "a": "Needle decompression with a large bore cannula.", "topic": "MSRA (CSV 11)"}, {"q": "What are the two recommended sites for needle decompression in a tension pneumothorax?", "a": "2nd intercostal space (ICS) mid-clavicular line, or 4th-5th ICS mid-axillary line.", "topic": "MSRA (CSV 11)"}, {"q": "Acute Respiratory Distress Syndrome (ARDS) is a form of acute respiratory failure characterized by severe hypoxaemia and _____-cardiogenic pulmonary oedema.", "a": "non", "topic": "MSRA (CSV 11)"}, {"q": "What is the underlying pathophysiology of ARDS?", "a": "Injury to the alveolar-capillary membrane leads to increased permeability and leakage of protein-rich fluid into the alveoli.", "topic": "MSRA (CSV 11)"}, {"q": "According to the Berlin Definition, what are the three main criteria for diagnosing ARDS?", "a": "Acute onset (within 1 week), bilateral opacities on imaging, and hypoxaemia not fully explained by cardiac failure.", "topic": "MSRA (CSV 11)"}, {"q": "What is the key principle of mechanical ventilation in managing ARDS?", "a": "Using low tidal volumes (e.g., 6 mL/kg ideal body weight) to minimize further lung injury.", "topic": "MSRA (CSV 11)"}, {"q": "Alpha-1 antitrypsin deficiency (AATD) leads to uncontrolled activity of neutrophil elastase in the lungs, resulting in what condition?", "a": "Early-onset emphysema.", "topic": "MSRA (CSV 11)"}, {"q": "Besides lung disease, what other major organ system is affected by Alpha-1 antitrypsin deficiency due to the accumulation of misfolded protein?", "a": "The liver, potentially leading to cirrhosis.", "topic": "MSRA (CSV 11)"}, {"q": "A young, non-smoking adult presenting with features of COPD and deranged LFTs should be investigated for what genetic disorder?", "a": "Alpha-1 antitrypsin deficiency (AATD).", "topic": "MSRA (CSV 11)"}, {"q": "What is the first-line investigation for diagnosing asthma in an adult (17+)?", "a": "Fractional exhaled nitric oxide (FeNO) measurement.", "topic": "MSRA (CSV 11)"}, {"q": "A FeNO level of _____ ppb or higher is considered positive for confirming asthma in adults.", "a": "50", "topic": "MSRA (CSV 11)"}, {"q": "If FeNO is not diagnostic for asthma in an adult, what spirometry finding confirms the diagnosis?", "a": "Bronchodilator reversibility showing an FEV₁ increase of ≥12% and ≥200mL.", "topic": "MSRA (CSV 11)"}, {"q": "What is 'AIR therapy' for a new asthma diagnosis?", "a": "Using a combination inhaler of an inhaled corticosteroid (ICS) and a long-acting beta-agonist (LABA) on an as-needed basis for symptom relief.", "topic": "MSRA (CSV 11)"}, {"q": "What does MART therapy for asthma involve?", "a": "Using a single combination ICS/LABA inhaler for both regular daily maintenance and as-needed reliever therapy.", "topic": "MSRA (CSV 11)"}, {"q": "In an acute severe asthma attack, a patient would typically be unable to _____.", "a": "complete sentences", "topic": "MSRA (CSV 11)"}, {"q": "What are the features of a life-threatening asthma attack?", "a": "PEFR < 33%, oxygen saturation < 92%, silent chest, cyanosis, hypotension, fatigue, or bradycardia.", "topic": "MSRA (CSV 11)"}, {"q": "What is the first-line intravenous medication for a life-threatening asthma attack, given after oxygen and nebulisers?", "a": "IV magnesium sulphate (1.2–2g over 20 min).", "topic": "MSRA (CSV 11)"}, {"q": "What is atelectasis?", "a": "The collapse of alveoli, resulting in a loss of lung volume.", "topic": "MSRA (CSV 11)"}, {"q": "A patient develops shortness of breath and hypoxia 48-72 hours after abdominal surgery. What is a common respiratory complication to consider?", "a": "Atelectasis.", "topic": "MSRA (CSV 11)"}, {"q": "What spirometry result is diagnostic for COPD?", "a": "A post-bronchodilator FEV1/FVC ratio of less than 0.7.", "topic": "MSRA (CSV 11)"}, {"q": "According to GOLD 2023 guidelines, what is the initial inhaler strategy for a COPD patient with significant symptoms (CAT ≥10) but ≤1 exacerbation in the past year (Group B)?", "a": "A combination LABA + LAMA inhaler.", "topic": "MSRA (CSV 11)"}, {"q": "A COPD patient is classified as Group E. What is the recommended inhaler therapy?", "a": "Triple therapy with a LABA + LAMA + ICS.", "topic": "MSRA (CSV 11)"}, {"q": "What blood test result strongly supports the use of an inhaled corticosteroid (ICS) in a COPD patient?", "a": "A blood eosinophil count > 300 cells/μL.", "topic": "MSRA (CSV 11)"}, {"q": "What are the criteria for starting long-term oxygen therapy (LTOT) in a stable COPD patient?", "a": "PaO2 < 7.3 kPa, or PaO2 between 7.3–8.0 kPa with evidence of cor pulmonale, polycythaemia, or pulmonary hypertension.", "topic": "MSRA (CSV 11)"}, {"q": "What is the first-line treatment for an acute exacerbation of COPD?", "a": "Oral prednisolone 30mg once daily for 5 days.", "topic": "MSRA (CSV 11)"}, {"q": "Under what circumstance should antibiotics be given for an acute exacerbation of COPD?", "a": "If there is increased sputum purulence or clinical signs of pneumonia.", "topic": "MSRA (CSV 11)"}, {"q": "What is the primary indication for non-invasive ventilation (NIV) in an acute exacerbation of COPD?", "a": "Type 2 respiratory failure with respiratory acidosis (pH < 7.35 and CO₂ > 6 kPa).", "topic": "MSRA (CSV 11)"}, {"q": "A patient aged 40 or over with unexplained haemoptysis should receive what urgent referral?", "a": "A 2-week wait (2WW) referral for suspected lung cancer.", "topic": "MSRA (CSV 11)"}, {"q": "What are the three main paraneoplastic syndromes associated with Small Cell Lung Cancer (SCLC)?", "a": "SIADH (hyponatraemia), ectopic ACTH production (Cushing's syndrome), and Lambert-Eaton myasthenic syndrome.", "topic": "MSRA (CSV 11)"}, {"q": "Hypercalcaemia as a paraneoplastic syndrome in lung cancer is most commonly associated with which histological subtype?", "a": "Squamous cell carcinoma (due to PTHrP secretion).", "topic": "MSRA (CSV 11)"}, {"q": "Which type of lung cancer is most common in non-smokers and typically has a peripheral location?", "a": "Adenocarcinoma.", "topic": "MSRA (CSV 11)"}, {"q": "Gynaecomastia as a paraneoplastic feature can be caused by β-hCG secretion from which type of lung cancer?", "a": "Large cell carcinoma.", "topic": "MSRA (CSV 11)"}, {"q": "A patient presents with facial swelling, headache, and dilated chest wall veins. On examination, Pemberton's sign is positive. What oncological emergency is this?", "a": "Superior Vena Cava Obstruction (SVCO).", "topic": "MSRA (CSV 11)"}, {"q": "What is the first-line treatment for moderate to severe Obstructive Sleep Apnoea (OSA)?", "a": "Continuous Positive Airway Pressure (CPAP).", "topic": "MSRA (CSV 11)"}, {"q": "What is the gold standard investigation for diagnosing Obstructive Sleep Apnoea (OSA)?", "a": "Polysomnography (sleep study).", "topic": "MSRA (CSV 11)"}, {"q": "What are the characteristic examination findings of a pleural effusion?", "a": "Stony dullness to percussion and reduced or absent breath sounds.", "topic": "MSRA (CSV 11)"}, {"q": "A pleural fluid protein level of less than 30 g/L suggests a _____, typically caused by heart, liver, or kidney failure.", "a": "transudate", "topic": "MSRA (CSV 11)"}, {"q": "A pleural fluid protein level greater than 30 g/L suggests an _____, typically caused by infection, malignancy, or inflammation.", "a": "exudate", "topic": "MSRA (CSV 11)"}, {"q": "What three criteria constitute Light's criteria for defining an exudative pleural effusion?", "a": "Pleural fluid/serum protein ratio > 0.5, pleural fluid/serum LDH ratio > 0.6, or pleural fluid LDH > 2/3 upper limit of normal serum LDH.", "topic": "MSRA (CSV 11)"}, {"q": "What is an empyema and what is its key management?", "a": "An infected pleural fluid collection, which requires chest drain insertion and antibiotics.", "topic": "MSRA (CSV 11)"}, {"q": "A pleural fluid pH of less than _____ is highly suggestive of an empyema.", "a": "7.2", "topic": "MSRA (CSV 11)"}, {"q": "According to the two-level Wells score, what score indicates that a pulmonary embolism is 'likely' and warrants immediate CTPA?", "a": "A score greater than 4.", "topic": "MSRA (CSV 11)"}, {"q": "If the Wells score indicates PE is 'unlikely' (≤ 4), what is the next investigation?", "a": "A D-dimer test.", "topic": "MSRA (CSV 11)"}, {"q": "What is the most common ECG finding in a patient with a pulmonary embolism?", "a": "Sinus tachycardia.", "topic": "MSRA (CSV 11)"}, {"q": "What is the first-line diagnostic imaging tool for suspected pulmonary embolism?", "a": "CT Pulmonary Angiogram (CTPA).", "topic": "MSRA (CSV 11)"}, {"q": "What is the first-line anticoagulant for treating a pulmonary embolism in a patient with normal renal function?", "a": "A NOAC (e.g., apixaban or rivaroxaban).", "topic": "MSRA (CSV 11)"}, {"q": "What is the primary indication for thrombolysis in a patient with a pulmonary embolism?", "a": "Haemodynamic instability (systolic blood pressure < 90 mmHg).", "topic": "MSRA (CSV 11)"}, {"q": "In a pregnant patient with suspected PE and clinical signs of DVT, what is the first investigation?", "a": "An ultrasound scan of the legs.", "topic": "MSRA (CSV 11)"}, {"q": "What is the anticoagulant of choice for treating a pulmonary embolism during pregnancy?", "a": "Low-molecular-weight heparin (LMWH).", "topic": "MSRA (CSV 11)"}, {"q": "What is the most common causative organism of community-acquired pneumonia?", "a": "Streptococcus pneumoniae.", "topic": "MSRA (CSV 11)"}, {"q": "What are the 5 components of the CURB-65 severity score for pneumonia?", "a": "Confusion (AMTS < 8), Urea > 7 mmol/L, Respiratory rate ≥ 30, Blood pressure (<90 systolic or ≤60 diastolic), Age ≥ 65.", "topic": "MSRA (CSV 11)"}, {"q": "What antibiotic regimen is recommended for a patient with moderate severity pneumonia (CURB-65 score of 2)?", "a": "Dual therapy with oral amoxicillin and clarithromycin.", "topic": "MSRA (CSV 11)"}, {"q": "A patient with pneumonia develops erythema multiforme. Which atypical pathogen should be suspected?", "a": "Mycoplasma pneumoniae.", "topic": "MSRA (CSV 11)"}, {"q": "A patient who recently returned from a holiday develops pneumonia, confusion, and hyponatraemia. Which pathogen is most likely?", "a": "Legionella pneumophila.", "topic": "MSRA (CSV 11)"}, {"q": "A vet who works with parrots presents with an atypical pneumonia and hepatosplenomegaly. What is the likely diagnosis?", "a": "Psittacosis (caused by Chlamydia psittaci).", "topic": "MSRA (CSV 11)"}, {"q": "A patient with HIV (CD4 count < 200) presents with a dry cough, dyspnoea, and bilateral infiltrates on CXR. What opportunistic infection is likely?", "a": "Pneumocystis jirovecii pneumonia (PJP).", "topic": "MSRA (CSV 11)"}, {"q": "In a patient with asthma, what is Allergic Bronchopulmonary Aspergillosis (ABPA)?", "a": "A hypersensitivity reaction to Aspergillus spores, causing bronchiectasis, wheeze, and eosinophilia.", "topic": "MSRA (CSV 11)"}, {"q": "What is the mechanism of action of varenicline for smoking cessation?", "a": "It is a partial agonist at nicotinic acetylcholine receptors, reducing cravings and the rewarding effects of smoking.", "topic": "MSRA (CSV 11)"}, {"q": "Bupropion is contraindicated for smoking cessation in patients with a history of what condition?", "a": "Epilepsy or seizures.", "topic": "MSRA (CSV 11)"}, {"q": "What are the characteristic spirometry findings in restrictive lung disease?", "a": "A reduced FVC, a reduced FEV1, and a normal or increased FEV1/FVC ratio.", "topic": "MSRA (CSV 11)"}, {"q": "What does the transfer factor (TLCO) measure?", "a": "The rate of gas transfer from the alveoli to the blood, assessing the efficiency of the alveolar-capillary membrane.", "topic": "MSRA (CSV 11)"}, {"q": "Pulmonary fibrosis, emphysema, and pulmonary embolism all typically cause a _____ TLCO.", "a": "low", "topic": "MSRA (CSV 11)"}, {"q": "What does the mnemonic CHARTSS stand for regarding causes of upper zone pulmonary fibrosis?", "a": "Coal worker's pneumoconiosis, Hypersensitivity pneumonitis, Ankylosing spondylitis, Radiation, TB, Silicosis, Sarcoidosis.", "topic": "MSRA (CSV 11)"}, {"q": "What does the mnemonic ACID stand for regarding causes of lower zone pulmonary fibrosis?", "a": "Asbestosis, Connective tissue disease, Idiopathic pulmonary fibrosis, Drugs (amiodarone, methotrexate).", "topic": "MSRA (CSV 11)"}, {"q": "An older male presents with progressive dyspnoea, a dry cough, finger clubbing, and fine end-inspiratory crepitations at the lung bases. What is the most likely diagnosis?", "a": "Idiopathic Pulmonary Fibrosis (IPF).", "topic": "MSRA (CSV 11)"}, {"q": "What finding on an HRCT scan is characteristic of Idiopathic Pulmonary Fibrosis (IPF)?", "a": "Honeycombing, particularly at the lung bases.", "topic": "MSRA (CSV 11)"}, {"q": "A farmer presents with cough and dyspnoea that occurs 4-8 hours after working. What is the likely diagnosis?", "a": "Hypersensitivity pneumonitis (Farmer's lung).", "topic": "MSRA (CSV 11)"}, {"q": "A young adult of African-Caribbean descent presents with cough, erythema nodosum, and bilateral hilar lymphadenopathy on CXR. What is the most likely diagnosis?", "a": "Sarcoidosis.", "topic": "MSRA (CSV 11)"}, {"q": "What blood test abnormalities are characteristic of sarcoidosis?", "a": "Elevated serum ACE and hypercalcaemia.", "topic": "MSRA (CSV 11)"}, {"q": "An ex-shipbuilder presents with a large pleural effusion and chest pain. What asbestos-related malignancy must be considered?", "a": "Mesothelioma.", "topic": "MSRA (CSV 11)"}];
+
+  const LS_KEY = "flashcards_progress_v2";
+  const LS_ORDER = "flashcards_order_v2";
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function nowISO() { return new Date().toISOString(); }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
+  }
+
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function saveProgress(p) { localStorage.setItem(LS_KEY, JSON.stringify(p)); }
+
+  function loadOrder() {
+    try {
+      const o = JSON.parse(localStorage.getItem(LS_ORDER) || "null");
+      if (Array.isArray(o) && o.length === RAW_DECK.length) return o;
+      return null;
+    } catch (e) { return null; }
+  }
+  function saveOrder(order) { localStorage.setItem(LS_ORDER, JSON.stringify(order)); }
+
+  const deck = RAW_DECK.map((c, i) => ({
+    id: i,
+    q: (c.q || "").trim(),
+    a: (c.a || "").trim(),
+    topic: (c.topic || "Other").trim(),
+    qLower: (c.q || "").toLowerCase(),
+    aLower: (c.a || "").toLowerCase(),
+    topicLower: (c.topic || "other").toLowerCase(),
+  }));
+
+  let progress = loadProgress();
+  let order = loadOrder() || deck.map(c => c.id);
+
+  let mode = "all";
+  let searchTerm = "";
+  let topicFilter = "__ALL__";
+  let view = [];
+  let pos = 0;
+
+  function statusOf(id) {
+    return (progress[id] && progress[id].status) || null;
+  }
+  function seenOf(id) {
+    return !!(progress[id] && progress[id].seen);
+  }
+
+  function recomputeView(keepCurrentId=true) {
+    const prevId = view[pos];
+    const term = (searchTerm || "").trim().toLowerCase();
+
+    view = order.filter(id => {
+      const c = deck[id];
+      const st = statusOf(id);
+      const seen = seenOf(id);
+
+      if (mode === "unknown" && (seen || st)) return false;
+      if (mode === "known" && st !== "known") return false;
+      if (mode === "unsure" && st !== "unsure") return false;
+
+      if (topicFilter !== "__ALL__" && c.topic !== topicFilter) return false;
+
+      if (term) {
+        return c.qLower.includes(term) || c.aLower.includes(term) || c.topicLower.includes(term);
+      }
+      return true;
+    });
+
+    document.getElementById("total").textContent = view.length;
+
+    const badge = document.getElementById("filterBadge");
+    let label = "All";
+    if (mode === "unknown") label = "Only unseen";
+    if (mode === "known") label = "Known";
+    if (mode === "unsure") label = "Unsure";
+    if (topicFilter !== "__ALL__") label = topicFilter + " • " + label;
+    if (term) label += " • Search";
+    badge.textContent = label;
+
+    if (view.length === 0) {
+      pos = 0;
+      renderEmpty();
+      updateStats();
+      return;
+    }
+
+    if (keepCurrentId && prevId != null) {
+      const newPos = view.indexOf(prevId);
+      pos = newPos >= 0 ? newPos : clamp(pos, 0, view.length - 1);
+    } else {
+      pos = clamp(pos, 0, view.length - 1);
+    }
+    renderCard();
+    updateStats();
+  }
+
+  function renderEmpty() {
+    document.getElementById("qText").textContent = "No cards match your filter/search 🤷‍♂️";
+    document.getElementById("aText").textContent = "Try clearing search or switching filters.";
+    document.getElementById("topicTagQ").textContent = "🧩 Topic";
+    document.getElementById("topicTagA").textContent = "🧩 Topic";
+    document.getElementById("idx").textContent = "0";
+    document.getElementById("bar").style.width = "0%";
+    document.getElementById("qLen").textContent = "";
+    document.getElementById("aLen").textContent = "";
+    document.getElementById("card").classList.remove("flipped");
+  }
+
+  function markSeen(id) {
+    progress[id] = progress[id] || {};
+    if (!progress[id].seen) {
+      progress[id].seen = true;
+      progress[id].updatedAt = nowISO();
+      saveProgress(progress);
+    }
+  }
+
+  function setStatus(id, s) {
+    progress[id] = progress[id] || {};
+    progress[id].status = s;
+    progress[id].seen = true;
+    progress[id].updatedAt = nowISO();
+    saveProgress(progress);
+  }
+
+  function renderCard() {
+    if (view.length === 0) return renderEmpty();
+    const id = view[pos];
+    const c = deck[id];
+
+    markSeen(id);
+
+    document.getElementById("qText").textContent = c.q || "(no question)";
+    document.getElementById("aText").textContent = c.a || "(no answer)";
+    document.getElementById("topicTagQ").textContent = "🧩 " + c.topic;
+    document.getElementById("topicTagA").textContent = "🧩 " + c.topic;
+
+    document.getElementById("idx").textContent = String(pos + 1);
+
+    const pct = ((pos + 1) / view.length) * 100;
+    document.getElementById("bar").style.width = pct.toFixed(1) + "%";
+
+    document.getElementById("qLen").textContent = c.q.length ? ("📝 " + c.q.length + " chars") : "";
+    document.getElementById("aLen").textContent = c.a.length ? ("📝 " + c.a.length + " chars") : "";
+
+    const st = statusOf(id);
+    if (st === "known") toast("✅ You previously marked this as Known");
+    if (st === "unsure") toast("🤔 You previously marked this as Unsure");
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const ids = deck.map(c => c.id);
+    let known = 0, unsure = 0, seen = 0;
+    for (const id of ids) {
+      const st = statusOf(id);
+      if (st === "known") known++;
+      if (st === "unsure") unsure++;
+      if (seenOf(id) || st) seen++;
+    }
+    document.getElementById("knownCount").textContent = known;
+    document.getElementById("unsureCount").textContent = unsure;
+    document.getElementById("seenCount").textContent = seen;
+    const completion = ids.length ? Math.round((known / ids.length) * 100) : 0;
+    document.getElementById("pct").textContent = completion + "%";
+  }
+
+  function flip() { document.getElementById("card").classList.toggle("flipped"); }
+  function next() {
+    if (view.length === 0) return;
+    pos = (pos + 1) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+  function prev() {
+    if (view.length === 0) return;
+    pos = (pos - 1 + view.length) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+
+  function shuffleOrder() {
+    const arr = order.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    order = arr;
+    saveOrder(order);
+    recomputeView(false);
+    toast("🔀 Shuffled!");
+  }
+
+  function resetAll() {
+    if (!confirm("Reset your progress (Known/Unsure/Seen) and shuffle order?")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_ORDER);
+    progress = loadProgress();
+    order = deck.map(c => c.id);
+    searchTerm = "";
+    topicFilter = "__ALL__";
+    document.getElementById("search").value = "";
+    document.getElementById("topicSelect").value = "__ALL__";
+    mode = "all";
+    document.querySelector('input[name="mode"][value="all"]').checked = true;
+    recomputeView(false);
+    toast("♻️ Reset done!");
+  }
+
+  function exportProgress() {
+    const payload = {
+      exportedAt: nowISO(),
+      deckSize: deck.length,
+      progress,
+      order
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flashcards_progress.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("⬇️ Exported progress");
+  }
+
+  document.getElementById("card").addEventListener("click", flip);
+  document.getElementById("flipBtn").addEventListener("click", flip);
+  document.getElementById("nextBtn").addEventListener("click", next);
+  document.getElementById("prevBtn").addEventListener("click", prev);
+  document.getElementById("shuffleBtn").addEventListener("click", shuffleOrder);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("downloadBtn").addEventListener("click", exportProgress);
+
+  document.getElementById("knownBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "known");
+    toast("✅ Marked Known");
+    next();
+  });
+
+  document.getElementById("unsureBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "unsure");
+    toast("🤔 Marked Unsure");
+    next();
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    searchTerm = e.target.value || "";
+    recomputeView(true);
+  });
+
+  document.getElementById("topicSelect").addEventListener("change", (e) => {
+    topicFilter = e.target.value;
+    recomputeView(false);
+  });
+
+  for (const r of document.querySelectorAll('input[name="mode"]')) {
+    r.addEventListener("change", (e) => {
+      mode = e.target.value;
+      recomputeView(true);
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+    const typing = tag === "input" || tag === "textarea" || tag === "select";
+    if (typing) return;
+
+    if (e.key === " " ) { e.preventDefault(); flip(); }
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === "ArrowLeft") prev();
+    else if (e.key.toLowerCase() === "s") shuffleOrder();
+    else if (e.key.toLowerCase() === "k") {
+      if (view.length) { setStatus(view[pos], "known"); toast("✅ Known"); next(); }
+    }
+    else if (e.key.toLowerCase() === "u") {
+      if (view.length) { setStatus(view[pos], "unsure"); toast("🤔 Unsure"); next(); }
+    }
+  });
+
+  document.getElementById("deckName").textContent = "Deck • " + deck.length + " cards";
+  recomputeView(false);
+</script>
+</body>
+</html>
