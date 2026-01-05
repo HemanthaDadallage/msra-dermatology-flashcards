@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MSRA Flash Cards — CSV 13</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #160b2a;
+      --glass: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 22px;
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(1000px 700px at 85% 15%, rgba(6,182,212,.32), transparent 55%),
+        radial-gradient(900px 600px at 55% 90%, rgba(245,158,11,.25), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+    .blob { position: fixed; width: 420px; height: 420px; filter: blur(40px); opacity: .55; z-index: -1; border-radius: 999px; animation: float 9s ease-in-out infinite; pointer-events: none; }
+    .b1 { left: -120px; top: -140px; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.95), rgba(124,58,237,.05)); }
+    .b2 { right: -140px; top: 60px; background: radial-gradient(circle at 40% 40%, rgba(6,182,212,.95), rgba(6,182,212,.05)); animation-duration: 12s; }
+    .b3 { left: 35%; bottom: -180px; background: radial-gradient(circle at 35% 40%, rgba(245,158,11,.9), rgba(245,158,11,.05)); animation-duration: 14s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18px, -22px) scale(1.05); } }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 18px 38px; }
+    header { display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:44px; height:44px; border-radius:14px; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); box-shadow: 0 12px 30px rgba(0,0,0,.35); position:relative; overflow:hidden; }
+    .logo:after { content:""; position:absolute; inset:-40%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%); transform: rotate(18deg); opacity: .6; }
+    h1 { font-size:20px; margin:0; letter-spacing:.3px; }
+    .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; width:100%; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:9px 12px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.25); }
+    .pill input[type="search"] { width: 220px; max-width: 70vw; background:transparent; border:none; outline:none; color:var(--text); font-size:14px; }
+    .pill select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      appearance: none;
+      padding-right: 18px;
+      cursor: pointer;
+    }
+    .pill select option { color: #111; }
+    .pill .caret { opacity: .75; }
+
+    .btn { border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.10); color: var(--text); padding: 10px 12px; border-radius:14px; cursor:pointer; transition: transform .08s ease, background .2s ease, border-color .2s ease; user-select:none; box-shadow: 0 10px 26px rgba(0,0,0,.22); backdrop-filter: blur(10px); display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13px; }
+    .btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn.primary { border:none; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); }
+    .btn.good { border:none; background: linear-gradient(135deg, rgba(34,197,94,1), rgba(6,182,212,1)); }
+    .btn.bad { border:none; background: linear-gradient(135deg, rgba(239,68,68,1), rgba(245,158,11,1)); }
+
+    .grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; align-items:stretch; margin-top:14px; }
+    @media (max-width:900px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(12px); overflow:hidden; }
+    .panel-head { padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border-bottom: 1px solid rgba(255,255,255,.12); }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; color: var(--muted); font-size: 13px; }
+    .badge { padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.85); font-weight:700; letter-spacing:.2px; }
+
+    .progress { height: 10px; border-radius:999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.12); overflow:hidden; min-width:220px; }
+    .bar { height:100%; width:0%; background: linear-gradient(90deg, rgba(124,58,237,1), rgba(6,182,212,1), rgba(34,197,94,1)); border-radius:999px; transition: width .25s ease; }
+
+    .stage { padding: 18px; display:grid; place-items:center; }
+    .card { width: min(720px, 100%); height: 360px; perspective: 1400px; }
+    .inner { width:100%; height:100%; position:relative; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+    .card.flipped .inner { transform: rotateY(180deg); }
+    .face { position:absolute; inset:0; border-radius:26px; border: 1px solid rgba(255,255,255,.20); box-shadow: 0 22px 60px rgba(0,0,0,.45); overflow:hidden; backface-visibility:hidden; display:flex; flex-direction:column; }
+    .face::before { content:""; position:absolute; inset:0; background: radial-gradient(900px 500px at 10% 20%, rgba(255,255,255,.18), transparent 55%), radial-gradient(700px 500px at 90% 20%, rgba(255,255,255,.16), transparent 55%), radial-gradient(800px 650px at 50% 120%, rgba(0,0,0,.25), transparent 60%); pointer-events:none; }
+    .qface { background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(6,182,212,.70)); }
+    .aface { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(34,197,94,.82), rgba(245,158,11,.65)); }
+
+    .tagrow { display:flex; gap:10px; flex-wrap:wrap; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; margin:14px 14px 0; border-radius:999px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.22); width: fit-content; font-weight:800; letter-spacing:.2px; font-size:12px; }
+    .tag.topic { background: rgba(0,0,0,.22); }
+
+    .content { flex:1; padding: 18px 20px 16px; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; }
+    .text { font-size:22px; line-height:1.3; font-weight:800; text-shadow: 0 2px 14px rgba(0,0,0,.25); white-space: pre-wrap; }
+    .small { font-weight:700; font-size:14px; color: rgba(255,255,255,.85); text-shadow:none; }
+    .hint { padding: 10px 16px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.80); font-size:12px; }
+    kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,.20); border: 1px solid rgba(255,255,255,.18); }
+
+    .controls { padding: 16px; border-top: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .left, .right { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .stats { padding: 14px 16px 16px; }
+    .statgrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; box-shadow: 0 10px 24px rgba(0,0,0,.20); }
+    .stat b { font-size:18px; }
+    .stat span { color: var(--muted); font-weight:700; font-size:12px; }
+
+    .list { padding: 10px 16px 16px; }
+    .mini { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+    .mini h3 { margin:0 0 8px; font-size:14px; letter-spacing:.2px; }
+    .toggle { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .switch { display:inline-flex; align-items:center; gap:8px; padding: 8px 10px; border-radius:999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); cursor:pointer; user-select:none; font-size:12px; font-weight:800; color: rgba(255,255,255,.88); }
+    .switch input { accent-color:white; }
+
+    .footer { margin-top:14px; color: rgba(255,255,255,.55); font-size:12px; text-align:center; }
+
+    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.92); padding: 10px 12px; border-radius:999px; box-shadow: 0 18px 50px rgba(0,0,0,.35); backdrop-filter: blur(10px); opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; font-weight:700; font-size:13px; }
+    .toast.show { opacity:1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>MSRA Flash Cards — CSV 13</h1>
+          <div class="subtitle">Categorised by topic • <kbd>Space</kbd> flip, <kbd>←</kbd>/<kbd>→</kbd> navigate, <kbd>S</kbd> shuffle</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="pill" title="Topic filter">
+          🧩
+          <select id="topicSelect" aria-label="Topic">
+            <option value="__ALL__">All topics</option>
+            <option value="Autoimmune &amp; blistering">Autoimmune &amp; blistering (4)</option>
+<option value="Benign lesions &amp; tumours">Benign lesions &amp; tumours (4)</option>
+<option value="Drug reactions">Drug reactions (4)</option>
+<option value="Emergencies">Emergencies (5)</option>
+<option value="Hair &amp; nails">Hair &amp; nails (5)</option>
+<option value="Infections &amp; infestations">Infections &amp; infestations (17)</option>
+<option value="Inflammatory conditions">Inflammatory conditions (26)</option>
+<option value="Other dermatology">Other dermatology (33)</option>
+<option value="Pigment disorders">Pigment disorders (4)</option>
+<option value="Skin cancer &amp; premalignant">Skin cancer &amp; premalignant (20)</option>
+<option value="Vascular &amp; ulcers">Vascular &amp; ulcers (5)</option>
+          </select>
+          <span class="caret">▾</span>
+        </div>
+
+        <div class="pill" title="Search questions/answers">
+          🔎
+          <input id="search" type="search" placeholder="Search (e.g., melanoma, BCC, scabies…)" autocomplete="off" />
+        </div>
+
+        <button class="btn" id="shuffleBtn" title="Shuffle deck (S)">🔀 Shuffle</button>
+        <button class="btn" id="resetBtn" title="Reset progress">♻️ Reset</button>
+        <button class="btn primary" id="downloadBtn" title="Download your progress as JSON">⬇️ Export</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge" id="deckName">Deck</span>
+            <span>Card <b id="idx">1</b>/<b id="total">0</b></span>
+            <span class="badge" id="filterBadge">All</span>
+          </div>
+          <div class="progress" aria-label="Progress">
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="card" id="card" role="button" aria-label="Flashcard (click to flip)" tabindex="0">
+            <div class="inner">
+              <div class="face qface">
+                <div class="tagrow">
+                  <div class="tag">❓ Question</div>
+                  <div class="tag topic" id="topicTagQ">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="qText"></div>
+                </div>
+                <div class="hint">
+                  <span>Tip: press <kbd>Space</kbd> to flip</span>
+                  <span class="small" id="qLen"></span>
+                </div>
+              </div>
+
+              <div class="face aface">
+                <div class="tagrow">
+                  <div class="tag">✅ Answer</div>
+                  <div class="tag topic" id="topicTagA">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="aText"></div>
+                </div>
+                <div class="hint">
+                  <span>Mark it: <kbd>K</kbd> Known, <kbd>U</kbd> Unsure</span>
+                  <span class="small" id="aLen"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="left">
+            <button class="btn" id="prevBtn" title="Previous (←)">⬅️ Prev</button>
+            <button class="btn" id="flipBtn" title="Flip (Space)">🪄 Flip</button>
+            <button class="btn" id="nextBtn" title="Next (→)">Next ➡️</button>
+          </div>
+          <div class="right">
+            <button class="btn good" id="knownBtn" title="Mark known (K)">✅ Known</button>
+            <button class="btn bad" id="unsureBtn" title="Mark unsure (U)">🤔 Unsure</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge">Dashboard</span>
+            <span class="small">Progress is saved in your browser (localStorage).</span>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="statgrid">
+            <div class="stat"><span>✅ Known</span><b id="knownCount">0</b></div>
+            <div class="stat"><span>🤔 Unsure</span><b id="unsureCount">0</b></div>
+            <div class="stat"><span>🧠 Seen</span><b id="seenCount">0</b></div>
+            <div class="stat"><span>🎯 Completion</span><b id="pct">0%</b></div>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="mini">
+            <h3>Filters</h3>
+            <div class="toggle">
+              <label class="switch"><input type="radio" name="mode" value="all" checked> All</label>
+              <label class="switch"><input type="radio" name="mode" value="unknown"> Only unseen</label>
+              <label class="switch"><input type="radio" name="mode" value="known"> Known</label>
+              <label class="switch"><input type="radio" name="mode" value="unsure"> Unsure</label>
+            </div>
+            <div class="small" style="margin-top:10px; line-height:1.5;">
+              Topic filter (top bar) narrows the whole deck.
+            </div>
+          </div>
+
+          <div style="height: 12px"></div>
+
+          <div class="mini">
+            <h3>Study tips</h3>
+            <div class="small" style="line-height:1.6;">
+              • Choose a <b>Topic</b> to focus on one area.<br/>
+              • Use <b>Search</b> to jump to a matching card.<br/>
+              • Shuffle for spaced repetition vibes.<br/>
+              • Export if you want to save/share your progress file.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Built as a single offline HTML file ✨
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const RAW_DECK = [{"q": "In a patient with CN III palsy, what does pupil involvement suggest as a cause?", "a": "A surgical cause, such as a compressive aneurysm.", "topic": "MSRA (CSV 13)"}, {"q": "A CN III palsy that spares the pupil is most likely due to a _____ cause, like diabetes.", "a": "medical", "topic": "MSRA (CSV 13)"}, {"q": "What is the classic triad of symptoms in Horner's syndrome?", "a": "Ptosis (drooping eyelid), miosis (constricted pupil), and anhidrosis (decreased sweating).", "topic": "MSRA (CSV 13)"}, {"q": "A patient presenting with Horner's syndrome should be investigated for what two serious conditions?", "a": "Pancoast tumour or carotid dissection.", "topic": "MSRA (CSV 13)"}, {"q": "In a young patient, Internuclear Ophthalmoplegia (INO) is a buzzword for which condition?", "a": "Multiple Sclerosis (MS).", "topic": "MSRA (CSV 13)"}, {"q": "What is the defining feature of an Argyll-Robertson pupil?", "a": "It reacts to accommodation but not to light.", "topic": "MSRA (CSV 13)"}, {"q": "Argyll-Robertson pupil is classically associated with which infection?", "a": "Neurosyphilis.", "topic": "MSRA (CSV 13)"}, {"q": "A sluggishly reacting pupil in a young woman with absent reflexes is characteristic of which condition?", "a": "Holmes-Adie pupil.", "topic": "MSRA (CSV 13)"}, {"q": "What is the characteristic position of the eye in a complete oculomotor (CN III) palsy?", "a": "The eye is positioned \"down and out\".", "topic": "MSRA (CSV 13)"}, {"q": "Why are parasympathetic fibres controlling the pupil affected early in compressive CN III lesions?", "a": "Because they are located on the periphery of the nerve.", "topic": "MSRA (CSV 13)"}, {"q": "A dilated pupil in the context of a third nerve palsy suggests a compressive lesion, such as an aneurysm of which artery?", "a": "Posterior communicating artery.", "topic": "MSRA (CSV 13)"}, {"q": "Disruption of which autonomic pathway causes Horner's syndrome?", "a": "The sympathetic pathway.", "topic": "MSRA (CSV 13)"}, {"q": "What is the underlying pathophysiology of Internuclear Ophthalmoplegia (INO)?", "a": "A lesion in the medial longitudinal fasciculus (MLF).", "topic": "MSRA (CSV 13)"}, {"q": "In Internuclear Ophthalmoplegia (INO), what are the two key clinical features observed during horizontal gaze?", "a": "Impaired adduction of the affected eye and nystagmus of the contralateral abducting eye.", "topic": "MSRA (CSV 13)"}, {"q": "Motor Neurone Disease (MND) is characterized by the progressive degeneration of which two types of motor neurons?", "a": "Both upper motor neurons (UMNs) and lower motor neurons (LMNs).", "topic": "MSRA (CSV 13)"}, {"q": "What three types of neurological signs are notably absent in Motor Neurone Disease (MND)?", "a": "No sensory loss, no cerebellar signs, and no extraocular involvement.", "topic": "MSRA (CSV 13)"}, {"q": "What is the most common subtype of Motor Neurone Disease (MND)?", "a": "Amyotrophic Lateral Sclerosis (ALS).", "topic": "MSRA (CSV 13)"}, {"q": "Which medication offers a modest survival benefit in Motor Neurone Disease (MND)?", "a": "Riluzole.", "topic": "MSRA (CSV 13)"}, {"q": "What key LMN sign, characterized by visible muscle twitching, is a classic finding in MND?", "a": "Fasciculations.", "topic": "MSRA (CSV 13)"}, {"q": "In the most common pattern of MND, ALS, UMN signs are typically found in the _____ limbs, and LMN signs are found in the _____ limbs.", "a": "lower; upper", "topic": "MSRA (CSV 13)"}, {"q": "Which form of MND affects only upper motor neurons?", "a": "Primary Lateral Sclerosis (PLS).", "topic": "MSRA (CSV 13)"}, {"q": "Which variant of MND affects the brainstem motor nuclei, leading to dysarthria and dysphagia, and carries the worst prognosis?", "a": "Progressive Bulbar Palsy.", "topic": "MSRA (CSV 13)"}, {"q": "What is the mechanism of action for Riluzole in treating MND?", "a": "It is a glutamate receptor blocker.", "topic": "MSRA (CSV 13)"}, {"q": "What intervention can prolong survival by approximately 6 months in MND patients with respiratory involvement?", "a": "Nighttime non-invasive ventilation (NIV).", "topic": "MSRA (CSV 13)"}, {"q": "What is the underlying pathophysiology of Myasthenia Gravis (MG)?", "a": "IgG autoantibodies target nicotinic acetylcholine receptors (AChR) at the neuromuscular junction.", "topic": "MSRA (CSV 13)"}, {"q": "What is the defining characteristic of weakness in Myasthenia Gravis?", "a": "It is fatiguable, meaning it worsens with use and improves with rest.", "topic": "MSRA (CSV 13)"}, {"q": "What is the pathophysiology of Lambert-Eaton Myasthenic Syndrome (LEMS)?", "a": "Autoantibodies target presynaptic voltage-gated calcium channels (VGCCs).", "topic": "MSRA (CSV 13)"}, {"q": "Unlike MG, the proximal weakness in Lambert-Eaton syndrome characteristically shows what response to repeated use?", "a": "It improves transiently with repeated use.", "topic": "MSRA (CSV 13)"}, {"q": "Lambert-Eaton Myasthenic Syndrome is strongly associated with which type of cancer?", "a": "Small-cell lung cancer (SCLC).", "topic": "MSRA (CSV 13)"}, {"q": "What is the first-line medication for symptomatic treatment of Myasthenia Gravis?", "a": "Pyridostigmine (a long-acting acetylcholinesterase inhibitor).", "topic": "MSRA (CSV 13)"}, {"q": "What are the two primary treatments for a myasthenic crisis?", "a": "IV immunoglobulin (IVIG) or plasmapheresis.", "topic": "MSRA (CSV 13)"}, {"q": "What is the first-line investigation for suspected Myasthenia Gravis?", "a": "Anti-AChR antibodies.", "topic": "MSRA (CSV 13)"}, {"q": "A CT of the thorax is performed in patients with Myasthenia Gravis to screen for what associated condition?", "a": "Thymoma.", "topic": "MSRA (CSV 13)"}, {"q": "What is the characteristic finding on EMG for Myasthenia Gravis?", "a": "A decremental response to repetitive stimulation.", "topic": "MSRA (CSV 13)"}, {"q": "What is the characteristic finding on EMG for Lambert-Eaton Myasthenic Syndrome?", "a": "An incremental response to repetitive stimulation.", "topic": "MSRA (CSV 13)"}, {"q": "What is the core pathophysiological process in Multiple Sclerosis (MS)?", "a": "Autoimmune-mediated demyelination of the central nervous system (CNS).", "topic": "MSRA (CSV 13)"}, {"q": "What is the most common disease course of Multiple Sclerosis, affecting about 85% of patients?", "a": "Relapsing-Remitting MS (RRMS).", "topic": "MSRA (CSV 13)"}, {"q": "What is the first-line investigation for a suspected diagnosis of Multiple Sclerosis?", "a": "MRI of the brain and spine.", "topic": "MSRA (CSV 13)"}, {"q": "What is the treatment for an acute relapse in Multiple Sclerosis?", "a": "High-dose corticosteroids (e.g., IV or oral methylprednisolone).", "topic": "MSRA (CSV 13)"}, {"q": "What is optic neuritis, a common presenting symptom of MS?", "a": "Painful monocular vision loss.", "topic": "MSRA (CSV 13)"}, {"q": "What is Uhthoff's phenomenon in the context of MS?", "a": "The worsening of symptoms with heat (e.g., after a hot bath).", "topic": "MSRA (CSV 13)"}, {"q": "What is Lhermitte's sign in the context of MS?", "a": "An electric shock-like sensation down the spine with neck flexion.", "topic": "MSRA (CSV 13)"}, {"q": "What characteristic finding on an MRI brain scan is highly suggestive of MS?", "a": "Periventricular plaques (high T2 signal white matter lesions).", "topic": "MSRA (CSV 13)"}, {"q": "The presence of _____ in the cerebrospinal fluid (CSF) supports a diagnosis of MS.", "a": "oligoclonal bands", "topic": "MSRA (CSV 13)"}, {"q": "What are the first-line disease-modifying therapies (DMTs) for MS mentioned in the source?", "a": "Natalizumab and Ocrelizumab.", "topic": "MSRA (CSV 13)"}, {"q": "What are the first-line pharmacological options for treating spasticity in MS?", "a": "Baclofen and Gabapentin.", "topic": "MSRA (CSV 13)"}, {"q": "According to NICE, what are the four first-line drug options for neuropathic pain?", "a": "Gabapentin, pregabalin, amitriptyline, or duloxetine.", "topic": "MSRA (CSV 13)"}, {"q": "What is the recommended first-line treatment for trigeminal neuralgia?", "a": "Carbamazepine.", "topic": "MSRA (CSV 13)"}, {"q": "What is the recommended first-line analgesic class for sciatica?", "a": "NSAIDs.", "topic": "MSRA (CSV 13)"}, {"q": "What is a potential treatment for localized post-herpetic neuralgia, especially if oral therapy is not tolerated?", "a": "Capsaicin 0.075% cream.", "topic": "MSRA (CSV 13)"}, {"q": "In epilepsy, seizures originating from the _____ lobe can cause motor features like a Jacksonian march.", "a": "frontal", "topic": "MSRA (CSV 13)"}, {"q": "Hallucinations, strong emotions, or déjà vu are classic clues for seizures originating in which lobe of the brain?", "a": "Temporal lobe.", "topic": "MSRA (CSV 13)"}, {"q": "Which two anti-epileptic drugs are considered safer first-line options for women of child-bearing age?", "a": "Lamotrigine and levetiracetam.", "topic": "MSRA (CSV 13)"}, {"q": "What is the definition of status epilepticus?", "a": "A seizure lasting longer than 5 minutes, or multiple seizures without recovery in between.", "topic": "MSRA (CSV 13)"}, {"q": "What is the immediate first-line pharmacological treatment for status epilepticus (in the 5-15 minute window)?", "a": "An IV benzodiazepine, such as Lorazepam 4mg.", "topic": "MSRA (CSV 13)"}, {"q": "What is the first-line treatment for absence seizures?", "a": "Ethosuximide.", "topic": "MSRA (CSV 13)"}, {"q": "Which anti-epileptic drug should be avoided in absence seizures as it can worsen them?", "a": "Carbamazepine.", "topic": "MSRA (CSV 13)"}, {"q": "Which highly effective but teratogenic anti-epileptic drug is first-line for generalized tonic-clonic seizures in males?", "a": "Sodium valproate.", "topic": "MSRA (CSV 13)"}, {"q": "What is the first-line investigation for suspected non-epileptic attack disorder (NEAD)?", "a": "Video telemetry.", "topic": "MSRA (CSV 13)"}, {"q": "What are the two hallmark microscopic changes seen in the brain in Alzheimer's Disease?", "a": "Amyloid plaques (beta-amyloid) and neurofibrillary tangles (hyperphosphorylated tau).", "topic": "MSRA (CSV 13)"}, {"q": "Which class of drugs, such as donepezil, is used as first-line treatment for mild-to-moderate Alzheimer's disease?", "a": "Acetylcholinesterase inhibitors.", "topic": "MSRA (CSV 13)"}, {"q": "What is the mechanism of action of Memantine, used in moderate-to-severe Alzheimer's disease?", "a": "It is an NMDA receptor antagonist.", "topic": "MSRA (CSV 13)"}, {"q": "Vascular dementia is characterized by a progressive cognitive decline that often follows a _____ pattern.", "a": "stepwise", "topic": "MSRA (CSV 13)"}, {"q": "What are the three core clinical features of Lewy Body Dementia?", "a": "Fluctuating cognition, parkinsonism, and visual hallucinations.", "topic": "MSRA (CSV 13)"}, {"q": "Which class of medications should be avoided in Lewy Body Dementia as they can worsen parkinsonism?", "a": "Neuroleptics (antipsychotics).", "topic": "MSRA (CSV 13)"}, {"q": "Frontotemporal Dementia (FTD) is characterized by early onset (<65 years) and prominent changes in _____ and social behavior.", "a": "personality", "topic": "MSRA (CSV 13)"}, {"q": "Rapidly progressive dementia accompanied by myoclonus and ataxia is highly suggestive of which condition?", "a": "Creutzfeldt-Jakob Disease (CJD).", "topic": "MSRA (CSV 13)"}, {"q": "What is the classic clinical triad of Wernicke's encephalopathy?", "a": "Ophthalmoplegia, ataxia, and confusion.", "topic": "MSRA (CSV 13)"}, {"q": "Wernicke's encephalopathy is caused by a deficiency of which vitamin?", "a": "Thiamine (B1).", "topic": "MSRA (CSV 13)"}, {"q": "What is the classic triad of symptoms for Normal Pressure Hydrocephalus (NPH)?", "a": "Gait disturbance, urinary incontinence, and dementia (\"wet, wobbly, wacky\").", "topic": "MSRA (CSV 13)"}, {"q": "How is the diagnosis of Normal Pressure Hydrocephalus (NPH) often confirmed before considering treatment?", "a": "A trial lumbar puncture (LP) that shows symptomatic improvement.", "topic": "MSRA (CSV 13)"}, {"q": "What is the definitive treatment for Normal Pressure Hydrocephalus (NPH) if a trial LP is successful?", "a": "A ventriculoperitoneal (VP) shunt.", "topic": "MSRA (CSV 13)"}, {"q": "What is the most common cause of viral encephalitis in the UK?", "a": "Herpes Simplex Virus-1 (HSV-1).", "topic": "MSRA (CSV 13)"}, {"q": "What is the immediate, life-saving treatment for suspected HSV encephalitis?", "a": "IV aciclovir.", "topic": "MSRA (CSV 13)"}, {"q": "HSV encephalitis typically affects which lobes of the brain?", "a": "The temporal and frontal lobes.", "topic": "MSRA (CSV 13)"}, {"q": "A CT head with contrast showing a 'ring-enhancing lesion' is characteristic of what CNS infection?", "a": "Brain abscess.", "topic": "MSRA (CSV 13)"}, {"q": "Brain abscesses often develop as a secondary complication of infections in what nearby areas?", "a": "Otitis media, sinusitis, or dental infections.", "topic": "MSRA (CSV 13)"}, {"q": "What is the first-line treatment for essential tremor?", "a": "Propranolol (a non-selective beta-blocker).", "topic": "MSRA (CSV 13)"}, {"q": "What is the classic feature of essential tremor that helps differentiate it from Parkinsonian tremor?", "a": "It is a bilateral postural or kinetic (action) tremor that often improves with alcohol.", "topic": "MSRA (CSV 13)"}, {"q": "The presence of cerebellar haemangioblastomas and renal cell carcinoma should raise suspicion for which genetic disorder?", "a": "Von Hippel-Lindau (VHL) syndrome.", "topic": "MSRA (CSV 13)"}, {"q": "The combination of epilepsy, learning difficulties, and cutaneous findings like ash-leaf spots and facial angiofibromas is characteristic of what disorder?", "a": "Tuberous Sclerosis.", "topic": "MSRA (CSV 13)"}, {"q": "Which genetic disorder is characterized by café-au-lait spots, axillary freckling, and peripheral neurofibromas?", "a": "Neurofibromatosis type 1 (NF1).", "topic": "MSRA (CSV 13)"}, {"q": "Bilateral acoustic neuromas are the hallmark of which genetic disorder?", "a": "Neurofibromatosis type 2 (NF2).", "topic": "MSRA (CSV 13)"}, {"q": "Friedreich's ataxia is an autosomal recessive disorder characterized by gait ataxia, kyphoscoliosis, and what two major systemic complications?", "a": "Hypertrophic obstructive cardiomyopathy (HOCM) and diabetes.", "topic": "MSRA (CSV 13)"}, {"q": "A child presenting with ataxia, telangiectasia (especially in the eyes), and recurrent infections may have which genetic disorder?", "a": "Ataxia-Telangiectasia.", "topic": "MSRA (CSV 13)"}, {"q": "What is the characteristic 'myotonic handshake' seen in myotonic dystrophy?", "a": "Delayed relaxation after gripping.", "topic": "MSRA (CSV 13)"}, {"q": "What genetic disorder presents with distal muscle wasting ('champagne bottle legs'), pes cavus, and foot drop?", "a": "Hereditary Motor & Sensory Neuropathy (Charcot-Marie-Tooth disease).", "topic": "MSRA (CSV 13)"}, {"q": "What is the first-line acute treatment for a migraine attack?", "a": "An oral triptan combined with an NSAID or paracetamol.", "topic": "MSRA (CSV 13)"}, {"q": "Prophylaxis for migraines should be considered if a patient has at least how many attacks per month?", "a": "Two or more migraines per month.", "topic": "MSRA (CSV 13)"}, {"q": "What are the two first-line options for migraine prophylaxis?", "a": "Propranolol or topiramate.", "topic": "MSRA (CSV 13)"}, {"q": "What are the key features of a cluster headache attack?", "a": "Severe, stabbing, unilateral retro-orbital pain lasting ~30 mins, with autonomic features like tearing and nasal congestion.", "topic": "MSRA (CSV 13)"}, {"q": "What is the acute management for a cluster headache?", "a": "100% oxygen and a subcutaneous triptan.", "topic": "MSRA (CSV 13)"}, {"q": "What is the first-line prophylactic medication for cluster headaches?", "a": "Verapamil.", "topic": "MSRA (CSV 13)"}, {"q": "Chronic Paroxysmal Hemicrania is characterized by very frequent, short-lasting headaches that show a dramatic response to which medication?", "a": "Indomethacin.", "topic": "MSRA (CSV 13)"}, {"q": "Headache occurring on 15 or more days per month in a patient with regular analgesic use defines which condition?", "a": "Medication Overuse Headache (MOH).", "topic": "MSRA (CSV 13)"}, {"q": "Idiopathic Intracranial Hypertension (IIH) typically affects which demographic?", "a": "Overweight women of childbearing age.", "topic": "MSRA (CSV 13)"}, {"q": "What are the characteristic clinical findings in Idiopathic Intracranial Hypertension (IIH)?", "a": "Headache, visual symptoms, papilloedema, and CN VI palsy.", "topic": "MSRA (CSV 13)"}, {"q": "A patient presents with a 'thunderclap headache', bitemporal hemianopia, and hypotension. What is the likely diagnosis?", "a": "Pituitary apoplexy.", "topic": "MSRA (CSV 13)"}, {"q": "What is the immediate, life-saving medication that must be given in suspected pituitary apoplexy?", "a": "IV hydrocortisone (to treat adrenal crisis).", "topic": "MSRA (CSV 13)"}, {"q": "Narcolepsy is caused by a deficiency of which neurotransmitter?", "a": "Hypocretin (also known as orexin).", "topic": "MSRA (CSV 13)"}, {"q": "What is cataplexy?", "a": "A sudden, brief loss of muscle tone triggered by strong emotion, where consciousness is preserved.", "topic": "MSRA (CSV 13)"}, {"q": "What is the first-line medication for excessive daytime sleepiness in narcolepsy?", "a": "Modafinil.", "topic": "MSRA (CSV 13)"}, {"q": "The combination of bradykinesia, tremor, and rigidity is known as _____.", "a": "Parkinsonism", "topic": "MSRA (CSV 13)"}, {"q": "Which anti-emetic drug is a common cause of drug-induced parkinsonism?", "a": "Metoclopramide.", "topic": "MSRA (CSV 13)"}, {"q": "What is the first-line treatment for idiopathic Parkinson's disease when motor symptoms begin to affect quality of life?", "a": "Levodopa (with a decarboxylase inhibitor).", "topic": "MSRA (CSV 13)"}, {"q": "Fever, muscle rigidity, and delirium following abrupt withdrawal of Parkinson's medication is characteristic of what syndrome?", "a": "Neuroleptic Malignant Syndrome (NMS).", "topic": "MSRA (CSV 13)"}, {"q": "A patient with parkinsonism who also has a prominent vertical gaze palsy (especially downward) and frequent falls likely has which condition?", "a": "Progressive Supranuclear Palsy (PSP).", "topic": "MSRA (CSV 13)"}, {"q": "A patient with parkinsonism who also has significant autonomic dysfunction (e.g., postural hypotension, urinary retention) likely has which condition?", "a": "Multiple System Atrophy (MSA).", "topic": "MSRA (CSV 13)"}, {"q": "The sensation of an 'alien limb' is a feature of which Parkinson's-plus syndrome?", "a": "Corticobasal Degeneration (CBD).", "topic": "MSRA (CSV 13)"}, {"q": "In patients with Restless Leg Syndrome (RLS), iron supplementation should be initiated if their ferritin is below what level?", "a": "Less than 75 mcg/L.", "topic": "MSRA (CSV 13)"}, {"q": "Dopamine agonists used for RLS carry a risk of what type of side effect?", "a": "Impulse control disorders (e.g., gambling, binge eating).", "topic": "MSRA (CSV 13)"}, {"q": "Hemisection of the spinal cord, known as Brown-Séquard syndrome, results in what pattern of neurological deficits?", "a": "Ipsilateral motor weakness and loss of proprioception/vibration, with contralateral loss of pain and temperature.", "topic": "MSRA (CSV 13)"}, {"q": "Subacute combined degeneration of the cord is caused by a deficiency in _____.", "a": "Vitamin B12", "topic": "MSRA (CSV 13)"}, {"q": "Which two spinal cord tracts are primarily affected in subacute combined degeneration?", "a": "The dorsal columns and the corticospinal tracts.", "topic": "MSRA (CSV 13)"}, {"q": "Occlusion of the anterior spinal artery spares which spinal cord tracts?", "a": "The dorsal columns.", "topic": "MSRA (CSV 13)"}, {"q": "What is the characteristic pattern of sensory loss in syringomyelia?", "a": "A 'cape-like' distribution of lost pain and temperature sensation across the upper chest, shoulders, and arms.", "topic": "MSRA (CSV 13)"}, {"q": "Syringomyelia is strongly associated with which structural brain abnormality?", "a": "Arnold-Chiari malformation.", "topic": "MSRA (CSV 13)"}, {"q": "Tabes dorsalis, a manifestation of tertiary syphilis, involves degeneration of which part of the spinal cord?", "a": "The dorsal columns.", "topic": "MSRA (CSV 13)"}, {"q": "A stroke affecting the anterior cerebral artery (ACA) typically causes weakness and sensory loss that is greater in the _____ than the _____.", "a": "lower limb; upper limb/face", "topic": "MSRA (CSV 13)"}, {"q": "A stroke affecting the middle cerebral artery (MCA) typically causes weakness and sensory loss that is greater in the _____ and _____ than the _____.", "a": "face; upper limb; lower limb", "topic": "MSRA (CSV 13)"}, {"q": "According to the Oxford Stroke Classification, what three deficits must be present for a diagnosis of a Total Anterior Circulation Stroke (TACS)?", "a": "Unilateral weakness/sensory loss, homonymous hemianopia, and higher cortical dysfunction (e.g., aphasia, neglect).", "topic": "MSRA (CSV 13)"}, {"q": "What is Wallenberg's syndrome (lateral medullary syndrome) typically caused by?", "a": "Occlusion of the Posterior Inferior Cerebellar Artery (PICA).", "topic": "MSRA (CSV 13)"}, {"q": "In a suspected stroke, what is the first-line imaging investigation?", "a": "Non-contrast CT head.", "topic": "MSRA (CSV 13)"}, {"q": "Thrombolysis with alteplase for ischemic stroke can be offered within what time window from symptom onset?", "a": "Within 4.5 hours.", "topic": "MSRA (CSV 13)"}, {"q": "Following an ischemic stroke, patients are typically started on high-dose aspirin for how long before switching to long-term secondary prevention?", "a": "Two weeks.", "topic": "MSRA (CSV 13)"}, {"q": "What is the first-line long-term secondary prevention antiplatelet therapy after an ischemic stroke or TIA?", "a": "Clopidogrel 75mg once daily.", "topic": "MSRA (CSV 13)"}, {"q": "A 'waiter's tip' deformity of the arm is characteristic of which brachial plexus injury?", "a": "Erb's palsy (C5-C6 root injury).", "topic": "MSRA (CSV 13)"}, {"q": "A 'claw hand' deformity, possibly with an associated Horner's syndrome, is characteristic of which brachial plexus injury?", "a": "Klumpke's palsy (C8-T1 root injury).", "topic": "MSRA (CSV 13)"}, {"q": "According to NICE, what is an indication for an immediate CT head (within 1 hour) after a head injury?", "a": "GCS <15 two hours post-injury, suspected skull fracture, post-traumatic seizure, focal deficit, or >=2 episodes of vomiting.", "topic": "MSRA (CSV 13)"}, {"q": "A history of a 'lucid interval' following head trauma is a classic feature of which type of intracranial bleed?", "a": "Extradural haematoma.", "topic": "MSRA (CSV 13)"}, {"q": "An extradural haematoma typically has a _____ or lentiform shape on a CT scan.", "a": "biconvex", "topic": "MSRA (CSV 13)"}, {"q": "A crescent-shaped bleed on a CT head, often seen in elderly or alcoholic patients after a fall, is characteristic of what injury?", "a": "Subdural haematoma.", "topic": "MSRA (CSV 13)"}, {"q": "What is the most common cause of traumatic subarachnoid haemorrhage (SAH)?", "a": "Trauma.", "topic": "MSRA (CSV 13)"}, {"q": "What medication is given to all patients with aneurysmal subarachnoid haemorrhage to prevent vasospasm?", "a": "Nimodipine.", "topic": "MSRA (CSV 13)"}, {"q": "In a patient with suspected SAH but a negative CT head performed more than 6 hours after onset, what is the next investigation?", "a": "Lumbar puncture (performed at least 12 hours after onset to look for xanthochromia).", "topic": "MSRA (CSV 13)"}, {"q": "Which cervical nerve root is most commonly affected in cervical radiculopathy?", "a": "C7.", "topic": "MSRA (CSV 13)"}, {"q": "Weakness of elbow extension (triceps) and sensory loss in the middle finger points to radiculopathy of which cervical nerve root?", "a": "C7.", "topic": "MSRA (CSV 13)"}, {"q": "What is the gold standard investigation for confirming cervical myelopathy or radiculopathy?", "a": "MRI of the cervical spine.", "topic": "MSRA (CSV 13)"}, {"q": "How do reflexes differ between cervical radiculopathy and cervical myelopathy?", "a": "Radiculopathy causes decreased reflexes at the affected level (LMN), while myelopathy causes hyperreflexia below the lesion (UMN).", "topic": "MSRA (CSV 13)"}, {"q": "Guillain-Barré syndrome (GBS) classically presents with _____ symmetrical weakness.", "a": "ascending", "topic": "MSRA (CSV 13)"}, {"q": "GBS is often preceded by an infection, most commonly with which organism?", "a": "Campylobacter jejuni.", "topic": "MSRA (CSV 13)"}, {"q": "What is the characteristic finding in the CSF of a patient with GBS?", "a": "Raised protein with a normal white cell count (albuminocytologic dissociation).", "topic": "MSRA (CSV 13)"}, {"q": "What key respiratory parameter must be monitored in patients with GBS?", "a": "Forced Vital Capacity (FVC).", "topic": "MSRA (CSV 13)"}, {"q": "What is the mainstay of treatment for Guillain-Barré syndrome?", "a": "IV immunoglobulin (IVIG) or plasma exchange.", "topic": "MSRA (CSV 13)"}, {"q": "The Miller Fisher variant of GBS is characterized by the triad of ophthalmoplegia, ataxia, and ____.", "a": "areflexia", "topic": "MSRA (CSV 13)"}, {"q": "The Miller Fisher variant of GBS is associated with which specific antibody?", "a": "Anti-GQ1b antibodies.", "topic": "MSRA (CSV 13)"}, {"q": "Cervical myelopathy is caused by compression of the _____.", "a": "spinal cord", "topic": "MSRA (CSV 13)"}, {"q": "A patient with clumsy hands, gait disturbance, and hyperreflexia in the lower limbs should be investigated for which condition?", "a": "Cervical myelopathy.", "topic": "MSRA (CSV 13)"}, {"q": "What is Hoffmann's sign, a finding in cervical myelopathy?", "a": "Flicking the distal phalanx of the middle finger causes involuntary flexion of the thumb.", "topic": "MSRA (CSV 13)"}, {"q": "What is the definitive management for progressive cervical myelopathy?", "a": "Surgical decompression.", "topic": "MSRA (CSV 13)"}];
+
+  const LS_KEY = "flashcards_progress_v2";
+  const LS_ORDER = "flashcards_order_v2";
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function nowISO() { return new Date().toISOString(); }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
+  }
+
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function saveProgress(p) { localStorage.setItem(LS_KEY, JSON.stringify(p)); }
+
+  function loadOrder() {
+    try {
+      const o = JSON.parse(localStorage.getItem(LS_ORDER) || "null");
+      if (Array.isArray(o) && o.length === RAW_DECK.length) return o;
+      return null;
+    } catch (e) { return null; }
+  }
+  function saveOrder(order) { localStorage.setItem(LS_ORDER, JSON.stringify(order)); }
+
+  const deck = RAW_DECK.map((c, i) => ({
+    id: i,
+    q: (c.q || "").trim(),
+    a: (c.a || "").trim(),
+    topic: (c.topic || "Other").trim(),
+    qLower: (c.q || "").toLowerCase(),
+    aLower: (c.a || "").toLowerCase(),
+    topicLower: (c.topic || "other").toLowerCase(),
+  }));
+
+  let progress = loadProgress();
+  let order = loadOrder() || deck.map(c => c.id);
+
+  let mode = "all";
+  let searchTerm = "";
+  let topicFilter = "__ALL__";
+  let view = [];
+  let pos = 0;
+
+  function statusOf(id) {
+    return (progress[id] && progress[id].status) || null;
+  }
+  function seenOf(id) {
+    return !!(progress[id] && progress[id].seen);
+  }
+
+  function recomputeView(keepCurrentId=true) {
+    const prevId = view[pos];
+    const term = (searchTerm || "").trim().toLowerCase();
+
+    view = order.filter(id => {
+      const c = deck[id];
+      const st = statusOf(id);
+      const seen = seenOf(id);
+
+      if (mode === "unknown" && (seen || st)) return false;
+      if (mode === "known" && st !== "known") return false;
+      if (mode === "unsure" && st !== "unsure") return false;
+
+      if (topicFilter !== "__ALL__" && c.topic !== topicFilter) return false;
+
+      if (term) {
+        return c.qLower.includes(term) || c.aLower.includes(term) || c.topicLower.includes(term);
+      }
+      return true;
+    });
+
+    document.getElementById("total").textContent = view.length;
+
+    const badge = document.getElementById("filterBadge");
+    let label = "All";
+    if (mode === "unknown") label = "Only unseen";
+    if (mode === "known") label = "Known";
+    if (mode === "unsure") label = "Unsure";
+    if (topicFilter !== "__ALL__") label = topicFilter + " • " + label;
+    if (term) label += " • Search";
+    badge.textContent = label;
+
+    if (view.length === 0) {
+      pos = 0;
+      renderEmpty();
+      updateStats();
+      return;
+    }
+
+    if (keepCurrentId && prevId != null) {
+      const newPos = view.indexOf(prevId);
+      pos = newPos >= 0 ? newPos : clamp(pos, 0, view.length - 1);
+    } else {
+      pos = clamp(pos, 0, view.length - 1);
+    }
+    renderCard();
+    updateStats();
+  }
+
+  function renderEmpty() {
+    document.getElementById("qText").textContent = "No cards match your filter/search 🤷‍♂️";
+    document.getElementById("aText").textContent = "Try clearing search or switching filters.";
+    document.getElementById("topicTagQ").textContent = "🧩 Topic";
+    document.getElementById("topicTagA").textContent = "🧩 Topic";
+    document.getElementById("idx").textContent = "0";
+    document.getElementById("bar").style.width = "0%";
+    document.getElementById("qLen").textContent = "";
+    document.getElementById("aLen").textContent = "";
+    document.getElementById("card").classList.remove("flipped");
+  }
+
+  function markSeen(id) {
+    progress[id] = progress[id] || {};
+    if (!progress[id].seen) {
+      progress[id].seen = true;
+      progress[id].updatedAt = nowISO();
+      saveProgress(progress);
+    }
+  }
+
+  function setStatus(id, s) {
+    progress[id] = progress[id] || {};
+    progress[id].status = s;
+    progress[id].seen = true;
+    progress[id].updatedAt = nowISO();
+    saveProgress(progress);
+  }
+
+  function renderCard() {
+    if (view.length === 0) return renderEmpty();
+    const id = view[pos];
+    const c = deck[id];
+
+    markSeen(id);
+
+    document.getElementById("qText").textContent = c.q || "(no question)";
+    document.getElementById("aText").textContent = c.a || "(no answer)";
+    document.getElementById("topicTagQ").textContent = "🧩 " + c.topic;
+    document.getElementById("topicTagA").textContent = "🧩 " + c.topic;
+
+    document.getElementById("idx").textContent = String(pos + 1);
+
+    const pct = ((pos + 1) / view.length) * 100;
+    document.getElementById("bar").style.width = pct.toFixed(1) + "%";
+
+    document.getElementById("qLen").textContent = c.q.length ? ("📝 " + c.q.length + " chars") : "";
+    document.getElementById("aLen").textContent = c.a.length ? ("📝 " + c.a.length + " chars") : "";
+
+    const st = statusOf(id);
+    if (st === "known") toast("✅ You previously marked this as Known");
+    if (st === "unsure") toast("🤔 You previously marked this as Unsure");
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const ids = deck.map(c => c.id);
+    let known = 0, unsure = 0, seen = 0;
+    for (const id of ids) {
+      const st = statusOf(id);
+      if (st === "known") known++;
+      if (st === "unsure") unsure++;
+      if (seenOf(id) || st) seen++;
+    }
+    document.getElementById("knownCount").textContent = known;
+    document.getElementById("unsureCount").textContent = unsure;
+    document.getElementById("seenCount").textContent = seen;
+    const completion = ids.length ? Math.round((known / ids.length) * 100) : 0;
+    document.getElementById("pct").textContent = completion + "%";
+  }
+
+  function flip() { document.getElementById("card").classList.toggle("flipped"); }
+  function next() {
+    if (view.length === 0) return;
+    pos = (pos + 1) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+  function prev() {
+    if (view.length === 0) return;
+    pos = (pos - 1 + view.length) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+
+  function shuffleOrder() {
+    const arr = order.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    order = arr;
+    saveOrder(order);
+    recomputeView(false);
+    toast("🔀 Shuffled!");
+  }
+
+  function resetAll() {
+    if (!confirm("Reset your progress (Known/Unsure/Seen) and shuffle order?")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_ORDER);
+    progress = loadProgress();
+    order = deck.map(c => c.id);
+    searchTerm = "";
+    topicFilter = "__ALL__";
+    document.getElementById("search").value = "";
+    document.getElementById("topicSelect").value = "__ALL__";
+    mode = "all";
+    document.querySelector('input[name="mode"][value="all"]').checked = true;
+    recomputeView(false);
+    toast("♻️ Reset done!");
+  }
+
+  function exportProgress() {
+    const payload = {
+      exportedAt: nowISO(),
+      deckSize: deck.length,
+      progress,
+      order
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flashcards_progress.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("⬇️ Exported progress");
+  }
+
+  document.getElementById("card").addEventListener("click", flip);
+  document.getElementById("flipBtn").addEventListener("click", flip);
+  document.getElementById("nextBtn").addEventListener("click", next);
+  document.getElementById("prevBtn").addEventListener("click", prev);
+  document.getElementById("shuffleBtn").addEventListener("click", shuffleOrder);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("downloadBtn").addEventListener("click", exportProgress);
+
+  document.getElementById("knownBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "known");
+    toast("✅ Marked Known");
+    next();
+  });
+
+  document.getElementById("unsureBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "unsure");
+    toast("🤔 Marked Unsure");
+    next();
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    searchTerm = e.target.value || "";
+    recomputeView(true);
+  });
+
+  document.getElementById("topicSelect").addEventListener("change", (e) => {
+    topicFilter = e.target.value;
+    recomputeView(false);
+  });
+
+  for (const r of document.querySelectorAll('input[name="mode"]')) {
+    r.addEventListener("change", (e) => {
+      mode = e.target.value;
+      recomputeView(true);
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+    const typing = tag === "input" || tag === "textarea" || tag === "select";
+    if (typing) return;
+
+    if (e.key === " " ) { e.preventDefault(); flip(); }
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === "ArrowLeft") prev();
+    else if (e.key.toLowerCase() === "s") shuffleOrder();
+    else if (e.key.toLowerCase() === "k") {
+      if (view.length) { setStatus(view[pos], "known"); toast("✅ Known"); next(); }
+    }
+    else if (e.key.toLowerCase() === "u") {
+      if (view.length) { setStatus(view[pos], "unsure"); toast("🤔 Unsure"); next(); }
+    }
+  });
+
+  document.getElementById("deckName").textContent = "Deck • " + deck.length + " cards";
+  recomputeView(false);
+</script>
+</body>
+</html>
