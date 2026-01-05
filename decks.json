@@ -65,6 +65,12 @@
   "title": "Respiratory",
   "file": "msra-csv11-topic-based.html",
   "cards": 90
+},
+    {
+  "id": "msra-csv12-topic-based",
+  "title": "Peadiatrics",
+  "file": "msra-csv12-topic-based.html",
+  "cards": 100
 }
   ]
 }
