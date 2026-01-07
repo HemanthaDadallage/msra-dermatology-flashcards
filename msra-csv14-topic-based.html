@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MSRA Flash Cards — CSV 14</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #160b2a;
+      --glass: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 22px;
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(1000px 700px at 85% 15%, rgba(6,182,212,.32), transparent 55%),
+        radial-gradient(900px 600px at 55% 90%, rgba(245,158,11,.25), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+    .blob { position: fixed; width: 420px; height: 420px; filter: blur(40px); opacity: .55; z-index: -1; border-radius: 999px; animation: float 9s ease-in-out infinite; pointer-events: none; }
+    .b1 { left: -120px; top: -140px; background: radial-gradient(circle at 30% 30%, rgba(124,58,237,.95), rgba(124,58,237,.05)); }
+    .b2 { right: -140px; top: 60px; background: radial-gradient(circle at 40% 40%, rgba(6,182,212,.95), rgba(6,182,212,.05)); animation-duration: 12s; }
+    .b3 { left: 35%; bottom: -180px; background: radial-gradient(circle at 35% 40%, rgba(245,158,11,.9), rgba(245,158,11,.05)); animation-duration: 14s; }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18px, -22px) scale(1.05); } }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 26px 18px 38px; }
+    header { display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom: 16px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:44px; height:44px; border-radius:14px; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); box-shadow: 0 12px 30px rgba(0,0,0,.35); position:relative; overflow:hidden; }
+    .logo:after { content:""; position:absolute; inset:-40%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.65), transparent 55%); transform: rotate(18deg); opacity: .6; }
+    h1 { font-size:20px; margin:0; letter-spacing:.3px; }
+    .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; width:100%; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:9px 12px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.25); }
+    .pill input[type="search"] { width: 220px; max-width: 70vw; background:transparent; border:none; outline:none; color:var(--text); font-size:14px; }
+    .pill select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      appearance: none;
+      padding-right: 18px;
+      cursor: pointer;
+    }
+    .pill select option { color: #111; }
+    .pill .caret { opacity: .75; }
+
+    .btn { border:1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.10); color: var(--text); padding: 10px 12px; border-radius:14px; cursor:pointer; transition: transform .08s ease, background .2s ease, border-color .2s ease; user-select:none; box-shadow: 0 10px 26px rgba(0,0,0,.22); backdrop-filter: blur(10px); display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13px; }
+    .btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn.primary { border:none; background: linear-gradient(135deg, rgba(124,58,237,1), rgba(6,182,212,1)); }
+    .btn.good { border:none; background: linear-gradient(135deg, rgba(34,197,94,1), rgba(6,182,212,1)); }
+    .btn.bad { border:none; background: linear-gradient(135deg, rgba(239,68,68,1), rgba(245,158,11,1)); }
+
+    .grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; align-items:stretch; margin-top:14px; }
+    @media (max-width:900px) { .grid { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(12px); overflow:hidden; }
+    .panel-head { padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border-bottom: 1px solid rgba(255,255,255,.12); }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; color: var(--muted); font-size: 13px; }
+    .badge { padding: 6px 10px; border-radius:999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.85); font-weight:700; letter-spacing:.2px; }
+
+    .progress { height: 10px; border-radius:999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.12); overflow:hidden; min-width:220px; }
+    .bar { height:100%; width:0%; background: linear-gradient(90deg, rgba(124,58,237,1), rgba(6,182,212,1), rgba(34,197,94,1)); border-radius:999px; transition: width .25s ease; }
+
+    .stage { padding: 18px; display:grid; place-items:center; }
+    .card { width: min(720px, 100%); height: 360px; perspective: 1400px; }
+    .inner { width:100%; height:100%; position:relative; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2,.8,.2,1); }
+    .card.flipped .inner { transform: rotateY(180deg); }
+    .face { position:absolute; inset:0; border-radius:26px; border: 1px solid rgba(255,255,255,.20); box-shadow: 0 22px 60px rgba(0,0,0,.45); overflow:hidden; backface-visibility:hidden; display:flex; flex-direction:column; }
+    .face::before { content:""; position:absolute; inset:0; background: radial-gradient(900px 500px at 10% 20%, rgba(255,255,255,.18), transparent 55%), radial-gradient(700px 500px at 90% 20%, rgba(255,255,255,.16), transparent 55%), radial-gradient(800px 650px at 50% 120%, rgba(0,0,0,.25), transparent 60%); pointer-events:none; }
+    .qface { background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(6,182,212,.70)); }
+    .aface { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(34,197,94,.82), rgba(245,158,11,.65)); }
+
+    .tagrow { display:flex; gap:10px; flex-wrap:wrap; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; margin:14px 14px 0; border-radius:999px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.22); width: fit-content; font-weight:800; letter-spacing:.2px; font-size:12px; }
+    .tag.topic { background: rgba(0,0,0,.22); }
+
+    .content { flex:1; padding: 18px 20px 16px; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; }
+    .text { font-size:22px; line-height:1.3; font-weight:800; text-shadow: 0 2px 14px rgba(0,0,0,.25); white-space: pre-wrap; }
+    .small { font-weight:700; font-size:14px; color: rgba(255,255,255,.85); text-shadow:none; }
+    .hint { padding: 10px 16px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.80); font-size:12px; }
+    kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,.20); border: 1px solid rgba(255,255,255,.18); }
+
+    .controls { padding: 16px; border-top: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .left, .right { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .stats { padding: 14px 16px 16px; }
+    .statgrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .stat { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; box-shadow: 0 10px 24px rgba(0,0,0,.20); }
+    .stat b { font-size:18px; }
+    .stat span { color: var(--muted); font-weight:700; font-size:12px; }
+
+    .list { padding: 10px 16px 16px; }
+    .mini { border-radius:18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); padding:12px 12px; box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+    .mini h3 { margin:0 0 8px; font-size:14px; letter-spacing:.2px; }
+    .toggle { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .switch { display:inline-flex; align-items:center; gap:8px; padding: 8px 10px; border-radius:999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); cursor:pointer; user-select:none; font-size:12px; font-weight:800; color: rgba(255,255,255,.88); }
+    .switch input { accent-color:white; }
+
+    .footer { margin-top:14px; color: rgba(255,255,255,.55); font-size:12px; text-align:center; }
+
+    .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.92); padding: 10px 12px; border-radius:999px; box-shadow: 0 18px 50px rgba(0,0,0,.35); backdrop-filter: blur(10px); opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; font-weight:700; font-size:13px; }
+    .toast.show { opacity:1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>MSRA Flash Cards — CSV 14</h1>
+          <div class="subtitle">Categorised by topic • <kbd>Space</kbd> flip, <kbd>←</kbd>/<kbd>→</kbd> navigate, <kbd>S</kbd> shuffle</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="pill" title="Topic filter">
+          🧩
+          <select id="topicSelect" aria-label="Topic">
+            <option value="__ALL__">All topics</option>
+            <option value="Autoimmune &amp; blistering">Autoimmune &amp; blistering (4)</option>
+<option value="Benign lesions &amp; tumours">Benign lesions &amp; tumours (4)</option>
+<option value="Drug reactions">Drug reactions (4)</option>
+<option value="Emergencies">Emergencies (5)</option>
+<option value="Hair &amp; nails">Hair &amp; nails (5)</option>
+<option value="Infections &amp; infestations">Infections &amp; infestations (17)</option>
+<option value="Inflammatory conditions">Inflammatory conditions (26)</option>
+<option value="Other dermatology">Other dermatology (33)</option>
+<option value="Pigment disorders">Pigment disorders (4)</option>
+<option value="Skin cancer &amp; premalignant">Skin cancer &amp; premalignant (20)</option>
+<option value="Vascular &amp; ulcers">Vascular &amp; ulcers (5)</option>
+          </select>
+          <span class="caret">▾</span>
+        </div>
+
+        <div class="pill" title="Search questions/answers">
+          🔎
+          <input id="search" type="search" placeholder="Search (e.g., melanoma, BCC, scabies…)" autocomplete="off" />
+        </div>
+
+        <button class="btn" id="shuffleBtn" title="Shuffle deck (S)">🔀 Shuffle</button>
+        <button class="btn" id="resetBtn" title="Reset progress">♻️ Reset</button>
+        <button class="btn primary" id="downloadBtn" title="Download your progress as JSON">⬇️ Export</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge" id="deckName">Deck</span>
+            <span>Card <b id="idx">1</b>/<b id="total">0</b></span>
+            <span class="badge" id="filterBadge">All</span>
+          </div>
+          <div class="progress" aria-label="Progress">
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="card" id="card" role="button" aria-label="Flashcard (click to flip)" tabindex="0">
+            <div class="inner">
+              <div class="face qface">
+                <div class="tagrow">
+                  <div class="tag">❓ Question</div>
+                  <div class="tag topic" id="topicTagQ">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="qText"></div>
+                </div>
+                <div class="hint">
+                  <span>Tip: press <kbd>Space</kbd> to flip</span>
+                  <span class="small" id="qLen"></span>
+                </div>
+              </div>
+
+              <div class="face aface">
+                <div class="tagrow">
+                  <div class="tag">✅ Answer</div>
+                  <div class="tag topic" id="topicTagA">🧩 Topic</div>
+                </div>
+                <div class="content">
+                  <div class="text" id="aText"></div>
+                </div>
+                <div class="hint">
+                  <span>Mark it: <kbd>K</kbd> Known, <kbd>U</kbd> Unsure</span>
+                  <span class="small" id="aLen"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="left">
+            <button class="btn" id="prevBtn" title="Previous (←)">⬅️ Prev</button>
+            <button class="btn" id="flipBtn" title="Flip (Space)">🪄 Flip</button>
+            <button class="btn" id="nextBtn" title="Next (→)">Next ➡️</button>
+          </div>
+          <div class="right">
+            <button class="btn good" id="knownBtn" title="Mark known (K)">✅ Known</button>
+            <button class="btn bad" id="unsureBtn" title="Mark unsure (U)">🤔 Unsure</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="meta">
+            <span class="badge">Dashboard</span>
+            <span class="small">Progress is saved in your browser (localStorage).</span>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="statgrid">
+            <div class="stat"><span>✅ Known</span><b id="knownCount">0</b></div>
+            <div class="stat"><span>🤔 Unsure</span><b id="unsureCount">0</b></div>
+            <div class="stat"><span>🧠 Seen</span><b id="seenCount">0</b></div>
+            <div class="stat"><span>🎯 Completion</span><b id="pct">0%</b></div>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="mini">
+            <h3>Filters</h3>
+            <div class="toggle">
+              <label class="switch"><input type="radio" name="mode" value="all" checked> All</label>
+              <label class="switch"><input type="radio" name="mode" value="unknown"> Only unseen</label>
+              <label class="switch"><input type="radio" name="mode" value="known"> Known</label>
+              <label class="switch"><input type="radio" name="mode" value="unsure"> Unsure</label>
+            </div>
+            <div class="small" style="margin-top:10px; line-height:1.5;">
+              Topic filter (top bar) narrows the whole deck.
+            </div>
+          </div>
+
+          <div style="height: 12px"></div>
+
+          <div class="mini">
+            <h3>Study tips</h3>
+            <div class="small" style="line-height:1.6;">
+              • Choose a <b>Topic</b> to focus on one area.<br/>
+              • Use <b>Search</b> to jump to a matching card.<br/>
+              • Shuffle for spaced repetition vibes.<br/>
+              • Export if you want to save/share your progress file.
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Built as a single offline HTML file ✨
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const RAW_DECK = [{"q": "What is the primary pathophysiology of alcohol withdrawal?", "a": "Rebound CNS excitation due to the loss of GABAergic enhancement and NMDA antagonism.", "topic": "MSRA (CSV 14)"}, {"q": "Delirium tremens, a severe complication of alcohol withdrawal, is characterized by coarse tremor, hallucinations, and _____.", "a": "delirium", "topic": "MSRA (CSV 14)"}, {"q": "What is the first-line pharmacological treatment for alcohol withdrawal management?", "a": "Benzodiazepines, such as chlordiazepoxide or diazepam.", "topic": "MSRA (CSV 14)"}, {"q": "Korsakoff's dementia, a late complication of chronic thiamine deficiency, is characterized by memory loss, anterograde amnesia, and _____.", "a": "confabulation", "topic": "MSRA (CSV 14)"}, {"q": "In alcohol withdrawal, reduced GABA activity leads to CNS _____.", "a": "hyperexcitability", "topic": "MSRA (CSV 14)"}, {"q": "How soon after the last alcoholic drink do withdrawal symptoms typically begin?", "a": "Symptoms begin 6–12 hours after the last drink.", "topic": "MSRA (CSV 14)"}, {"q": "Delirium tremens typically occurs how long after the last alcoholic drink?", "a": "It typically occurs 48–72 hours after the last drink.", "topic": "MSRA (CSV 14)"}, {"q": "What is the classic triad of Wernicke’s encephalopathy?", "a": "Ophthalmoplegia, confusion, and ataxia.", "topic": "MSRA (CSV 14)"}, {"q": "What is confabulation, a key feature of Korsakoff's dementia?", "a": "The fabrication of stories to fill in gaps in memory.", "topic": "MSRA (CSV 14)"}, {"q": "In at-risk patients, why must parenteral thiamine (B1) always be given before glucose?", "a": "To prevent precipitating Wernicke's encephalopathy, as glucose metabolism consumes thiamine.", "topic": "MSRA (CSV 14)"}, {"q": "For a diagnosis of Generalized Anxiety Disorder (GAD), symptoms of excessive worry must be present for at least how long?", "a": "At least 6 months.", "topic": "MSRA (CSV 14)"}, {"q": "A GAD diagnosis requires at least how many core physical or cognitive symptoms in addition to excessive worry?", "a": "At least 3 core symptoms.", "topic": "MSRA (CSV 14)"}, {"q": "What is the first-line pharmacological treatment for Generalized Anxiety Disorder (GAD) according to NICE guidelines?", "a": "Sertraline (an SSRI).", "topic": "MSRA (CSV 14)"}, {"q": "What medication class can be used to manage the physical symptoms of anxiety, such as in panic disorder?", "a": "Beta-blockers, such as propranolol.", "topic": "MSRA (CSV 14)"}, {"q": "A GAD-7 score of 10 indicates what level of anxiety?", "a": "Moderate anxiety.", "topic": "MSRA (CSV 14)"}, {"q": "What is the recommended second-line pharmacological option for GAD if an initial SSRI is not tolerated?", "a": "An alternative SSRI (e.g., escitalopram) or an SNRI (e.g., duloxetine).", "topic": "MSRA (CSV 14)"}, {"q": "If a patient's GAD improves on an SSRI, for how long should the antidepressant be continued to reduce relapse risk?", "a": "For at least 12 months.", "topic": "MSRA (CSV 14)"}, {"q": "If a patient's panic disorder improves on an SSRI, for how long should the antidepressant be continued before tapering?", "a": "For at least 6 months.", "topic": "MSRA (CSV 14)"}, {"q": "What is agoraphobia?", "a": "An anxiety disorder characterized by an irrational fear of open spaces, crowds, or places where escape might be difficult.", "topic": "MSRA (CSV 14)"}, {"q": "For a diagnosis of major depressive disorder, at least 5 symptoms must persist for how long?", "a": "For at least 2 weeks.", "topic": "MSRA (CSV 14)"}, {"q": "What are the two core symptoms of depression, one of which must be present for diagnosis?", "a": "Low mood or anhedonia (loss of interest or pleasure).", "topic": "MSRA (CSV 14)"}, {"q": "A PHQ-9 score of _____ or higher suggests moderate to severe depression.", "a": "16", "topic": "MSRA (CSV 14)"}, {"q": "In patients with comorbid physical illness, such as ischaemic heart disease, which SSRI is considered safest?", "a": "Sertraline.", "topic": "MSRA (CSV 14)"}, {"q": "Which SSRI is generally preferred for treating depression in children and adolescents?", "a": "Fluoxetine.", "topic": "MSRA (CSV 14)"}, {"q": "An elderly patient presenting with weight loss, agitation, and memory concerns may have _____, not just dementia.", "a": "depression", "topic": "MSRA (CSV 14)"}, {"q": "What is the primary contraindication for Electroconvulsive Therapy (ECT)?", "a": "Raised intracranial pressure.", "topic": "MSRA (CSV 14)"}, {"q": "What is a significant long-term adverse effect of Electroconvulsive Therapy (ECT)?", "a": "Persistent memory impairment.", "topic": "MSRA (CSV 14)"}, {"q": "Which SSRI is associated with a risk of QTc prolongation, warranting an ECG in patients with cardiac risk factors?", "a": "Citalopram.", "topic": "MSRA (CSV 14)"}, {"q": "For a diagnosis of mania, symptoms must last for at least how long and cause significant functional impairment?", "a": "At least 7 days.", "topic": "MSRA (CSV 14)"}, {"q": "What is the first-line pharmacological treatment for an acute manic episode?", "a": "An oral antipsychotic (e.g., haloperidol, quetiapine, risperidone, olanzapine).", "topic": "MSRA (CSV 14)"}, {"q": "What is the key difference between mania and hypomania regarding psychotic symptoms and functional impairment?", "a": "Hypomania has no psychotic features and less functional impairment than mania.", "topic": "MSRA (CSV 14)"}, {"q": "What distinguishes Bipolar I Disorder from Bipolar II Disorder?", "a": "Bipolar I involves at least one manic episode, while Bipolar II involves at least one hypomanic episode and one depressive episode, with no history of mania.", "topic": "MSRA (CSV 14)"}, {"q": "If a patient with acute mania does not respond to an initial antipsychotic, what is the next step according to NICE guidelines?", "a": "Switch to an alternative antipsychotic.", "topic": "MSRA (CSV 14)"}, {"q": "What is a first-line pharmacological option for managing bipolar depression?", "a": "Quetiapine or Lamotrigine.", "topic": "MSRA (CSV 14)"}, {"q": "A fine tremor is a common side effect of lithium, but a coarse tremor suggests _____.", "a": "toxicity", "topic": "MSRA (CSV 14)"}, {"q": "Name two endocrine-related side effects of long-term lithium use.", "a": "Hypothyroidism and hyperparathyroidism (with hypercalcaemia).", "topic": "MSRA (CSV 14)"}, {"q": "How often should lithium levels be checked once a patient is on a stable dose?", "a": "Every 3 months.", "topic": "MSRA (CSV 14)"}, {"q": "What biochemical tests should be performed every 6 months for a patient on long-term lithium therapy?", "a": "BMI, U&Es (Urea & Electrolytes), calcium, and TSH (Thyroid Stimulating Hormone).", "topic": "MSRA (CSV 14)"}, {"q": "What is the mechanism of action of typical (first-generation) antipsychotics?", "a": "They are dopamine D2 receptor antagonists.", "topic": "MSRA (CSV 14)"}, {"q": "What is the primary management for acute dystonic reactions, such as an oculogyric crisis, caused by antipsychotics?", "a": "An anticholinergic agent, such as procyclidine or benzatropine.", "topic": "MSRA (CSV 14)"}, {"q": "Atypical (second-generation) antipsychotics are associated with a higher risk of _____ syndrome.", "a": "metabolic", "topic": "MSRA (CSV 14)"}, {"q": "What are the characteristic features of Tardive Dyskinesia?", "a": "Slow, writhing movements, often involving lip-smacking, tongue protrusion, or grimacing.", "topic": "MSRA (CSV 14)"}, {"q": "What is akathisia, an extrapyramidal side effect of antipsychotics?", "a": "A state of severe inner restlessness.", "topic": "MSRA (CSV 14)"}, {"q": "What is the indication for using clozapine?", "a": "Treatment-resistant schizophrenia, defined as failure of at least two other antipsychotics.", "topic": "MSRA (CSV 14)"}, {"q": "What is the most serious potential side effect of clozapine, requiring regular FBC monitoring?", "a": "Agranulocytosis.", "topic": "MSRA (CSV 14)"}, {"q": "Neuroleptic Malignant Syndrome (NMS) is characterized by pyrexia, muscle rigidity, agitation, and _____ dysfunction.", "a": "autonomic", "topic": "MSRA (CSV 14)"}, {"q": "A key difference in examination findings between Neuroleptic Malignant Syndrome (NMS) and Serotonin Syndrome is that reflexes are reduced/absent in NMS, whereas they are _____ in Serotonin Syndrome.", "a": "brisk (hyperreflexia)", "topic": "MSRA (CSV 14)"}, {"q": "What serious complication can arise from the rhabdomyolysis seen in Neuroleptic Malignant Syndrome (NMS)?", "a": "Acute kidney injury.", "topic": "MSRA (CSV 14)"}, {"q": "Patients under 30 started on an SSRI should be reviewed within _____ due to a potential increased risk of suicidal ideation.", "a": "1 week", "topic": "MSRA (CSV 14)"}, {"q": "Combining SSRIs with what class of common analgesics increases the risk of a GI bleed?", "a": "NSAIDs (Non-Steroidal Anti-Inflammatory Drugs).", "topic": "MSRA (CSV 14)"}, {"q": "What is serotonin syndrome?", "a": "A potentially life-threatening condition caused by excessive serotonergic activity, featuring neuromuscular, autonomic, and cognitive symptoms.", "topic": "MSRA (CSV 14)"}, {"q": "What life-threatening risk is associated with combining Monoamine Oxidase Inhibitors (MAOIs) with tyramine-containing foods like aged cheese?", "a": "A hypertensive crisis.", "topic": "MSRA (CSV 14)"}, {"q": "What is the most dangerous class of antidepressants in overdose, causing cardiotoxicity?", "a": "Tricyclic Antidepressants (TCAs).", "topic": "MSRA (CSV 14)"}, {"q": "What is the management for TCA overdose if the ECG shows a QRS duration >100 ms or ventricular arrhythmias?", "a": "IV sodium bicarbonate.", "topic": "MSRA (CSV 14)"}, {"q": "To avoid withdrawal seizures, benzodiazepines should be tapered gradually, typically by reducing the dose by _____ every few weeks.", "a": "one-eighth", "topic": "MSRA (CSV 14)"}, {"q": "What are compulsions in the context of OCD?", "a": "Repetitive behaviors or mental rituals performed in response to obsessions to reduce distress.", "topic": "MSRA (CSV 14)"}, {"q": "What is the specific type of CBT used as a first-line psychological treatment for OCD?", "a": "CBT with Exposure and Response Prevention (ERP).", "topic": "MSRA (CSV 14)"}, {"q": "For severe OCD, what is the recommended first-line management approach?", "a": "A combination of an SSRI and high-intensity CBT (with ERP).", "topic": "MSRA (CSV 14)"}, {"q": "Personality disorders are grouped into three clusters; what are the general characteristics of Cluster A?", "a": "Odd or eccentric behavior.", "topic": "MSRA (CSV 14)"}, {"q": "Antisocial, Borderline, Histrionic, and Narcissistic personality disorders belong to which cluster?", "a": "Cluster B (dramatic, emotional, or erratic).", "topic": "MSRA (CSV 14)"}, {"q": "What are the core features of Cluster C personality disorders?", "a": "Anxious or fearful behavior.", "topic": "MSRA (CSV 14)"}, {"q": "A profound disregard for social norms, a history of law-breaking, and a lack of remorse are characteristic of which personality disorder?", "a": "Antisocial Personality Disorder.", "topic": "MSRA (CSV 14)"}, {"q": "Intense fear of abandonment, unstable relationships, emotional instability, and self-harming behavior are hallmarks of which personality disorder?", "a": "Borderline (Emotionally Unstable) Personality Disorder.", "topic": "MSRA (CSV 14)"}, {"q": "What is the mainstay of treatment for personality disorders, particularly Dialectical Behaviour Therapy (DBT) for Borderline PD?", "a": "Psychological therapies.", "topic": "MSRA (CSV 14)"}, {"q": "A person who is emotionally cold, detached, lacks interest in relationships, and prefers solitary activities may have which personality disorder?", "a": "Schizoid Personality Disorder.", "topic": "MSRA (CSV 14)"}, {"q": "Unusual beliefs or 'magical thinking' are a key feature of which Cluster A personality disorder?", "a": "Schizotypal Personality Disorder.", "topic": "MSRA (CSV 14)"}, {"q": "A grandiose sense of self-importance, a lack of empathy, and a tendency to exploit others are features of _____ Personality Disorder.", "a": "Narcissistic", "topic": "MSRA (CSV 14)"}, {"q": "What is the key difference between Obsessive-Compulsive Personality Disorder (OCPD) and Obsessive-Compulsive Disorder (OCD)?", "a": "OCPD is characterized by a preoccupation with order and perfectionism, but lacks the true obsessions and compulsions seen in OCD.", "topic": "MSRA (CSV 14)"}, {"q": "What is the typical time of onset for 'baby blues' after delivery?", "a": "It occurs 3–7 days after delivery.", "topic": "MSRA (CSV 14)"}, {"q": "How is postpartum depression (PND) distinguished from 'baby blues' based on timing and duration?", "a": "PND typically has an onset of 1–3 months postpartum and is not self-limiting, whereas baby blues occurs in the first week and resolves in days.", "topic": "MSRA (CSV 14)"}, {"q": "A score of >13 on the _____ suggests a depressive episode in the postnatal period.", "a": "Edinburgh Postnatal Depression Scale (EPDS)", "topic": "MSRA (CSV 14)"}, {"q": "Which two SSRIs are considered safest during breastfeeding due to their low milk-to-plasma ratio?", "a": "Sertraline and paroxetine.", "topic": "MSRA (CSV 14)"}, {"q": "What is postpartum psychosis?", "a": "A psychiatric emergency with acute onset of severe mood disturbance and psychotic symptoms (delusions, hallucinations) in the postpartum period.", "topic": "MSRA (CSV 14)"}, {"q": "What are the core symptom clusters of Post-Traumatic Stress Disorder (PTSD)?", "a": "Re-experiencing the trauma, emotional numbing/avoidance, and hyperarousal.", "topic": "MSRA (CSV 14)"}, {"q": "How is Acute Stress Disorder differentiated from PTSD?", "a": "Acute Stress Disorder is diagnosed if symptoms last for less than 4 weeks after the trauma; if they persist beyond this, the diagnosis becomes PTSD.", "topic": "MSRA (CSV 14)"}, {"q": "What are the two first-line psychological therapies for PTSD?", "a": "Trauma-focused CBT or Eye Movement Desensitisation and Reprocessing (EMDR).", "topic": "MSRA (CSV 14)"}, {"q": "If pharmacological treatment is required for PTSD, what are the first-line medication options?", "a": "Sertraline (SSRI) or venlafaxine (SNRI).", "topic": "MSRA (CSV 14)"}, {"q": "Schneider's first-rank symptom of _____ is the belief that one's thoughts are being planted by an external source.", "a": "thought insertion", "topic": "MSRA (CSV 14)"}, {"q": "What is thought broadcast, a first-rank symptom of schizophrenia?", "a": "The belief that one's thoughts are being broadcast to others.", "topic": "MSRA (CSV 14)"}, {"q": "What is a delusional perception?", "a": "Assigning a new, delusional meaning to a normal sensory experience.", "topic": "MSRA (CSV 14)"}, {"q": "In the management of schizophrenia, atypical (second-generation) antipsychotics are often preferred due to a lower risk of _____ compared to typical agents.", "a": "extrapyramidal side effects (EPSEs)", "topic": "MSRA (CSV 14)"}, {"q": "What is Cotard Syndrome?", "a": "A delusional belief that one is dead, does not exist, or that a body part is missing.", "topic": "MSRA (CSV 14)"}, {"q": "De Clérambault's Syndrome is the delusional belief that a person, typically of higher status like a celebrity, is _____.", "a": "in love with the patient", "topic": "MSRA (CSV 14)"}, {"q": "What is Capgras Delusion?", "a": "The belief that a familiar person has been replaced by an identical impostor.", "topic": "MSRA (CSV 14)"}, {"q": "What is Charles-Bonnet Syndrome?", "a": "The experience of visual or auditory hallucinations in patients with visual impairment, where insight that the hallucinations are not real is preserved.", "topic": "MSRA (CSV 14)"}, {"q": "A patient with multiple vague physical symptoms who persistently demands investigations despite negative findings and resists reassurance likely has _____ disorder.", "a": "somatisation", "topic": "MSRA (CSV 14)"}, {"q": "What is the central feature of hypochondriasis (Illness Anxiety Disorder)?", "a": "A persistent belief or fear of having a specific serious illness, despite negative investigations and medical reassurance.", "topic": "MSRA (CSV 14)"}, {"q": "What is Conversion Disorder?", "a": "A condition involving the loss of motor or sensory function (e.g., paralysis, blindness) with no identifiable medical cause, where symptoms are not consciously faked.", "topic": "MSRA (CSV 14)"}, {"q": "What is 'la belle indifférence', sometimes seen in Conversion Disorder?", "a": "A notable lack of concern or emotional indifference about what appears to be a serious physical symptom.", "topic": "MSRA (CSV 14)"}, {"q": "What is the key difference in motivation between Factitious Disorder and Malingering?", "a": "In Factitious Disorder, the motivation is to adopt the 'sick role' with no external gain, whereas in Malingering, the motivation is for external benefit (e.g., financial, avoiding work).", "topic": "MSRA (CSV 14)"}, {"q": "What are dissociative disorders?", "a": "A group of disorders, typically arising from trauma, characterized by features like amnesia, depersonalization, derealization, or identity disturbance.", "topic": "MSRA (CSV 14)"}, {"q": "A key clinical feature of anorexia nervosa is a low BMI, often accompanied by menstrual disturbance such as oligomenorrhoea or _____.", "a": "amenorrhoea", "topic": "MSRA (CSV 14)"}, {"q": "What are the hallmark behaviors of Bulimia Nervosa?", "a": "Recurrent episodes of binge eating followed by compensatory behaviors (purging) to avoid weight gain.", "topic": "MSRA (CSV 14)"}, {"q": "What is the cornerstone of psychological therapy for both anorexia and bulimia nervosa?", "a": "Cognitive Behavioural Therapy for Eating Disorders (CBT-ED).", "topic": "MSRA (CSV 14)"}, {"q": "While not used as monotherapy, which antidepressant may be considered in combination with psychological therapy for Bulimia Nervosa?", "a": "Fluoxetine.", "topic": "MSRA (CSV 14)"}, {"q": "What is Body Dysmorphic Disorder (BDD)?", "a": "A preoccupation with an imagined or minor defect in appearance that causes significant distress, but does not meet criteria for an eating disorder.", "topic": "MSRA (CSV 14)"}, {"q": "Parotid gland enlargement and dental enamel erosion in a patient with normal body weight are suggestive of _____.", "a": "bulimia nervosa (due to self-induced vomiting)", "topic": "MSRA (CSV 14)"}, {"q": "What is the purpose and maximum duration of a Section 2 of the Mental Health Act?", "a": "Admission for assessment (with or without treatment) for up to 28 days.", "topic": "MSRA (CSV 14)"}, {"q": "What is the purpose and initial duration of a Section 3 of the Mental Health Act?", "a": "Admission for treatment for up to 6 months (renewable).", "topic": "MSRA (CSV 14)"}, {"q": "What is a Section 5(2) of the Mental Health Act?", "a": "A doctor's holding power to detain a voluntary inpatient for up to 72 hours to allow for a Mental Health Act assessment.", "topic": "MSRA (CSV 14)"}, {"q": "Who can initiate a Section 5(4) of the Mental Health Act, and for how long can it hold a patient?", "a": "A registered mental health nurse can hold a voluntary inpatient for up to 6 hours until a doctor is available.", "topic": "MSRA (CSV 14)"}, {"q": "What power does Section 136 of the Mental Health Act give to the police?", "a": "The power to remove a person who appears to have a mental disorder from a public place to a place of safety.", "topic": "MSRA (CSV 14)"}, {"q": "Under what circumstances is a Section 135 of the Mental Health Act used?", "a": "It allows police, with a warrant from a magistrate, to enter a private property to remove a person believed to have a mental disorder and be at risk.", "topic": "MSRA (CSV 14)"}];
+
+  const LS_KEY = "flashcards_progress_v2";
+  const LS_ORDER = "flashcards_order_v2";
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function nowISO() { return new Date().toISOString(); }
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 1500);
+  }
+
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function saveProgress(p) { localStorage.setItem(LS_KEY, JSON.stringify(p)); }
+
+  function loadOrder() {
+    try {
+      const o = JSON.parse(localStorage.getItem(LS_ORDER) || "null");
+      if (Array.isArray(o) && o.length === RAW_DECK.length) return o;
+      return null;
+    } catch (e) { return null; }
+  }
+  function saveOrder(order) { localStorage.setItem(LS_ORDER, JSON.stringify(order)); }
+
+  const deck = RAW_DECK.map((c, i) => ({
+    id: i,
+    q: (c.q || "").trim(),
+    a: (c.a || "").trim(),
+    topic: (c.topic || "Other").trim(),
+    qLower: (c.q || "").toLowerCase(),
+    aLower: (c.a || "").toLowerCase(),
+    topicLower: (c.topic || "other").toLowerCase(),
+  }));
+
+  let progress = loadProgress();
+  let order = loadOrder() || deck.map(c => c.id);
+
+  let mode = "all";
+  let searchTerm = "";
+  let topicFilter = "__ALL__";
+  let view = [];
+  let pos = 0;
+
+  function statusOf(id) {
+    return (progress[id] && progress[id].status) || null;
+  }
+  function seenOf(id) {
+    return !!(progress[id] && progress[id].seen);
+  }
+
+  function recomputeView(keepCurrentId=true) {
+    const prevId = view[pos];
+    const term = (searchTerm || "").trim().toLowerCase();
+
+    view = order.filter(id => {
+      const c = deck[id];
+      const st = statusOf(id);
+      const seen = seenOf(id);
+
+      if (mode === "unknown" && (seen || st)) return false;
+      if (mode === "known" && st !== "known") return false;
+      if (mode === "unsure" && st !== "unsure") return false;
+
+      if (topicFilter !== "__ALL__" && c.topic !== topicFilter) return false;
+
+      if (term) {
+        return c.qLower.includes(term) || c.aLower.includes(term) || c.topicLower.includes(term);
+      }
+      return true;
+    });
+
+    document.getElementById("total").textContent = view.length;
+
+    const badge = document.getElementById("filterBadge");
+    let label = "All";
+    if (mode === "unknown") label = "Only unseen";
+    if (mode === "known") label = "Known";
+    if (mode === "unsure") label = "Unsure";
+    if (topicFilter !== "__ALL__") label = topicFilter + " • " + label;
+    if (term) label += " • Search";
+    badge.textContent = label;
+
+    if (view.length === 0) {
+      pos = 0;
+      renderEmpty();
+      updateStats();
+      return;
+    }
+
+    if (keepCurrentId && prevId != null) {
+      const newPos = view.indexOf(prevId);
+      pos = newPos >= 0 ? newPos : clamp(pos, 0, view.length - 1);
+    } else {
+      pos = clamp(pos, 0, view.length - 1);
+    }
+    renderCard();
+    updateStats();
+  }
+
+  function renderEmpty() {
+    document.getElementById("qText").textContent = "No cards match your filter/search 🤷‍♂️";
+    document.getElementById("aText").textContent = "Try clearing search or switching filters.";
+    document.getElementById("topicTagQ").textContent = "🧩 Topic";
+    document.getElementById("topicTagA").textContent = "🧩 Topic";
+    document.getElementById("idx").textContent = "0";
+    document.getElementById("bar").style.width = "0%";
+    document.getElementById("qLen").textContent = "";
+    document.getElementById("aLen").textContent = "";
+    document.getElementById("card").classList.remove("flipped");
+  }
+
+  function markSeen(id) {
+    progress[id] = progress[id] || {};
+    if (!progress[id].seen) {
+      progress[id].seen = true;
+      progress[id].updatedAt = nowISO();
+      saveProgress(progress);
+    }
+  }
+
+  function setStatus(id, s) {
+    progress[id] = progress[id] || {};
+    progress[id].status = s;
+    progress[id].seen = true;
+    progress[id].updatedAt = nowISO();
+    saveProgress(progress);
+  }
+
+  function renderCard() {
+    if (view.length === 0) return renderEmpty();
+    const id = view[pos];
+    const c = deck[id];
+
+    markSeen(id);
+
+    document.getElementById("qText").textContent = c.q || "(no question)";
+    document.getElementById("aText").textContent = c.a || "(no answer)";
+    document.getElementById("topicTagQ").textContent = "🧩 " + c.topic;
+    document.getElementById("topicTagA").textContent = "🧩 " + c.topic;
+
+    document.getElementById("idx").textContent = String(pos + 1);
+
+    const pct = ((pos + 1) / view.length) * 100;
+    document.getElementById("bar").style.width = pct.toFixed(1) + "%";
+
+    document.getElementById("qLen").textContent = c.q.length ? ("📝 " + c.q.length + " chars") : "";
+    document.getElementById("aLen").textContent = c.a.length ? ("📝 " + c.a.length + " chars") : "";
+
+    const st = statusOf(id);
+    if (st === "known") toast("✅ You previously marked this as Known");
+    if (st === "unsure") toast("🤔 You previously marked this as Unsure");
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const ids = deck.map(c => c.id);
+    let known = 0, unsure = 0, seen = 0;
+    for (const id of ids) {
+      const st = statusOf(id);
+      if (st === "known") known++;
+      if (st === "unsure") unsure++;
+      if (seenOf(id) || st) seen++;
+    }
+    document.getElementById("knownCount").textContent = known;
+    document.getElementById("unsureCount").textContent = unsure;
+    document.getElementById("seenCount").textContent = seen;
+    const completion = ids.length ? Math.round((known / ids.length) * 100) : 0;
+    document.getElementById("pct").textContent = completion + "%";
+  }
+
+  function flip() { document.getElementById("card").classList.toggle("flipped"); }
+  function next() {
+    if (view.length === 0) return;
+    pos = (pos + 1) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+  function prev() {
+    if (view.length === 0) return;
+    pos = (pos - 1 + view.length) % view.length;
+    document.getElementById("card").classList.remove("flipped");
+    renderCard();
+  }
+
+  function shuffleOrder() {
+    const arr = order.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    order = arr;
+    saveOrder(order);
+    recomputeView(false);
+    toast("🔀 Shuffled!");
+  }
+
+  function resetAll() {
+    if (!confirm("Reset your progress (Known/Unsure/Seen) and shuffle order?")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_ORDER);
+    progress = loadProgress();
+    order = deck.map(c => c.id);
+    searchTerm = "";
+    topicFilter = "__ALL__";
+    document.getElementById("search").value = "";
+    document.getElementById("topicSelect").value = "__ALL__";
+    mode = "all";
+    document.querySelector('input[name="mode"][value="all"]').checked = true;
+    recomputeView(false);
+    toast("♻️ Reset done!");
+  }
+
+  function exportProgress() {
+    const payload = {
+      exportedAt: nowISO(),
+      deckSize: deck.length,
+      progress,
+      order
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flashcards_progress.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("⬇️ Exported progress");
+  }
+
+  document.getElementById("card").addEventListener("click", flip);
+  document.getElementById("flipBtn").addEventListener("click", flip);
+  document.getElementById("nextBtn").addEventListener("click", next);
+  document.getElementById("prevBtn").addEventListener("click", prev);
+  document.getElementById("shuffleBtn").addEventListener("click", shuffleOrder);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("downloadBtn").addEventListener("click", exportProgress);
+
+  document.getElementById("knownBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "known");
+    toast("✅ Marked Known");
+    next();
+  });
+
+  document.getElementById("unsureBtn").addEventListener("click", () => {
+    if (view.length === 0) return;
+    const id = view[pos];
+    setStatus(id, "unsure");
+    toast("🤔 Marked Unsure");
+    next();
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    searchTerm = e.target.value || "";
+    recomputeView(true);
+  });
+
+  document.getElementById("topicSelect").addEventListener("change", (e) => {
+    topicFilter = e.target.value;
+    recomputeView(false);
+  });
+
+  for (const r of document.querySelectorAll('input[name="mode"]')) {
+    r.addEventListener("change", (e) => {
+      mode = e.target.value;
+      recomputeView(true);
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase();
+    const typing = tag === "input" || tag === "textarea" || tag === "select";
+    if (typing) return;
+
+    if (e.key === " " ) { e.preventDefault(); flip(); }
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === "ArrowLeft") prev();
+    else if (e.key.toLowerCase() === "s") shuffleOrder();
+    else if (e.key.toLowerCase() === "k") {
+      if (view.length) { setStatus(view[pos], "known"); toast("✅ Known"); next(); }
+    }
+    else if (e.key.toLowerCase() === "u") {
+      if (view.length) { setStatus(view[pos], "unsure"); toast("🤔 Unsure"); next(); }
+    }
+  });
+
+  document.getElementById("deckName").textContent = "Deck • " + deck.length + " cards";
+  recomputeView(false);
+</script>
+</body>
+</html>
